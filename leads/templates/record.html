@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+{% if user.is_authenticated %}
+
+    <div class="card w-75 mb-3">
+
+        <div class="card-body">
+          <h3 class="card-title"><strong>{{ record.name }}</strong></h3>
+          <p class="card-text">{{ record.description }}</p>
+          <p class="card-text"><strong>ID: </strong> {{ record.id }}</p>
+          <p class="card-text"><strong>Телефон: </strong> {{ record.phone }}</p>
+          <p class="card-text"><strong>Дата поступления: </strong> {{ record.created_at }}</p>
+          <form method="post">
+                            {% csrf_token %}
+                            {{form_status.as_p}}
+                            <button type="submit" class="btn btn-success">Изменить статус</button>
+          </form>
+
+          {% if user.status == "Директор КЦ" or  user.status == "Администратор"%}
+                <p class="card-text"><strong>Прикрепленные операторы: </strong> {{ record.employees_KC }}</p>
+                 <form method="post">
+                                  {% csrf_token %}
+                                  {{form_employees_KC.as_p}}
+                                  <button type="submit" class="btn btn-success">Прикрепить оператора</button>
+                 </form>
+
+          {% endif %}
+
+          {% if user.status == "Директор ЮПП" or  user.status == "Администратор"%}
+                <p class="card-text"><strong>Прикрепленные юристы: </strong> {{ record.employees_UPP }}</p>
+                    <form method="post">
+                                  {% csrf_token %}
+                                  {{form_employees_UPP.as_p}}
+                                  <button type="submit" class="btn btn-success">Прикрепить Юриста</button>
+                    </form>
+          {% endif %}
+
+        </div>
+    </div>
+
+
+      <a href="{% url 'home' %}" class="btn btn-secondary">Вернуться к списку</a>
+    {% if user.status == "Администратор"%}
+      <a href="{% url 'delete_record' record.id %}" class="btn btn-danger">Удалить</a>
+    {% endif %}
+      <a href="{% url 'update_record' record.id %}" class="btn btn-success">Редактировать</a>
+    {% if user.status == "Директор КЦ" or user.status == "Оператор"%}
+      <a href="{% url 'in_work' record.id %}" class="btn btn-primary">В работу</a>
+    {% endif %}
+      <a href="{% url 'home' %}" class="btn btn-secondary">Отмена</a>
+
+{% endif %}
+
+{% endblock content %}

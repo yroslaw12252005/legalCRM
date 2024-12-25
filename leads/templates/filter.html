@@ -1,0 +1,320 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% if user.is_authenticated %}
+
+<style>
+    .tasks__list {
+  margin: 0;
+  padding: 0;
+
+  list-style: none;
+}
+.tasks{
+background-color: #212529;
+}
+
+.tasks__list {
+  margin: 0;
+  padding: 0;
+
+
+  list-style: none;
+}
+
+.tasks__item {
+  transition: background-color 0.5s;
+  margin-bottom: 10px;
+  padding: 5px;
+
+  display: flex;
+    justify-content: center;
+  border-radius: 10px;
+  cursor: move;
+
+  transition: background-color 0.5s;
+
+}
+
+.tasks__item:last-child {
+  margin-bottom: 0;
+}
+
+.selected {
+  opacity: 0.6;
+}
+</style>
+
+
+<div class="row">
+    <div class="tasks col-3 ">
+
+        <ul class="tasks__list">
+            <br>
+            <h1 class="tasks__title" style="color:#fff;     text-align: center;">Виджеты</h1>
+            <br>
+    <li class="tasks__item"><div class="card" style="width: 25rem">
+        <div class="card-body ">
+      <h3>Список задач</h3>
+
+            <table class="table myaccordion" id="accordion">
+                <thead>
+                <tr>
+                    <th>Название</th>
+                    <th>Дэдлайн</th>
+                    <th>Приоретет</th>
+                </tr>
+                </thead>
+                {% for todo in todolist %}
+                {% if todo.time|date:"Y-n-j" == now %}
+                <tbody>
+                <tr data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+                    <td><a href="{% url 'todolist'%}">{{todo.title}}</a></td>
+                    <td>{{todo.time}} {{now}}</td>
+                    {% if todo.priority == "Высокий" %}
+                    <td class="table-danger">{{todo.priority}}</td>
+                    {% elif todo.priority == "Средний" %}
+                    <td class="table-warning">{{todo.priority}}</td>
+                    {% elif todo.priority == "Низкий" %}
+                    <td>{{todo.priority}}</td>
+
+                    {% endif %}
+
+
+                </tr>
+
+                </tbody>
+                {% endif %}{% endfor %}
+            </table>
+        </div>
+    </div>
+        </l>
+            <li class="tasks__item">
+                <div class="card" style="width: 25rem">
+                    <div class="card-body ">
+      <h3>Запись в офис</h3>
+
+    <table class="table myaccordion" id="accordion">
+						  <thead>
+						    <tr>
+						      <th>Имя</th>
+						      <th>Дата</th>
+						    </tr>
+						  </thead>
+							{% for coming in comings %}
+						  <tbody>
+						    <tr data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+						      <td>{{coming.lead}}</td>
+						      <td>{{coming.date}}</td>
+						    </tr>
+
+						  </tbody>{% endfor %}
+						</table>
+  </div>
+</div></li>
+    <li class="tasks__item" style="height: 200px;" ></li>
+    <li class="tasks__item" style="height: 200px;" ></li>
+    <li class="tasks__item" style="height: 200px;" ></li>
+    <li class="tasks__item" style="height: 200px;" ></li>
+  </ul>
+    </div>
+    <div class="col">
+    <h1>Заявки</h1>
+
+        <button type="button" class="btn btn-primary dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+    Фильтр
+  </button>
+  <ul class="dropdown-menu">
+    <li><a class="dropdown-item" href="{% url 'filter' 'Новая' %}">Новая</a> </li>
+    <li><a class="dropdown-item" href="{% url 'filter' 'Брак' %}">Брак</a> </li>
+    <li><a class="dropdown-item" href="{% url 'filter' 'Недозвон' %}">Недозвон</a> </li>
+    <li><a class="dropdown-item" href="{% url 'filter' 'Перезвон' %}">Перезвон</a> </li>
+    <li><a class="dropdown-item" href="{% url 'filter' 'Запись' %}">Запись</a> </li>
+    <li><a class="dropdown-item" href="{% url 'filter' 'Отказ' %}">Отказ</a> </li>
+    <li><hr class="dropdown-divider"></li>
+    <li><a class="dropdown-item" href="{% url 'home'%}">Все</a></li>
+  </ul>
+    <table class="table table-striped table-bordered table-hover">
+      <thead class="table-success">
+        <tr>
+          <th scope="col">Имя</th>
+          <th scope="col">Телефон</th>
+          <th scope="col">Описание</th>
+          <th scope="col">Статус</th>
+            {% if user.status == "Директор КЦ" or user.status == "Оператор"%}
+            <th scope="col">В работе</th>
+            {% endif %}
+
+        </tr>
+      </thead>
+
+      <tbody>
+        {% if records %}
+
+          {% for record in records %}
+        {% if record.status == status %}
+        {% if user.status == "Директор КЦ" and record.in_work == 0 or user.status == "Директор КЦ" and record.in_work == 1 or user.status == "Директор ЮПП" and record.in_work == 1 or user.status == "Юрист пирвичник" and record.employees_UPP == user.username or user.status == "Оператор" and record.employees_KC == user.username or user.status == "Менеджер" or user.status == "Администратор"%}
+        <tr>
+          <td>
+              <a href="{% url 'record' record.id %}">{{ record.name }}</a>
+          </td>
+          <td>
+            {{ record.phone }}
+          </td>
+          <td>
+            {{ record.description|slice:"40" }}
+          </td>
+            {% if record.status == "Новая" %}
+            <td>{{ record.status }}</td>
+            {% elif record.status == "Брак" %}
+            <td style=" background-color:#B39F7A; ">{{ record.status }}</td>
+            {% elif record.status == "Недозвон" %}
+            <td style=" background-color:#FCE883; ">{{ record.status }}</td>
+            {% elif record.status == "Перезвон" %}
+            <td style=" background-color:#FF7514;">{{ record.status }}</td>
+            {% elif record.status == "Запись" %}
+            <td style=" background-color:#77DD77;">{{ record.status }}</td>
+            {% elif record.status == "Отказ" %}
+            <td style=" background-color:#ff0000;">{{ record.status }}</td>
+
+            {%endif%}
+
+
+
+
+
+            {% if user.status == "Директор КЦ" or user.status == "Оператор"%}
+            {% if record.in_work == 1%}
+            <td>Да</td>
+            {% else %}
+            <td>Нет</td>
+            {% endif %}
+            {% endif %}
+
+
+
+        </tr>
+        {% endif %}
+        {%endif%}
+        {% endfor %}
+        {% endif %}
+
+
+
+      </tbody>
+    </table>
+
+</div>
+</div>
+
+
+<script>
+const tasksListElement = document.querySelector(`.tasks__list`);
+const taskElements = tasksListElement.querySelectorAll(`.tasks__item`);
+
+// Перебираем все элементы списка и присваиваем нужное значение
+for (const task of taskElements) {
+  task.draggable = true;
+}
+
+    tasksListElement.addEventListener(`dragstart`, (evt) => {
+  evt.target.classList.add(`selected`);
+})
+
+tasksListElement.addEventListener(`dragend`, (evt) => {
+  evt.target.classList.remove(`selected`);
+});
+
+    tasksListElement.addEventListener(`dragover`, (evt) => {
+  // Разрешаем сбрасывать элементы в эту область
+  evt.preventDefault();
+
+  // Находим перемещаемый элемент
+  const activeElement = tasksListElement.querySelector(`.selected`);
+  // Находим элемент, над которым в данный момент находится курсор
+  const currentElement = evt.target;
+  // Проверяем, что событие сработало:
+  // 1. не на том элементе, который мы перемещаем,
+  // 2. именно на элементе списка
+  const isMoveable = activeElement !== currentElement &&
+    currentElement.classList.contains(`tasks__item`);
+
+  // Если нет, прерываем выполнение функции
+  if (!isMoveable) {
+    return;
+  }
+
+  // Находим элемент, перед которым будем вставлять
+  const nextElement = (currentElement === activeElement.nextElementSibling) ?
+      currentElement.nextElementSibling :
+      currentElement;
+
+  // Вставляем activeElement перед nextElement
+  tasksListElement.insertBefore(activeElement, nextElement);
+});
+
+  const getNextElement = (cursorPosition, currentElement) => {
+  // Получаем объект с размерами и координатами
+  const currentElementCoord = currentElement.getBoundingClientRect();
+  // Находим вертикальную координату центра текущего элемента
+  const currentElementCenter = currentElementCoord.y + currentElementCoord.height / 2;
+
+  // Если курсор выше центра элемента, возвращаем текущий элемент
+  // В ином случае — следующий DOM-элемент
+  const nextElement = (cursorPosition < currentElementCenter) ?
+      currentElement :
+      currentElement.nextElementSibling;
+
+  return nextElement;
+};
+
+tasksListElement.addEventListener(`dragover`, (evt) => {
+  evt.preventDefault();
+
+  const activeElement = tasksListElement.querySelector(`.selected`);
+  const currentElement = evt.target;
+  const isMoveable = activeElement !== currentElement &&
+    currentElement.classList.contains(`tasks__item`);
+
+  if (!isMoveable) {
+    return;
+  }
+
+  // evt.clientY — вертикальная координата курсора в момент,
+  // когда сработало событие
+  const nextElement = getNextElement(evt.clientY, currentElement);
+
+  // Проверяем, нужно ли менять элементы местами
+  if (
+    nextElement &&
+    activeElement === nextElement.previousElementSibling ||
+    activeElement === nextElement
+  ) {
+    // Если нет, выходим из функции, чтобы избежать лишних изменений в DOM
+    return;
+  }
+
+  tasksListElement.insertBefore(activeElement, nextElement);
+});
+</script>
+
+
+
+    {% else %}
+    <div class="col-md-6 offset-md-3">
+        <h5>Добро пожаловать в legaCRM - <br>CRM для настоящих юристов</h5>
+        <form action="{% url 'home' %}" method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+            <input type="text" class="form-control" name="username" placeholder="Имя" required>
+            </div>
+            <div class="mb-3">
+            <input type="password" class="form-control" name="password" placeholder="Пароль" required>
+            </div>
+            <button type="submit" class="btn btn-success">Зайти</button>
+        </form>
+        </div>
+        {% endif%}
+
+{% endblock content %}

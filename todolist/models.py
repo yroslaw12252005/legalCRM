@@ -1,0 +1,9 @@
+from django.db import models
+
+class ToDoList(models.Model):
+    title = models.CharField(max_length=50)
+    description = models.CharField(max_length=200)
+    time = models.DateTimeField()
+    made = models.BooleanField(default=False)
+    priority = models.CharField(max_length=50)
+    category = models.CharField(max_length=100)

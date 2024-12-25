@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+
+{% block content %}
+
+{% if user.is_authenticated %}
+<section class="ftco-section">
+		<div class="container">
+			<div class="row justify-content-center">
+				<div class="col-md-6 text-center mb-4">
+					<h2 class="heading-section">Список задач</h2>
+				</div>
+			</div>
+			<div class="row">
+				<div class="col-md-12">
+
+					<div class="table-wrap">
+						<table class="table myaccordion" id="accordion">
+						  <thead>
+						    <tr>
+						      <th>Название</th>
+						      <th>Дэдлайн</th>
+						      <th>Приоретет</th>
+						      <th>Категория</th>
+						    </tr>
+						  </thead>
+							{% for todo in todolist %}
+						  <tbody>
+						    <tr data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
+						      <td>{{todo.title}}</td>
+						      <td>{{todo.time}}</td>
+								{% if todo.priority == "Высокий" %}
+								<td class="table-danger">{{todo.priority}}</td>
+								{% elif todo.priority == "Средний" %}
+								<td class="table-warning">{{todo.priority}}</td>
+						      	{% elif todo.priority == "Низкий" %}
+                                <td>{{todo.category}}</td>
+
+								{% endif %}
+
+						    </tr>
+						    <tr>
+						    	<td colspan="6" id="collapseOne"  style="border-bottom-width:3px" class="collapse show acc" data-parent="#accordion">
+						    		<p>{{todo.description}}</p>
+						    	</td>
+						    </tr>
+
+
+						  </tbody>{% endfor %}
+						</table>
+					</div>
+
+				</div>
+			</div>
+		</div>
+	</section>
+
+    <h1>to-do-List</h1>
+{% endif%}
+{% endblock content %}
