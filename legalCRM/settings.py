@@ -115,6 +115,8 @@ USE_I18N = True
 
 USE_TZ = True
 
+CSRF_TRUSTED_ORIGINS = ["https://yroslaw12252005-legalcrm-0df1.twc1.net",'https://127.0.0.1']
+
 
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
