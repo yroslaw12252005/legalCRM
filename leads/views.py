@@ -11,6 +11,7 @@ from accounts.models import User
 from django.views import View
 import datetime
 
+from django.views.decorators.csrf import csrf_protect
 
 
 def home(request):
@@ -112,8 +113,10 @@ def in_work(request, pk):
     record.save()
     return redirect("home")
 
+
+@csrf_exempt
 class Get_tilda_lead(View):
 
      def post(self, lead):
-         print("tilda")
+         render
          return 'test'
