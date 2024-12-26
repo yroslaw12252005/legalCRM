@@ -114,7 +114,7 @@ def in_work(request, pk):
     return redirect("home")
 
 
-@csrf_exempt
+@method_decorator(csrf_exempt)
 class Get_tilda_lead(View):
 
      def post(self, lead):
