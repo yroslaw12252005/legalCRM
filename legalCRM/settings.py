@@ -133,3 +133,5 @@ AUTH_USER_MODEL = "accounts.User"
 DATETIME_FORMAT="%d.%m.%Y %H:%M"
 L10N=False
 USE_TZ=False
+
+CSRF_COOKIE_SECURE = True
