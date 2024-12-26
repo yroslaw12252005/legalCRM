@@ -11,8 +11,7 @@ from accounts.models import User
 from django.views import View
 import datetime
 
-from django.views.decorators.csrf import csrf_protect
-from django.utils.decorators import method_decorator
+from django.views.decorators.csrf import csrf_exempt
 
 def home(request):
     current_time = datetime.datetime.now()
@@ -114,7 +113,7 @@ def in_work(request, pk):
     return redirect("home")
 
 
-@method_decorator(csrf_exempt)
+@csrf_exempt
 class Get_tilda_lead(View):
 
      def post(self, lead):
