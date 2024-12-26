@@ -8,6 +8,7 @@ from coming.models import Coming
 from .forms import AddRecordForm, StatusForm, Employees_KCForm, Employees_UPPForm
 from accounts.models import User
 
+from django.views import View
 import datetime
 
 
@@ -111,7 +112,7 @@ def in_work(request, pk):
     record.save()
     return redirect("home")
 
-class Get_tilda_lead():
+class Get_tilda_lead(View):
 
      def post(self, lead):
          print("tilda")
