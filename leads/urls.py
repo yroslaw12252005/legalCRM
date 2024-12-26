@@ -3,7 +3,7 @@ from django.urls import path, include
 from leads import views
 urlpatterns = [
     path("", views.home, name='home'),
-    path("tilda_lead/", views.Get_tilda_lead.as_view(), name='home'),
+    path("tilda_lead/", views.Get_tilda_lead, name='home'),
     path("logout/", views.logout_user, name='logout'),
     path("record/<int:pk>/", views.record, name='record'),
     path("record/<status>/", views.filter, name='filter'),
