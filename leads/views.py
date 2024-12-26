@@ -118,5 +118,5 @@ def in_work(request, pk):
 class Get_tilda_lead(View):
 
      def post(self, lead):
-         render
+         print(200)
          return 'test'
