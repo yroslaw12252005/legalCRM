@@ -1,5 +1,4 @@
 from django.urls import path, include
-from leads.views import Get_tilda_lead
 from leads import views
 urlpatterns = [
     path("", views.home, name='home'),
