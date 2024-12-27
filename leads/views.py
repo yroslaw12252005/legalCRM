@@ -117,6 +117,4 @@ def in_work(request, pk):
 def get_tilda_lead(request):
     if request.method == "POST":
 
-         a = request.POST
-         print(a,"test")
          return  HttpResponse('test')
