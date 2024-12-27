@@ -113,7 +113,7 @@ def in_work(request, pk):
     return redirect("home")
 
 
-#@csrf_exempt
-#def get_tilda_lead(request):
-#    if request.method == "POST":
-#         return  None
+@csrf_exempt
+def get_tilda_lead(request):
+    if request.method == "POST":
+         return  None
