@@ -1,6 +1,7 @@
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.http import HttpResponse
 
 from .models import Record
 from todolist.models import ToDoList
@@ -8,7 +9,6 @@ from coming.models import Coming
 from .forms import AddRecordForm, StatusForm, Employees_KCForm, Employees_UPPForm
 from accounts.models import User
 
-from django.views import View
 import datetime
 
 from django.views.decorators.csrf import csrf_exempt
@@ -117,4 +117,4 @@ def in_work(request, pk):
 def get_tilda_lead(request):
     if request.method == "POST":
          print(200)
-         return 'test'
+         return  HttpResponse("test")
