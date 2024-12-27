@@ -9,6 +9,11 @@ from coming.models import Coming
 from .forms import AddRecordForm, StatusForm, Employees_KCForm, Employees_UPPForm
 from accounts.models import User
 
+import json
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+
 import datetime
 
 from django.views.decorators.csrf import csrf_exempt
@@ -114,8 +119,12 @@ def in_work(request, pk):
 
 
 @csrf_exempt
+@require_POST
 def get_tilda_lead(request):
-    if request.method == "POST":
-        phone = Record.objects.create(phone=request.POST["Phone"])
-        phone.save()
-        return HttpResponse("test")
+    jsondata = request.body
+    data = json.loads(jsondata)
+    for answer in data['form_response']['answers']:  # go through all the answers
+        type = answer['type']
+        print(f'answer: {answer[type]}')  # print value of answers
+
+    return HttpResponse(status=200)
