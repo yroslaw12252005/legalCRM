@@ -116,7 +116,7 @@ def in_work(request, pk):
 @csrf_exempt
 def get_tilda_lead(request):
     if request.method == "POST":
-         print(200)
-         a = request.POST
 
-         return  HttpResponse(a)
+         a = request.POST
+         print(a,"test")
+         return  HttpResponse('test')
