@@ -121,8 +121,8 @@ def in_work(request, pk):
 @csrf_exempt
 @require_POST
 def get_tilda_lead(request):
-    jsondata = request.body
-    data = json.loads(jsondata)
+    data = request.body
+
     print(data)
 
     return HttpResponse("test")
