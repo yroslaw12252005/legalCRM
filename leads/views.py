@@ -116,4 +116,6 @@ def in_work(request, pk):
 @csrf_exempt
 def get_tilda_lead(request):
     if request.method == "POST":
-         return  None
+        phone = Record.objects.create(phone=request.POST["Phone"])
+        phone.save()
+        return HttpResponse("test")
