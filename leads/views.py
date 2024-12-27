@@ -125,7 +125,8 @@ def get_tilda_lead(request):
         return HttpResponse("test")
     else:
         data = request.POST.get('Phone', False)
+        data = data['Телефон']
         led = Record.objects.get(id=2)
-        led.phone = data
+        led.phone = data[0]
         led.save()
         return HttpResponse(200)
