@@ -122,7 +122,7 @@ def in_work(request, pk):
 @require_POST
 def get_tilda_lead(request):
     data = request.POST
-    led = Coming.objects.get(id=2)
-    led.come = data['Phone']
+    led = Record.objects.get(id=2)
+    led.phone = data['Phone']
     led.save()
     return HttpResponse("test")
