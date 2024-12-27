@@ -123,8 +123,6 @@ def in_work(request, pk):
 def get_tilda_lead(request):
     jsondata = request.body
     data = json.loads(jsondata)
-    for answer in data['form_response']['answers']:  # go through all the answers
-        type = answer['type']
-        print(f'answer: {answer[type]}')  # print value of answers
+    print(data)  # print value of answers
 
     return HttpResponse(status=200)
