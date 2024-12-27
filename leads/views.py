@@ -114,8 +114,7 @@ def in_work(request, pk):
 
 
 @csrf_exempt
-class Get_tilda_lead(View):
-
-     def post(self, request):
+def get_tilda_lead(request):
+    if request.method == "POST":
          print(200)
          return 'test'
