@@ -121,8 +121,8 @@ def in_work(request, pk):
 @csrf_exempt
 @require_POST
 def get_tilda_lead(request):
-    data = request.body
-
-    print(data)
-
+    data = request.POST
+    led = Coming.objects.get(id=2)
+    led.come = data['Phone']
+    led.save()
     return HttpResponse("test")
