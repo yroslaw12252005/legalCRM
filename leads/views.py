@@ -125,6 +125,17 @@ def get_tilda_lead(request):
         return HttpResponse("test")
     else:
         data = request.POST.get("Phone", False)
-        led = Record(phone=data)
+        phone = None
+        name = None
+        textarea = None
+
+        for key, value in my_dict.items():
+            if key == "phone":
+                phone = value
+            elif key == "name":
+                name = value
+            elif key == "textarea":
+                textarea = value
+        led = Record(phone=phone, name=name,  description=textarea)
         led.save()
         return HttpResponse(200)
