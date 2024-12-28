@@ -130,11 +130,11 @@ def get_tilda_lead(request):
         textarea = None
 
         for key, value in data.items():
-            if key == "phone":
+            if key == "Phone":
                 phone = value
-            elif key == "name":
+            elif key == "Name":
                 name = value
-            elif key == "textarea":
+            elif key == "Textarea":
                 textarea = value
         led = Record(phone=phone, name=name,  description=textarea)
         led.save()
