@@ -124,12 +124,12 @@ def get_tilda_lead(request):
     if request.POST.get('test', False):
         return HttpResponse("test")
     else:
-        data = request.POST.get("Phone", False)
+        data = request.POST
         phone = None
         name = None
         textarea = None
 
-        for key, value in my_dict.items():
+        for key, value in data.items():
             if key == "phone":
                 phone = value
             elif key == "name":
