@@ -25,6 +25,7 @@
 						    </tr>
 						  </thead>
 							{% for todo in todolist %}
+							{% if todo.user == user.id %}
 						  <tbody>
 						    <tr data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
 						      <td>{{todo.title}}</td>
@@ -46,7 +47,9 @@
 						    </tr>
 
 
-						  </tbody>{% endfor %}
+						  </tbody>
+							{% endif %}
+							{% endfor %}
 						</table>
 					</div>
 
