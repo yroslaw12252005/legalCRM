@@ -117,7 +117,6 @@ def in_work(request, pk):
     record.save()
     return redirect("home")
 
-
 @csrf_exempt
 @require_POST
 def get_tilda_lead(request):
