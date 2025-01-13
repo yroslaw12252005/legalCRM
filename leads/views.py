@@ -21,7 +21,7 @@ def home(request):
     now = f"{year}-{month}-{day}"
     print(now)
     todolist = ToDoList.objects.all()
-    records = Record.objects.all()
+    records = Record.objects.all().reverse()
     coming = Coming.objects.all()
     user  =  User.objects.all()
     if request.method == "POST":
