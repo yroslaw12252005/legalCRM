@@ -15,4 +15,4 @@ class Record(models.Model):
         return f"{self.name}"
 
     class Meta:
-        ordering = ['created_at']
+        ordering = ['-created_at']
