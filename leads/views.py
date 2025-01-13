@@ -1,6 +1,7 @@
 from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
+from django.http import HttpResponse
 
 from .models import Record
 from todolist.models import ToDoList
@@ -8,7 +9,11 @@ from coming.models import Coming
 from .forms import AddRecordForm, StatusForm, Employees_KCForm, Employees_UPPForm
 from accounts.models import User
 
-from django.views import View
+import json
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+
 import datetime
 
 from django.views.decorators.csrf import csrf_exempt
@@ -112,10 +117,25 @@ def in_work(request, pk):
     record.save()
     return redirect("home")
 
-
 @csrf_exempt
-class Get_tilda_lead(View):
+@require_POST
+def get_tilda_lead(request):
+    if request.POST.get('test', False):
+        return HttpResponse("test")
+    else:
+        data = request.POST
+        phone = None
+        name = None
+        textarea = None
 
-     def post(self):
-         print(200)
-         return 'test'
+        for key, value in data.items():
+            if key == "Phone":
+                phone = value
+            elif key == "Name":
+                name = value
+            elif key == "Textarea":
+                textarea = value
+
+        led = Record(phone=phone, name=name,  description=textarea)
+        led.save()
+        return HttpResponse(200)
