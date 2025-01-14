@@ -130,7 +130,9 @@ background-color: #212529;
     <li><a class="dropdown-item" href="{% url 'filter' 'Брак' %}">Брак</a> </li>
     <li><a class="dropdown-item" href="{% url 'filter' 'Недозвон' %}">Недозвон</a> </li>
     <li><a class="dropdown-item" href="{% url 'filter' 'Перезвон' %}">Перезвон</a> </li>
-    <li><a class="dropdown-item" href="{% url 'filter' 'Запись' %}">Запись</a> </li>
+    <li><a class="dropdown-item" href="{% url 'filter' 'Запись' %}">Запись в офис</a> </li>
+    <li><a class="dropdown-item" href="{% url 'filter' 'Отказ' %}">Онлайн</a> </li>
+      <li><a class="dropdown-item" href="{% url 'filter' 'Отказ' %}">Акт</a> </li>
     <li><a class="dropdown-item" href="{% url 'filter' 'Отказ' %}">Отказ</a> </li>
     <li><hr class="dropdown-divider"></li>
     <li><a class="dropdown-item" href="{% url 'home'%}">Все</a></li>
@@ -174,11 +176,14 @@ background-color: #212529;
             <td style=" background-color:#FCE883; ">{{ record.status }}</td>
             {% elif record.status == "Перезвон" %}
             <td style=" background-color:#FF7514;">{{ record.status }}</td>
-            {% elif record.status == "Запись" %}
+            {% elif record.status == "Запись в офис" %}
             <td style=" background-color:#77DD77;">{{ record.status }}</td>
             {% elif record.status == "Отказ" %}
             <td style=" background-color:#ff0000;">{{ record.status }}</td>
-
+            {% elif record.status == "Онлайн" %}
+            <td style=" background-color:#77DD77;">{{ record.status }}</td>
+            {% elif record.status == "Акт" %}
+            <td style=" background-color:#77DD77;">{{ record.status }}</td>
             {%endif%}
 
 
