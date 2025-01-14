@@ -22,7 +22,9 @@ class AddRecordForm(forms.ModelForm):
         labels = {'name': 'Имя', "description":"Описание", "phone":"Телефон", "status":"Статус", "employees_KC":"Оператор", "employees_UPP":"Юрист"}
 
 class StatusForm(forms.ModelForm):
-    status = forms.ChoiceField(label="Статус заявки", choices=(("Новая", "Новая"),("Брак", "Брак"),("Недозвон", "Недозвон"), ("Перезвон", "Перезвон"), ("Запись", "Запись"), ("Отказ", "Отказ")))
+    status = forms.ChoiceField(label="Статус заявки", choices=(
+    ("Новая", "Новая"), ("Брак", "Брак"), ("Недозвон", "Недозвон"), ("Перезвон", "Перезвон"), ("Запись в офис", "Запись в офис"),
+    ("Отказ", "Отказ"), ("Онлайн", "Онлайн"), ("Акт", "Акт")))
 
     class Meta:
         model = Record
