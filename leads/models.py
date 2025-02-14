@@ -1,5 +1,4 @@
 from django.db import models
-from simple_history.models import HistoricalRecords
 from company.models import Companys
 
 class Record(models.Model):
