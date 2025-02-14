@@ -16,7 +16,6 @@ class Record(models.Model):
         on_delete=models.CASCADE
     )
     in_work = models.BooleanField(default=False)
-    history = HistoricalRecords()
 
     def __str__(self):
         return f"{self.name}"
