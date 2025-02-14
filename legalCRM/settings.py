@@ -81,9 +81,13 @@ WSGI_APPLICATION = 'legalCRM.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases 0
 
 DATABASES = {
-    "default": {
-        "ENGINE": "django.db.backends.sqlite3",
-        "NAME": "mydatabase",
+    'default': {
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'default_db',
+        'HOST': '212.193.24.52',
+        'PORT': 3306,
+        'USER': 'gen_user',
+        'PASSWORD': 'T925BO750ru'
     }
 }
 
