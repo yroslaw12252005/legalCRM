@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'accounts',
     'coming',
     'todolist',
-    'simple_history',
     'cost',
     'company',
 ]
