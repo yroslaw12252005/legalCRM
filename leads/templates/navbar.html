@@ -1,75 +1,80 @@
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
-    <div class="container-fluid">
-      <a class="navbar-brand" href="{% url 'home' %}">legalCRM</a>
-        <li class="nav-item" style=" display: flex; ">
-            <h4 style="color:#fff;">{{ user.username }}</h4>
-          </li>
-      <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarSupportedContent" aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
-        <span class="navbar-toggler-icon"></span>
-      </button>
-      <div class="collapse navbar-collapse" id="navbarSupportedContent">
-        <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+{% load static %}
+{% if user.is_authenticated %}
 
-          {% if user.is_authenticated %}
-          {% if user.status == "Директор КЦ" or user.status == "Администратор" %}
-          <li class="nav-item">
-            <a class="nav-link"  href="{% url 'add_record'%}">Сздать заявку</a>
-          </li>
-            <li class="nav-item">
-                    <a class="nav-link"  href="{% url 'appointments'%}">Запись в офис</a>
-              </li>
-            <li class="nav-item">
-                    <a class="nav-link"  href="{% url 'add_appointments'%}">Записать на прием в офис</a>
-              </li>
-          {% endif %}
+<link rel="stylesheet" href="{% static 'css/nav.css' %}" />
+<link rel="stylesheet" href="{% static 'css/style.css' %}" />
+<nav role="main container col">
 
-            {% if user.status == "Директор ЮПП" %}
-                <li class="nav-item">
-                    <a class="nav-link"  href="{% url 'appointments'%}">Запись в офис</a>
-                </li>
-            {% endif %}
+  <div class="blok-nav user">
+    <p class="employees_name">{{ user.username }}<br><span class="mail">{{ user.email }}</span></p>
+      <a class="nav-link"  href="{% url 'logout'%}"><img src="{% static 'img/logout.png' %}" alt=""></a>
+  </div>
+  <div class="nav-line"></div>
+  <div class="nav_right blok-nav">
+      <h3>Панель навигации</h3>
+    <ul>
+      {% if user.is_authenticated %}
 
-            {% if user.status == "Юрист пирвичник"%}
-                <li class="nav-item">
-                    <a class="nav-link"  href="{% url 'add_appointments'%}">Записать на прием в офис</a>
-              </li>
-            {% endif %}
+      {% if user.status == "Директор КЦ" %}
+            <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> лиды</a></li>
+            <li><a href="{% url 'appointments'%}"><img src="{% static 'img/appointment.png' %}" alt=""> запись в офис</a></li>
+            <li class="nav-item"><a class="nav-link"  href="{% url 'add_appointments'%}"><img src="{% static 'img/do_coming.png' %}" alt=""> записать на прием в офис</a></li>
+            <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> список задач</a></li>
+      {% endif %}
 
-          {% if user.status == "Администратор"%}
-          <li class="nav-item">
-              <a class="nav-link"  href="{% url 'reg'%}">Добавить польователя</a>
-            </li>
-            <li class="nav-item">
-                <a class="nav-link"  href="{% url 'employees'%}">Пользователи</a>
-            </li>
-            <li class="nav-item">
-                    <a class="nav-link"  href="{% url 'todolist'%}">Список задач</a>
-              </li>
-            {% endif %}
-            {% else%}
-            <li class="nav-item">
-              <a class="nav-link"  href="{% url 'home'%}">Login</a>
-            </li>
-          {% endif %}
+      {% if user.status == "Оператор" %}
+        <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> лиды</a></li>
+        <li><a href="{% url 'appointments'%}"><img src="{% static 'img/appointment.png' %}" alt=""> запись в офис</a></li>
+        <li class="nav-item"><img src="{% static 'img/do_coming.png' %}" alt=""> записать на прием в офис</a></li>
+        <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> список задач</a></li>
+      {% endif %}
 
-           {% if user.status == "Менеджер"%}
-              <li class="nav-item">
-                <a class="nav-link"  href="{% url 'home'%}">Заявки</a>
-              </li>
+      {% if user.status == "Директор ЮПП" %}
+        <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> лиды</a></li>
+        <li><a href="{% url 'appointments'%}"><img src="{% static 'img/appointment.png' %}" alt=""> запись в офис</a></li>
+        <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> список задач</a></li>
+      {% endif %}
 
-              <li class="nav-item">
-                    <a class="nav-link"  href="{% url 'appointments'%}">Запись в офис</a>
-              </li>
+      {% if user.status == "Юрист пирвичник" %}
+              <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> лиды</a></li>
+              <li><a href="{% url 'appointments'%}"><img src="{% static 'img/appointment.png' %}" alt=""> запись в офис</a></li>
+              <li class="nav-item"><img src="{% static 'img/do_coming.png' %}" alt=""> записать на прием в офис</a></li>
+              <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> список задач</a></li>
+      {% endif %}
 
-            {% endif %}
+      {% if user.status == "Менеджер" %}
+              <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> лиды</a></li>
+              <li><a href="{% url 'appointments'%}"><img src="{% static 'img/appointment.png' %}" alt=""> запись в офис</a></li>
+              <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> список задач</a></li>
+              <li><a href="{% url 'cost'%}"><img src="{% static 'img/payment.png' %}" alt=""> Добавить доплату</a></li>
+      {% endif %}
 
+      {% if user.status == "Администратор" %}
+                   <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> лиды</a></li>
+                    <li><a href="{% url 'appointments'%}"><img src="{% static 'img/appointment.png' %}" alt=""> запись в офис</a></li>
+                    <li class="nav-item"><a class="nav-link"  href="{% url 'add_appointments'%}"><img src="{% static 'img/do_coming.png' %}" alt=""> записать на прием в офис</a></li>
+                    <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> список задач</a></li>
+                    <li><a href="#"><img src="{% static 'img/brak.png' %}" alt=""> бракованные сделки</a></li>
+                    <li class="nav-item"><a class="nav-link"  href="{% url 'reg'%}"><img src="{% static 'img/add_user.png' %}" alt=""> добавить польователя</a></li>
+                    <li class="nav-item"><a class="nav-link"  href="{% url 'employees'%}"><img src="{% static 'img/employee.png' %}" alt=""> пользователи</a></li>
+                    <li><a href="{% url 'cost'%}"><img src="{% static 'img/payment.png' %}" alt=""> Добавить доплату</a></li>
+        {% endif %}
+      <!--
+      <li><a href=""><img src="{% static 'img/leads.png' %}" alt=""> лиды</a></li>
+      <li><a href=""><img src="{% static 'img/appointment.png' %}" alt=""> запись в офис</a></li>
+      <li class="nav-item"><a class="nav-link"  href="{% url 'add_appointments'%}">записать на прием в офис</a></li>
+      <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}">список задач</a></li>
+      <li><a href=""><img src="{% static 'img/brak.png' %}" alt=""> бракованные сделки</a></li>
+      <li class="nav-item"><a class="nav-link"  href="{% url 'reg'%}">добавить польователя</a></li>
+      <li class="nav-item"><img src="{% static 'img/employee.png' %}" alt=""><a class="nav-link"  href="{% url 'employees'%}">пользователи</a></li>
+      <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt="">Стоимость договора</a></li>
+      -->
+      {% endif %}
+    </ul>
+  </div>
+  <div class="nav-line"></div>
+  <div class="wigets blok-nav">
+  </div>
+</nav>
 
-
-            <li class="nav-item">
-            <a class="nav-link"  href="{% url 'logout'%}">Выйти</a>
-          </li>
-
-        </ul>
-      </div>
-    </div>
-  </nav>
+{% endif %}

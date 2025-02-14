@@ -11,6 +11,7 @@ https://docs.djangoproject.com/en/5.1/ref/settings/
 """
 
 from pathlib import Path
+import os
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -41,6 +42,9 @@ INSTALLED_APPS = [
     'accounts',
     'coming',
     'todolist',
+    'simple_history',
+    'cost',
+    'company',
 ]
 
 MIDDLEWARE = [
@@ -51,6 +55,7 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
+    'simple_history.middleware.HistoryRequestMiddleware',
 ]
 
 ROOT_URLCONF = 'legalCRM.urls'
@@ -78,14 +83,10 @@ WSGI_APPLICATION = 'legalCRM.wsgi.application'
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases 0
 
 DATABASES = {
-    'default': {
-		'ENGINE': 'django.db.backends.mysql',
-		'NAME': 'default_db',
-		'HOST': '212.193.24.52',
-		'PORT': 3306,
-		'USER': 'gen_user',
-		'PASSWORD': 'T925BO750ru'
-	}
+    "default": {
+        "ENGINE": "django.db.backends.sqlite3",
+        "NAME": "mydatabase",
+    }
 }
 
 
@@ -126,6 +127,9 @@ CSRF_TRUSTED_ORIGINS = ["https://yroslaw12252005-legalcrm-0df1.twc1.net",'https:
 
 STATIC_URL = 'static/'
 
+STATICFILES_DIRS = [
+   os.path.join(BASE_DIR, "static"),
+]
 # Default primary key field type
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 

@@ -1,5 +1,6 @@
 from django.db import models
-
+from simple_history.models import HistoricalRecords
+from company.models import Companys
 
 class Record(models.Model):
     name = models.CharField(max_length=50,default=None, null=True)
@@ -9,7 +10,13 @@ class Record(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     employees_KC = models.CharField(max_length=50, default="Не прикреплен")
     employees_UPP = models.CharField(max_length=50,default="Не прикреплен")
+    where = models.CharField(max_length=50, null=True)
+    companys = models.ForeignKey(
+        Companys,
+        on_delete=models.CASCADE
+    )
     in_work = models.BooleanField(default=False)
+    history = HistoricalRecords()
 
     def __str__(self):
         return f"{self.name}"

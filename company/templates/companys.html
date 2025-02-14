@@ -1,0 +1,9 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% for key, values in all_companys.items %}
+        <h1>{{key}}:{{values}}</h1>
+{% endfor %}
+{% endblock content %}
+

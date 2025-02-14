@@ -1,10 +1,84 @@
 {% extends "base.html" %}
-
-
+{% load static %}
 {% block content %}
-
+<link rel="stylesheet" href="{% static 'css/lead.css' %}" />
 {% if user.is_authenticated %}
 
+  <h1 class="lead_name">{{ record.name }}</h1>
+  <p class="lead_description">коментарие: {{ record.description }} </p>
+  <div class="lead-id">
+    <p class="id">id: {{ record.id }}</p>
+    <p class="phone">телефон: {{ record.phone }}</p>
+    <p class="date">дата поступления: {{ record.created_at }}</p>
+  </div>
+
+  <div class="work_zone">
+
+    <div class="status" >
+      <p class="status_text">статус заявки: {{ record.status }}</p>
+      <form>
+        <select class="status_input">
+            <option value="1">Новая</option>
+            <option value="2">Брак</option>
+        </select>
+        <input type="submit" value="Изменить"></p>
+      </form>
+    </div>
+
+    <div class="cost" >
+      <p class="status_text">Цена: {{ cost.cost }}</p>
+      <form>
+        <select class="status_input">
+            <option value="1">Новая</option>
+            <option value="2">Брак</option>
+        </select>
+        <input type="submit" value="Отправить"></p>
+      </form>
+    </div>
+    {% for surcharge in surcharge %}
+            <p class="card-text"><strong>Доплата: </strong> {{ surcharge.surcharge }} руб. Дата доплаты:{{ surcharge.date }}</p>
+            {% endfor%}
+    <div class="operator" >
+      <p class="status_text">Прикрепленные операторы:
+{{ record.employees_KC }}</p>
+      <form>
+        <select class="status_input">
+            <option value="1">Новая</option>
+            <option value="2">Брак</option>
+        </select>
+        <input type="submit" value="Отправить"></p>
+      </form>
+    </div>
+
+   <div class="urist" >
+      <p class="status_text">Прикрепленные юристы:
+{{ record.employees_UPP }}</p>
+      <form>
+        <select class="status_input">
+            <option value="1">Новая</option>
+            <option value="2">Брак</option>
+        </select>
+        <input type="submit" value="Отправить"></p>
+      </form>
+    </div>
+
+       <a href="{% url 'home' %}" class="btn btn-secondary">Вернуться к списку</a>
+    {% if user.status == "Администратор"%}
+
+      <a href="{% url 'delete_record' record.id %}" class="btn btn-danger">Удалить</a>
+    {% endif %}
+      <a href="{% url 'update_record' record.id %}" class="btn btn-success">Редактировать</a>
+    {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
+      <a href="{% url 'in_work' record.id %}" class="btn btn-primary">В работу</a>
+    {% endif %}
+      <a href="{% url 'home' %}" class="btn btn-primary">Отмена</a>
+
+  </div>
+
+
+
+
+<!--
     <div class="card w-75 mb-3">
 
         <div class="card-body">
@@ -18,6 +92,19 @@
                             {{form_status.as_p}}
                             <button type="submit" class="btn btn-success">Изменить статус</button>
           </form>
+            {% if user.status == "Менеджер" or user.status == "Администратор" or user.status == "Юрист пирвичник"%}
+            <p class="card-text"><strong>Цена: </strong> {{ cost.cost }} руб.</p>
+            {% for surcharge in surcharge %}
+            <p class="card-text"><strong>Доплата: </strong> {{ surcharge.surcharge }} руб. Дата доплаты:{{ surcharge.date }}</p>
+            {% endfor%}
+            {% if user.status == "Менеджер" or user.status == "Администратор"%}
+            <form method="post">
+                {% csrf_token %}
+                {{cost.as_p}}
+                <button type="submit" class="btn btn-success">Указать</button>
+            </form>
+            {% endif %}
+            {% endif %}
 
           {% if user.status == "Директор КЦ" or  user.status == "Администратор"%}
                 <p class="card-text"><strong>Прикрепленные операторы: </strong> {{ record.employees_KC }}</p>
@@ -30,7 +117,7 @@
           {% endif %}
 
           {% if user.status == "Директор ЮПП" or  user.status == "Администратор"%}
-                <p class="card-text"><strong>Прикрепленные юристы: </strong> {{ record.employees_UPP }}</p>
+                <p class="card-text"><strong>Прикрепленные юристы: </strong> v</p>
                     <form method="post">
                                   {% csrf_token %}
                                   {{form_employees_UPP.as_p}}
@@ -41,17 +128,16 @@
         </div>
     </div>
 
-
       <a href="{% url 'home' %}" class="btn btn-secondary">Вернуться к списку</a>
     {% if user.status == "Администратор"%}
+
       <a href="{% url 'delete_record' record.id %}" class="btn btn-danger">Удалить</a>
     {% endif %}
       <a href="{% url 'update_record' record.id %}" class="btn btn-success">Редактировать</a>
-    {% if user.status == "Директор КЦ" or user.status == "Оператор"%}
+    {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
       <a href="{% url 'in_work' record.id %}" class="btn btn-primary">В работу</a>
     {% endif %}
       <a href="{% url 'home' %}" class="btn btn-secondary">Отмена</a>
-
+-->
 {% endif %}
-
 {% endblock content %}

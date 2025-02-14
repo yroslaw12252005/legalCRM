@@ -2,12 +2,17 @@ from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import HttpResponse
+from django.core.exceptions import ObjectDoesNotExist
 
 from .models import Record
 from todolist.models import ToDoList
 from coming.models import Coming
-from .forms import AddRecordForm, StatusForm, Employees_KCForm, Employees_UPPForm
+from django.db.models import Sum
+from cost.models import Cost
+from cost.models import Surcharge
 from accounts.models import User
+
+from .forms import AddRecordForm, StatusForm, Employees_KCForm, Employees_UPPForm, Cost_form
 
 import json
 from django.http import HttpResponse
@@ -24,7 +29,6 @@ def home(request):
     month = current_time.month
     day = current_time.day
     now = f"{year}-{month}-{day}"
-    print(now)
     todolist = ToDoList.objects.all()
     records = Record.objects.all()
     coming = Coming.objects.all()
@@ -32,7 +36,7 @@ def home(request):
     if request.method == "POST":
         username = request.POST["username"]
         password = request.POST["password"]
-
+        
         user = authenticate(request, username=username, password=password)
 
         if user is not None:
@@ -42,6 +46,17 @@ def home(request):
             messages.warning(request, "Не правельный логин или пароль")
             return redirect("home")
     else:
+        ##cost_upp = Record.objects.aggregate(Sum('caunt'))
+        #items = Cost.objects.all()
+        #cost_upp = 0
+        #if request.user.is_authenticated:
+
+        #    if request.user.status == "Юрист пирвичник":
+        #        items = items.filter( employees_UPP = request.user.username)
+        #        cost_upp = sum(items.values_list('caunt', flat=True))
+        #    else:
+        #        cost_upp = sum(items.values_list('caunt', flat=True))
+
         return render(request, "home.html", {"records": records, 'users':user, 'todolist':todolist, "comings":coming, "now":now})
 
 def filter(request, status):
@@ -55,10 +70,13 @@ def logout_user(request):
 
 def record(request, pk):
     if request.user.is_authenticated:
+        cost = Cost.objects.filter(record_id=pk)
         record = Record.objects.get(id=pk)
+        surcharge = Surcharge.objects.filter(record_id=pk)
         form_status = StatusForm(request.POST or None, instance=record)
         form_employees_KC = Employees_KCForm(request.POST or None, instance=record)
         form_employees_UPP = Employees_UPPForm(request.POST or None, instance=record)
+        cost_form = Cost_form(request.POST or None)
         if form_status.is_valid():
             form_status.save()
             messages.success(request, f"Статус был успешно обнавлена")
@@ -74,7 +92,21 @@ def record(request, pk):
             messages.success(request, f"Юрист прикреплен")
             return redirect("home")
 
-        return render(request, "record.html", {"record": record, "form_status":form_status, "form_employees_KC":form_employees_KC, "form_employees_UPP":form_employees_UPP})
+        elif  cost_form.is_valid():
+            cost =  cost_form.save(commit=False)
+            if  cost_form.record_id == "null":
+                 cost_form.record_id = pk
+                 cost_form.save()
+            else:
+               a = Cost.objects.get(record_id=pk)
+               a.cost = cost.cost
+               a.save()
+
+            messages.success(request, f"Цена указана")
+            return redirect("home")
+
+
+        return render(request, "record.html", {"record": record, "form_status":form_status, "form_employees_KC":form_employees_KC, "form_employees_UPP":form_employees_UPP, "cost":cost, "surcharge":surcharge})
     else:
         return redirect("home")
 
@@ -139,3 +171,6 @@ def get_tilda_lead(request):
         led = Record(phone=phone, name=name,  description=textarea)
         led.save()
         return HttpResponse(200)
+
+def search_results(request):
+    return HttpResponse(request.POST)

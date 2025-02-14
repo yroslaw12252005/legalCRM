@@ -1,0 +1,89 @@
+/* Панель меню слева */
+@font-face {
+    font-family: 'tilda-sans_regular';
+    src: url('../fonts/tilda-sans_regular.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'tilda-sans_bold';
+    src: url('../fonts/tilda-sans_bold.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'druktextwidecyr-medium';
+    src: url('../fonts/druktextwidecyr-medium.woff') format('woff');
+}
+
+nav{ 
+  display: flex;
+  color: #fff;   
+  font-size: 14px;
+  width: 150px;
+  float: left;
+  display: inline;
+  margin: 0;
+  margin-right: 10px;
+  width: 300px;
+  height: 100vh;
+  background-color: #1D529C;
+  position: fixed;
+}
+.blok-nav{
+  padding: 10px 20px;
+}
+.nav-line {
+  width:100%;
+  border-bottom: 1px solid #fff;
+}
+.avatar{
+  width: 46px;
+  height: 47px;
+  border-radius: 100px;
+  margin-right: 10px;
+}
+.user{
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.user p{
+  font-size: 20px;
+  font-family: tilda-sans_bold;
+}
+
+.mail{
+    font-family:tilda-sans_regular;
+}
+.icon_nav{
+  display: flex;
+  justify-content: space-between;
+  padding-top: 50px;
+}
+
+.nav_right a {
+  text-decoration: none;
+  color: #fff;
+  font-size: 20px;
+  padding-top: 0px;
+  font-family: tilda-sans_regular;
+}
+
+.nav_right ul {
+  padding-left: 0px;
+}
+
+.wigets{
+  height: 60vh;
+}
+
+ul > li{
+ margin-bottom:20px;
+}
+@media (max-width:1500px) {
+    .wigets{
+      height: 40vh;
+    }
+}
+
+/***************************/

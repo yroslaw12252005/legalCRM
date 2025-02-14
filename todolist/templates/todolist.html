@@ -1,8 +1,6 @@
 {% extends "base.html" %}
 
-
 {% block content %}
-
 {% if user.is_authenticated %}
 <section class="ftco-section">
 		<div class="container">
@@ -25,7 +23,7 @@
 						    </tr>
 						  </thead>
 							{% for todo in todolist %}
-							{% if todo.user_id == user.id %}
+							{% if todo.user == user.id %}
 						  <tbody>
 						    <tr data-toggle="collapse" data-target="#collapseOne" aria-expanded="true" aria-controls="collapseOne">
 						      <td>{{todo.title}}</td>
@@ -59,3 +57,5 @@
 	</section>
 {% endif%}
 {% endblock content %}
+
+

@@ -1,0 +1,22 @@
+@font-face {
+    font-family: 'tilda-sans-regular';
+    src: url('../fonts/tilda-sans-regular.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'druktextwidecyr-medium';
+    src: url('../static/fonts/druktextwidecyr-medium.woff') format('woff');
+}
+
+p{
+    font-family: tilda-sans_regular;
+    font-size: 18px;
+}
+
+li{
+  list-style: none; 
+}
+
+body {
+    margin: 0px;
+}

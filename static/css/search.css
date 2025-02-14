@@ -1,0 +1,48 @@
+@font-face {
+    font-family: 'tilda-sans_regular';
+    src: url('../fonts/tilda-sans_regular.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'tilda-sans_bold';
+    src: url('../fonts/tilda-sans_bold.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'tilda-sans_medium';
+    src: url('tilda-sans_medium.woff') format('woff');
+}
+/* Шапка поиска и фильтров */
+
+
+.leads{
+  padding: 30px 50px;
+  display: flex;
+  justify-content: space-between;
+}
+
+.lead{
+  display: flex;
+  flex-direction: column;
+  min-height: 150px;
+
+  border-radius: 50px;
+  margin-bottom: 15px;
+  font-family: tilda-sans_regular;
+}
+
+.lead_name{
+  font-family: tilda-sans_bold;
+  color:#595959;
+  font-size: 20px;
+}
+
+.lead_phone{
+    font-family: tilda-sans_medium;
+    font-size: 20px;
+}
+
+.lead_text{
+    font-size: 16px;
+}
+/***************************/

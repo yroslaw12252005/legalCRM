@@ -1,15 +1,17 @@
 {% extends "base.html" %}
 
-
+{% load static %}
 {% block content %}
-
-<div class="col-md-6 offset-md-3">
-    <h1>Создать заявку</h1>
-    <form action="{% url 'add_record' %}" method="post">
+<link rel="stylesheet" href="{% static 'css/add_lead.css' %}" />
+<div class="row" style="justify-content: center;">
+    <div class="pole">
+    <h3 class="add_lead_title">Записать на прием в офис</h3>
+    <form action="{% url 'add_record' %}" class="form_add_lead" method="post">
         {% csrf_token %}
         {{form.as_p}}
         <button type="submit" class="btn btn-success">Создать заявку</button>
     </form>
     </div>
+</div>
 
 {% endblock content %}

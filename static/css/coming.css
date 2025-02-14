@@ -1,0 +1,60 @@
+@font-face {
+    font-family: 'tilda-sans_regular';
+    src: url('tilda-sans_regular.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'tilda-sans_bold';
+    src: url('tilda-sans_bold.woff') format('woff');
+}
+
+p{
+	font-family: tilda-sans_regular;
+}
+
+.phone_title{
+	font-family: tilda-sans_bold;
+}
+.name{
+	font-family: tilda-sans_bold;
+}
+.coming{
+	justify-content: center;
+	padding-top: 20px;
+}
+
+.com{
+	font-size: 20px;
+	box-shadow: 0px 4px 8px 0px rgba(34, 60, 80, 0.2);
+	border-radius: 30px;
+	display: flex;
+	justify-content: space-around;
+
+	margin-top: 30px;
+}
+
+.yes{
+	padding:10px 50px;
+	background-color: #22C06152;
+	border-radius: 30px;
+	font-size: 16px;
+	font-family: tilda-sans_regular;
+}
+
+.no{
+	padding:10px 50px;
+	border-radius: 30px;
+	font-size: 16px;
+	font-family: tilda-sans_regular;
+	background-color: #FF00002B;
+}
+
+.sector{
+	display: flex;
+    flex-direction: column;
+    justify-content: space-around;
+}
+
+.date{
+	font-family: tilda-sans_bold;
+}

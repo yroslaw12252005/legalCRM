@@ -1,0 +1,96 @@
+@font-face {
+    font-family: 'tilda-sans_regular';
+    src: url('../fonts/tilda-sans_regular.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'tilda-sans_bold';
+    src: url('../fonts/tilda-sans_bold.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'druktextwidecyr-medium';
+    src: url('druktextwidecyr-medium.woff') format('woff');
+}
+  
+/* Карточка клиента */
+.lead_name{
+	font-family: druktextwidecyr-medium;
+	letter-spacing: .1rem;
+}
+
+.lead_description{
+	font-family: tilda-sans_regular;
+}
+
+
+.lead-id{
+	display: flex;
+}
+
+.lead-id p {
+	font-family: tilda-sans-vf;
+	padding: 10px 20px;
+	margin-left: 10px;
+	border-radius: 30px;
+}
+.id{
+	background-color: #FFC7C7;
+}
+
+.phone{
+	background-color: #EFF0F1;
+}
+
+.date{
+	background-color: #6CE0FF3B;
+}
+
+.work_zone{
+	margin-top: 50px;
+	font-family: tilda-sans-vf;
+	background-color:#F5F0FA ;
+	padding: 60px 40px;
+}
+
+.work_zone p{
+	font-family: tilda-sans_regular;
+	font-weight: 700;
+}
+
+.work_zone form{
+	margin-left: 10px;
+}
+
+.work_zone form select{
+	padding: 5px 10px;
+	background-color: #F5F0FA;
+	border-radius: 30px;
+}
+
+.work_zone form input{
+	padding: 8px 30px;
+	background-color: #22C0616B;
+	border-radius: 30px;
+	border: 0px;
+	margin-left: 10px;
+}
+
+
+.status{
+	display: flex;
+}
+
+.cost{
+	display: flex;
+}
+
+.operator{
+	display: flex;
+}
+
+.urist{
+	display: flex;
+}
+
+/***************************/

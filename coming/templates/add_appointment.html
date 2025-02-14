@@ -1,12 +1,10 @@
 {% extends "base.html" %}
-
+{% load static %}
 {% block content %}
 
-
-
-<div class="col-md-6 offset-md-3">
+<link rel="stylesheet" href="{% static 'css/add_lead.css' %}" />
+<div class="pole">
     <h1>Записать в офис</h1>
-
 
     <form method="post">
     {% csrf_token %}

@@ -7,3 +7,13 @@ class Coming(models.Model):
     lead = models.OneToOneField(Record, on_delete=models.CASCADE, default=None,
                                 null=True,
                                 blank=True, related_name='coming')
+
+
+
+
+
+
+
+
+
+

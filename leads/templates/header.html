@@ -1,0 +1,28 @@
+{% load static %}
+{% block content %}
+{% if user.is_authenticated %}
+<link rel="stylesheet" href="{% static 'css/header.css' %}" />
+<header style="padding-left:350px;">
+    <div style="display: flex;">
+      <a href="{% url 'add_record'%}"><img src="{% static 'img/add_lead.png' %}"></a>
+<div class="dropdown">
+  <img src="{% static 'img/felters.png' %}">
+  <div class="dropdown-content">
+          <a class="dropdown-item" href="{% url 'filter' 'Новая' %}">Новая</a>
+   <a class="dropdown-item" href="{% url 'filter' 'Брак' %}">Брак</a>
+   <a class="dropdown-item" href="{% url 'filter' 'Недозвон' %}">Недозвон</a>
+   <a class="dropdown-item" href="{% url 'filter' 'Перезвон' %}">Перезвон</a>
+   <a class="dropdown-item" href="{% url 'filter' 'Запись' %}">Запись</a>
+   <a class="dropdown-item" href="{% url 'filter' 'Отказ' %}">Отказ</a>
+
+  </div>
+</div>
+        <form action="{% url 'search_results' %}" method="post">
+            {% csrf_token %}
+            <input class="search" type="" name="" placeholder="Имя/Номер">
+            <button type="submit" class="btn btn-success">Искать</button>
+        </form>
+    </div>
+  </header>
+{% endif %}
+{% endblock content %}

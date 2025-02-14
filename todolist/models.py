@@ -8,4 +8,5 @@ class ToDoList(models.Model):
     made = models.BooleanField(default=False)
     priority = models.CharField(max_length=50)
     category = models.CharField(max_length=100)
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.IntegerField()
+

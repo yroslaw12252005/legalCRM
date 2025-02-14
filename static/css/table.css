@@ -1,0 +1,40 @@
+@font-face {
+    font-family: 'tilda-sans_regular';
+    src: url('../fonts/tilda-sans_regular.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'tilda-sans_bold';
+    src: url('../fonts/tilda-sans_bold.woff') format('woff');
+}
+
+.main_tb{
+
+    justify-content: center;
+    margin-top: 50px;
+    padding-left:30px
+
+}
+table{
+    width: 100%;
+    margin-top: 50px;
+}
+table p{
+
+    color:#595959;
+}
+
+th,
+td {
+  border: 1px solid #5959594A;
+  padding: 8px 10px;
+}
+
+th p{
+    font-family: tilda-sans_bold;
+    color:#595959;
+}
+td p{
+    font-family: tilda-sans_regular;
+    color:#595959;
+}

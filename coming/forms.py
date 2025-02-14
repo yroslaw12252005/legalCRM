@@ -10,6 +10,7 @@ class AddComing(forms.ModelForm):
         model = Coming
         fields = "__all__"
         widgets = {
+            'date':forms.TextInput(attrs={'class': 'input'}),
             "come": forms.HiddenInput(),
         }
         #labels = {'name': 'Имя', "description":"Описание", "phone":"Телефон", "status":"Статус", "employees_KC":"Оператор", "employees_UPP":"Юрист"}
