@@ -64,6 +64,10 @@ def filter(request, status):
     return render(request, "filter.html",
                   {"records": records, "status":status})
 
+def brak(request, status):
+    records = Record.objects.filter(status="Брак")
+    return render(request, "home.html", {"record": records})
+
 def logout_user(request):
     logout(request)
     return redirect("home")
