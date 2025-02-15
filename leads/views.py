@@ -124,7 +124,7 @@ def add_record(request):
     if request.user.is_authenticated:
         if form.is_valid():
             add_record = form.save(commit=False)
-            add_record.where = request.user.companys  # The logged-in user
+            add_record.companys = request.user.companys  # The logged-in user
             add_record.save()
             messages.success(request, f"Заявка  с именем {add_record.name} успешно создана")
             return redirect("home")
