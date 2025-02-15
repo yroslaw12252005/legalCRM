@@ -82,9 +82,12 @@ WSGI_APPLICATION = 'legalCRM.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': 'mydatabase', # This is where you put the name of the db file.
-                 # If one doesn't exist, it will be created at migration time.
+        'ENGINE': 'django.db.backends.mysql',
+        'NAME': 'default_db',
+        'USER': 'gen_user',
+        'PASSWORD': 'T925BO750ru',
+        'HOST': '212.193.24.52',   # Or an IP Address that your DB is hosted on
+        'PORT': '3306',
     }
 }
 
