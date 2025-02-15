@@ -7,6 +7,7 @@ class User(AbstractUser):
     status = models.CharField(max_length=50)
     companys = models.ForeignKey(
         Companys,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+        null = True
     )
 # Create your models here.
