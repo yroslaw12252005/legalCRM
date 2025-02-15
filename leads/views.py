@@ -64,7 +64,7 @@ def filter(request, status):
     return render(request, "filter.html",
                   {"records": records, "status":status})
 
-def brak(request, status):
+def brak(request):
     records = Record.objects.filter(status="Брак")
     return render(request, "home.html", {"record": records})
 
