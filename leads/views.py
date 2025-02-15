@@ -123,7 +123,9 @@ def add_record(request):
     form = AddRecordForm(request.POST or None)
     if request.user.is_authenticated:
         if form.is_valid():
-            add_record = form.save()
+            add_record = form.save(commit=False)
+            add_record.where = request.user.companys  # The logged-in user
+            add_record.save()
             messages.success(request, f"Заявка  с именем {add_record.name} успешно создана")
             return redirect("home")
         return render(request, "add_record.html", {"form": form})
