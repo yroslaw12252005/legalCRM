@@ -65,7 +65,7 @@ def filter(request, status):
                   {"records": records, "status":status})
 
 def brak(request):
-    records = Record.objects.filter(status="Брак")
+    records = Record.objects.get(status="Брак")
     return render(request, "home.html", {"record": records})
 
 def logout_user(request):
