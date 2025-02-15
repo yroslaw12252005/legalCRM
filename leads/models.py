@@ -12,7 +12,8 @@ class Record(models.Model):
     where = models.CharField(max_length=50, null=True)
     companys = models.ForeignKey(
         Companys,
-        on_delete=models.CASCADE
+        on_delete=models.CASCADE,
+         default="Не прикреплен"
     )
     in_work = models.BooleanField(default=False)
 
