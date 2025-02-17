@@ -18,7 +18,7 @@
   </div>
 </div>
 
-        <form action="{% url 'earch' %}" method="get">
+        <form action="{% url 'search' %}" method="get">
             {% csrf_token %}
             <input class="search" type="" name="q" placeholder="Номер">
             <button type="submit" class="btn btn-success">Искать</button>
