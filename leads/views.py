@@ -177,5 +177,17 @@ def get_tilda_lead(request):
         led.save()
         return HttpResponse(200)
 
-def search_results(request):
-    return HttpResponse(request.POST)
+class SearchView(ListView):
+    model = Products
+    template_name = 'search_results.html'
+    context_object_name = 'all_search_results'
+
+    def get_queryset(self):
+        result = super(SearchView, self).get_queryset()
+        query = self.request.GET.get('search')
+        if query:
+            postresult = Products.objects.filter(title__contains=query)
+            result = postresult
+        else:
+            result = None
+        return result

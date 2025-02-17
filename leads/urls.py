@@ -13,6 +13,7 @@ urlpatterns = [
     path("register/", include('accounts.urls'), name='register'),
     path("search_results/", views.search_results, name='search_results'),
     path("brak/", views.brak, name='brak'),
+    path('results/', ecomm_views.SearchView.as_view(), name='search'),
 ]
 #path("delete_record/<int:pk>/", views.delete_record, name='delete_record'),
 #path("update_record/<int:pk>/", views.update_record, name='update_record'),
