@@ -1,11 +1,50 @@
 {% extends "base.html" %}
 
 {% block content %}
-    <ul>
-  {% for city in object_list %}
-    <li>
-      {{ city.name }}
-    </li>
-  {% endfor %}
-</ul>
+<link rel="stylesheet" href="{% static 'css/table.css' %}" />
+ <tbody>
+    {% if records %}
+      {% for record in object_list %}
+      {% if user.companys.id == record.companys.id %}
+        {% if user.status == "Директор КЦ" and record.in_work == 0 or user.status == "Директор КЦ" and record.in_work == 1 or user.status == "Директор ЮПП" and record.in_work == 1 or user.status == "Юрист пирвичник" and record.employees_UPP == user.username or user.status == "Оператор" and record.employees_KC == user.username or user.status == "Менеджер" or user.status == "Администратор"%}
+            <tr>
+              <td class="table-default"><p><a href="{% url 'record' record.id %}">{{ record.name }}</a></p></td>
+              <td class="table-default"><p>{{ record.phone }}</p></td>
+              <td class="table-default"><p>{{ record.description|slice:"100" }}</p></td>
+              <td class="table-default"><p>{{ record.where }}</p></td>
+                {% if record.status == "Новая" %}
+                <td class="table-default" style="color:#fff; background-color: #077EC2;"><p style="color:#fff;">{{ record.status }}</p></td>
+                {% elif record.status == "Брак" %}
+                 <td class="table-default" style=" color:#fff; background-color: #C51010;"><p style="color:#fff;">{{ record.status }}</p></td>
+                {% elif record.status == "Недозвон" %}
+                <td class="table-default" style="background-color: #595959;"><p style="color:#fff;">{{ record.status }}</p></td>
+                {% elif record.status == "Перезвон" %}
+                <td class="table-default" style="background-color: #595959;"><p style="color:#fff;">{{ record.status }}</p></td>
+                {% elif record.status == "Запись в офис" %}
+                <td class="table-default" style="background-color: #22C061;"><p style="color:#fff;">{{ record.status }}</p></td>
+                {% elif record.status == "Отказ" %}
+                <td class="table-default" style="background-color: #C51010;"><p style="color:#fff;">{{ record.status }}</p></td>
+                {% elif record.status == "Онлайн" %}
+                <td class="table-default" style="background-color: #E1C645;"><p style="color:#fff;">{{ record.status }}</p></td>
+                {% elif record.status == "Акт" %}
+                <td class="table-default" style="background-color: #22C061;"><p style="color:#fff;">{{ record.status }}</p></td>
+                {%endif%}
+{% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
+            {% if record.in_work == 1%}
+            <td style="background-color: #22C061;"><p style="color:#fff;">Да</p></td>
+            {% else %}
+            <td style="background-color: #C51010;"><p style="color:#fff;">Нет</p></td>
+            {% endif %}
+            {% endif %}
+
+
+
+            </tr>
+    {% endif %}
+      {% endif %}
+      {% endfor %}
+      {% endif %}
+</tbody>
+
+
 {% endblock content %}
