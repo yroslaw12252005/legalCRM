@@ -3,6 +3,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
+from django.views.generic import TemplateView, ListView
 
 from .models import Record
 from todolist.models import ToDoList
@@ -178,7 +179,7 @@ def get_tilda_lead(request):
         return HttpResponse(200)
 
 class SearchView(ListView):
-    model = Products
+    model = Record
     template_name = 'search_results.html'
     context_object_name = 'all_search_results'
 
