@@ -89,6 +89,10 @@ DATABASES = {
         'HOST': '212.193.24.52',   # Or an IP Address that your DB is hosted on
         'PORT': '3306',
     }
+    #'default': {
+    #    'ENGINE': 'django.db.backends.sqlite3',
+    #    'NAME': BASE_DIR / 'mydatabase',
+    #}
 }
 
 # Password validation
