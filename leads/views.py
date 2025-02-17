@@ -181,7 +181,7 @@ def get_tilda_lead(request):
 
 class SearchView(ListView):
     model = Record
-    template_name = 'search_results.html'
+    template_name = 'home.html'
 
     def get_queryset(self):
         query = self.request.GET.get('q')
