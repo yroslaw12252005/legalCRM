@@ -18,7 +18,7 @@
   </div>
 </div>
 
-        <form method="GET" action="{% url 'ecomm:search' %}">
+        <form method="GET" action="{% url 'search' %}">
             {% csrf_token %}
             <input class="search" type="" name="" placeholder="Номер">
             <button type="submit" class="btn btn-success">Искать</button>
