@@ -11,7 +11,6 @@ urlpatterns = [
     path("in_work/<int:pk>/", views.in_work, name='in_work'),
     path("add_record/", views.add_record, name='add_record'),
     path("register/", include('accounts.urls'), name='register'),
-    path("search_results/", views.search_results, name='search_results'),
     path("brak/", views.brak, name='brak'),
     path('results/', views.SearchView.as_view(), name='search'),
 ]
