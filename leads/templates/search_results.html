@@ -3,7 +3,7 @@
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/table.css' %}" />
  <tbody>
-    {% if records %}
+
       {% for record in object_list %}
       {% if user.companys.id == record.companys.id %}
         {% if user.status == "Директор КЦ" and record.in_work == 0 or user.status == "Директор КЦ" and record.in_work == 1 or user.status == "Директор ЮПП" and record.in_work == 1 or user.status == "Юрист пирвичник" and record.employees_UPP == user.username or user.status == "Оператор" and record.employees_KC == user.username or user.status == "Менеджер" or user.status == "Администратор"%}
@@ -43,7 +43,6 @@
     {% endif %}
       {% endif %}
       {% endfor %}
-      {% endif %}
 </tbody>
 
 
