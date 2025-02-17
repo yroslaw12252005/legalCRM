@@ -180,4 +180,4 @@ def get_tilda_lead(request):
 
 class SearchView(ListView):
     def get_queryset(self):
-        print(200)
+        return render(request, "home")
