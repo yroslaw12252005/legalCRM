@@ -186,7 +186,7 @@ class SearchView(ListView):
         result = super(SearchView, self).get_queryset()
         query = self.request.GET.get('search')
         if query:
-            postresult = Products.objects.filter(title__contains=query)
+            postresult = Record.objects.filter(phone=query)
             result = postresult
         else:
             result = None

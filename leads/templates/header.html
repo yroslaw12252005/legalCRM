@@ -18,9 +18,11 @@
   </div>
 </div>
         <form class="form-inline my-2 my-lg-0" method="GET" action="{% url 'ecomm:search' %}" >
+            {% csrf_token %}
             <input class="form-control mr-sm-2" type="search" name="search">
             <button class="btn btn btn-outline-info my-2 my-sm-0" type="submit"> Search </button>
         </form>
+
         <form action="{% url 'search_results' %}" method="post">
             {% csrf_token %}
             <input class="search" type="" name="" placeholder="Имя/Номер">
