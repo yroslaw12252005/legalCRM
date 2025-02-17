@@ -179,16 +179,5 @@ def get_tilda_lead(request):
         return HttpResponse(200)
 
 class SearchView(ListView):
-    model = Record
-    template_name = 'search_results.html'
-    context_object_name = 'all_search_results'
-
     def get_queryset(self):
-        result = super(SearchView, self).get_queryset()
-        query = self.request.GET.get('search')
-        if query:
-            postresult = Record.objects.filter(phone=query)
-            result = postresult
-        else:
-            result = None
-        return result
+        print(200)
