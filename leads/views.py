@@ -4,6 +4,7 @@ from django.contrib import messages
 from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic import TemplateView, ListView
+from django.db.models import Q
 
 from .models import Record
 from todolist.models import ToDoList
@@ -181,4 +182,9 @@ def get_tilda_lead(request):
 class SearchView(ListView):
     model = Record
     template_name = 'search_results.html'
-    queryset = Record.objects.filter(name='Дима')
+
+    def get_queryset(self):
+        query = self.request.GET.get('q')
+        # новый
+        return Record.objects.filter(Q(name=query) | Q(phone=query))
+
