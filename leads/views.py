@@ -60,9 +60,8 @@ def home(request):
         return render(request, "home.html", {"records": records, 'users':user, 'todolist':todolist, "comings":coming, "now":now})
 
 def filter(request, status):
-    records = Record.objects.all()
-    return render(request, "filter.html",
-                  {"records": records, "status":status})
+    records = Record.objects.filter(status=status)
+    return render(request, "home.html", {"records": records})
 
 def brak(request):
     records = Record.objects.filter(status="Брак")
