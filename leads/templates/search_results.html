@@ -2,8 +2,25 @@
 {% load static %}
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/table.css' %}" />
- <tbody>
+ <div class="row">
 
+<div class="row main_tb">
+  <div class="col-12">
+    <table class="table table-striped table-hover rounded-3">
+  <thead>
+     <tr class="table-success">
+       <th scope="col"><p>Имя</p></th>
+       <th scope="col"><p>Телефон</p></th>
+       <th scope="col"><p>Описание</p></th>
+       <th scope="col"><p>Источник</p></th>
+       <th scope="col"><p>Статус заявки</p></th>
+        {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
+            <th scope="col"><p>В работе</p></th>
+         {% endif %}
+     </tr>
+   </thead>
+   <tbody>
+    {% if records %}
       {% for record in object_list %}
       {% if user.companys.id == record.companys.id %}
         {% if user.status == "Директор КЦ" and record.in_work == 0 or user.status == "Директор КЦ" and record.in_work == 1 or user.status == "Директор ЮПП" and record.in_work == 1 or user.status == "Юрист пирвичник" and record.employees_UPP == user.username or user.status == "Оператор" and record.employees_KC == user.username or user.status == "Менеджер" or user.status == "Администратор"%}
@@ -43,7 +60,14 @@
     {% endif %}
       {% endif %}
       {% endfor %}
+      {% endif %}
 </tbody>
+</table>
+
+  </div>
+
+</div>
+
 
 
 {% endblock content %}
