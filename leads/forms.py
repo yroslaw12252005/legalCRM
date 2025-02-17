@@ -33,7 +33,7 @@ class StatusForm(forms.ModelForm):
         labels = {'status': 'Статус заявки'}
 
 class Employees_KCForm(forms.ModelForm):
-    employees_KC = forms.ModelChoiceField(queryset=User.objects.filter(status="Оператор"), label="Оператор")
+    employees_KC = forms.ModelChoiceField(queryset=User.objects.filter(status="Оператор"), label="")
 
     class Meta:
         model = User
@@ -41,12 +41,12 @@ class Employees_KCForm(forms.ModelForm):
         labels = {'status': 'Оператор'}
 
 class Employees_UPPForm(forms.ModelForm):
-    employees_UPP = forms.ModelChoiceField(queryset=User.objects.filter(status="Юрист пирвичник"), label="Юрист")
+    employees_UPP = forms.ModelChoiceField(queryset=User.objects.filter(status="Юрист пирвичник"), label="")
 
     class Meta:
         model = User
         fields = ['employees_UPP']
-        labels = {'status': 'Юрист'}
+        labels = {'status': ''}
 
 class Cost_form(forms.ModelForm):
     cost = forms.DecimalField()
