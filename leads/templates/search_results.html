@@ -3,11 +3,11 @@
 {% block content %}
 {% include "navbar.html" %}
 {% include "header.html" %}
-    {% for product in all_search_results %}
-        <h3>{{product.title}}</h3>
-        <p>{{product.description}}</p>
-        <img src="{{ product.picture.url }}">
-    {% empty %}
-        <h2>No results found</h2>
-    {% endfor %}
+    <ul>
+  {% for city in object_list %}
+    <li>
+      {{ city.name }}
+    </li>
+  {% endfor %}
+</ul>
 {% endblock content %}

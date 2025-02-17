@@ -179,5 +179,6 @@ def get_tilda_lead(request):
         return HttpResponse(200)
 
 class SearchView(ListView):
-    def get_queryset(self):
-        return render(request, "home")
+    model = Record
+    template_name = 'search_results.html'
+    queryset = Record.objects.filter(name__icontains='Дима')
