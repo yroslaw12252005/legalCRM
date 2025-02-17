@@ -27,9 +27,11 @@
 
     <div class="cost" >
       <p class="status_text">Цена: {{ cost.cost }}</p>
-      <form>
-        <input type="submit" value="Отправить"></p>
-      </form>
+        <form method="post" style="display: flex;">
+                {% csrf_token %}
+                {{cost.as_p}}
+                <input type="submit" value="Указать">
+        </form>
     </div>
     {% for surcharge in surcharge %}
             <p class="card-text"><strong>Доплата: </strong> {{ surcharge.surcharge }} руб. Дата доплаты:{{ surcharge.date }}</p>
@@ -37,23 +39,17 @@
     <div class="operator" >
       <p class="status_text">Прикрепленные операторы:
 {{ record.employees_KC }}</p>
-     <form method="post" style="display: flex;}">
-                                  {% csrf_token %}
-                                  {{form_employees_KC.as_p}}
-                                    <input type="submit" value="Прикрепить оператора">
-     </form>
+     <form method="post" style="display: flex;">{% csrf_token %}{{form_employees_KC.as_p}}<input type="submit" value="Прикрепить оператора"></form>
     </div>
 
    <div class="urist" >
       <p class="status_text">Прикрепленные юристы:
 {{ record.employees_UPP }}</p>
-      <form>
-        <select class="status_input">
-            <option value="1">Новая</option>
-            <option value="2">Брак</option>
-        </select>
-        <input type="submit" value="Отправить"></p>
-      </form>
+      <form method="post"  style="display: flex;">
+                                  {% csrf_token %}
+                                  {{form_employees_UPP.as_p}}
+                                  <input type="submit" value="Прикрепить оператора">
+                    </form>
     </div>
 
        <a href="{% url 'home' %}" class="btn btn-secondary">Вернуться к списку</a>
@@ -112,11 +108,7 @@
 
           {% if user.status == "Директор ЮПП" or  user.status == "Администратор"%}
                 <p class="card-text"><strong>Прикрепленные юристы: </strong> v</p>
-                    <form method="post">
-                                  {% csrf_token %}
-                                  {{form_employees_UPP.as_p}}
-                                  <button type="submit" class="btn btn-success">Прикрепить Юриста</button>
-                    </form>
+                    м
           {% endif %}
 
         </div>
