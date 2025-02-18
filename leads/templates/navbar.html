@@ -59,6 +59,10 @@
                     <li class="nav-item"><a class="nav-link"  href="{% url 'employees'%}"><img src="{% static 'img/employee.png' %}" alt=""> пользователи</a></li>
                     <li><a href="{% url 'cost'%}"><img src="{% static 'img/payment.png' %}" alt=""> Добавить доплату</a></li>
         {% endif %}
+
+        {% if user.status == "Администратор" and user.name="Сергей" or user.status == "Администратор" and user.name="Yrik" %}
+            <li><a href="{% url 'home'%}"><img src="{% static 'img/statistics.png' %}" alt=""> статистика компаний</a></li>
+        {% endif %}
       <!--
       <li><a href=""><img src="{% static 'img/leads.png' %}" alt=""> лиды</a></li>
       <li><a href=""><img src="{% static 'img/appointment.png' %}" alt=""> запись в офис</a></li>
