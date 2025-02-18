@@ -1,0 +1,7 @@
+{% load static %}
+
+<form action="{% url 'reg_company' %}" class="form_add_lead" method="post">
+        {% csrf_token %}
+        {{form.as_p}}
+        <button type="submit" class="btn btn-success">Создать заявку</button>
+</form>

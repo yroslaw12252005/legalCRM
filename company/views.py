@@ -1,10 +1,14 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from django.contrib import messages
+from django.contrib.auth import authenticate, login, logout
 
 from .models import Companys
 from accounts.models import User
 from leads.models import Record
 from cost.models import Cost
+
+from .forms import RegCompany
+from accounts.forms import AddEmployeesForm
 
 def companys(request):
     companys = Companys.objects.all()
@@ -38,3 +42,37 @@ def companys(request):
 
         all_companys[company.title] = {'users':users, 'leads':leads, 'try_leads':try_leads, "in_work_leads":in_work_leads, "vk_qs":vk_qs, "site_qs":site_qs, "call_qs":call_qs, "re_qs":re_qs}
     return render(request, "companys.html", {"all_companys": all_companys})
+
+def reg_company(request):
+    form = RegCompany(request.POST or None)
+    if request.method == "POST":
+
+        if form.is_valid():
+            add_appointment = form.save()
+
+            return redirect("reg_admin_user", id_company=Companys.objects.get(title=form.cleaned_data["title"]).id)
+
+    return render(request, "reg_company.html", {"form": form})
+
+def reg_admin_user(request, id_company):
+    form = AddEmployeesForm(request.POST or None)
+    if request.method == "POST":
+        form = AddEmployeesForm(request.POST)
+
+        if form.is_valid():
+            add_user = form.save(commit=False)
+            add_user.companys = Companys.objects.get(id=id_company)  # The logged-in user
+            add_user.save()
+            username = form.cleaned_data["username"]
+            password = form.cleaned_data["password1"]
+            status = form.cleaned_data["status"]
+            email = form.cleaned_data["email"]
+
+            user = authenticate(username=username, email=email, status=status, password=password)
+            login(request, user)
+            messages.success(request, "Пользователь зарегестрирован")
+            return redirect("home")
+        else:
+            messages.error(request, "An error occured during registration")
+
+    return render(request, "reg_admin_user.html", {"form": form, "id_company":id_company})

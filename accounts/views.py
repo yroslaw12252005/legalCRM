@@ -17,7 +17,9 @@ def register_employees(request):
         form = AddEmployeesForm(request.POST)
 
         if form.is_valid():
-            form.save()
+            add_user = form.save(commit=False)
+            add_user.companys = request.user.companys  # The logged-in user
+            add_user.save()
             username = form.cleaned_data["username"]
             password = form.cleaned_data["password1"]
             status = form.cleaned_data["status"]
