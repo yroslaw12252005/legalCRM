@@ -60,8 +60,8 @@
                     <li><a href="{% url 'cost'%}"><img src="{% static 'img/payment.png' %}" alt=""> Добавить доплату</a></li>
         {% endif %}
 
-        {% if user.status == "Администратор" and user.name="Сергей" or user.status == "Администратор" and user.name="Yrik" %}
-            <li><a href="{% url 'home'%}"><img src="{% static 'img/statistics.png' %}" alt=""> статистика компаний</a></li>
+        {% if user.username == "Yrik" or user.username == "Сергей" %}
+            <li><a href="{% url 'companys'%}"><img width="24px" src="{% static 'img/statistics.png' %}" alt=""> статистика компаний</a></li>
         {% endif %}
       <!--
       <li><a href=""><img src="{% static 'img/leads.png' %}" alt=""> лиды</a></li>
