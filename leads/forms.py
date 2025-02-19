@@ -4,6 +4,8 @@ from django.contrib.auth.models import User
 from .models import Record
 from accounts.models import User
 from cost.models import Cost
+from felial.models import Felial
+from django.forms import ModelChoiceField
 
 class AddRecordForm(forms.ModelForm):
     status = forms.ChoiceField(label="Статус заявки", choices=(
@@ -12,15 +14,19 @@ class AddRecordForm(forms.ModelForm):
 
     where = forms.ChoiceField(label="Источник", choices=(
         ("VK", "VK"), ("Tilda", "Tilda"), ("РЕ", "РЕ"), ("Звонок", "Звонок")))
+
+    felial = forms.ModelChoiceField(queryset=Felial.objects.all(),
+        initial = 0, label='Фелиал')
+
     class Meta:
         model = Record
-        fields = ['name', 'description', 'phone', 'status', 'where']
+        fields = ['name', 'description', 'phone', 'status', 'where', 'felial']
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control", "label": "Your name"}),
             "description": forms.TextInput(attrs={"class": "form-control"}),
             "phone": forms.TextInput(attrs={"class": "form-control"}),
         }
-        labels = {'name': 'Имя', "description":"Описание", "phone":"Телефон", "status":"Статус", "employees_KC":"Оператор", "employees_UPP":"Юрист",  'where':'Источник'}
+        labels = {'name': 'Имя', "description":"Описание", "phone":"Телефон", "status":"Статус", "employees_KC":"Оператор", "employees_UPP":"Юрист",  'where':'Источник', 'felial':'Фелиал'}
 
 class StatusForm(forms.ModelForm):
     status = forms.ChoiceField(label="Статус заявки", choices=(

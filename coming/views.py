@@ -3,46 +3,43 @@ from coming.models import Coming
 from leads.models import Record
 from django.http import HttpResponse
 from django.contrib import messages
-
+from django.shortcuts import redirect, get_object_or_404
+from django.views.generic import ListView, CreateView, View
+from django.contrib import messages
+from django.urls import reverse_lazy
 
 from .forms import AddComing
 
 
 
-def appointments(request):
-    comings = Coming.objects.all()
-    mas = {}
-    for i in comings:
-        name = Record.objects.get(pk=i.lead_id)
-        mas[i.lead_id] = name.name
-    print(mas)
-    #print(Record.objects.get(pk=Coming.objects.get(pk=4)))
-    return render(request, "appointments.html", {"comings": comings, "mas":mas})
+class AppointmentsView(ListView):
+    model = Coming
+    template_name = "appointments.html"
+    context_object_name = "comings"
 
-def add_appointment(request):
-    form = AddComing(request.POST or None)
-    if request.method == "POST":
+    def get_queryset(self):
+        return Coming.objects.select_related('lead').all()
 
-        if form.is_valid():
-            add_appointment = form.save()
-            return redirect("home")
+class AddAppointmentView(CreateView):
+    form_class = AddComing
+    template_name = "add_appointment.html"
+    success_url = reverse_lazy('home')
 
+class BaseComeView(View):
+    come_value = None
+    message = ""
 
-    return render(request, "add_appointment.html", {"form": form})
+    def post(self, request, pk):
+        coming = get_object_or_404(Coming, id=pk)
+        coming.come = self.come_value
+        coming.save()
+        messages.warning(request, self.message)
+        return redirect('appointments')
 
-def come_True(request, pk):
-    comings = Coming.objects.all()
-    come_True = Coming.objects.get(id=pk)
-    come_True.come = 1
-    come_True.save()
-    messages.warning(request, "Клиент отмечен как дошедший")
-    return render(request, "appointments.html", {"comings": comings})
+class ComeTrueView(BaseComeView):
+    come_value = 1
+    message = "Клиент отмечен как дошедший"
 
-def come_False(request, pk):
-    comings = Coming.objects.all()
-    come_True = Coming.objects.get(id=pk)
-    come_True.come = 0
-    come_True.save()
-    messages.warning(request, "Клиент отмечен как недошедший")
-    return render(request, "appointments.html", {"comings": comings})
-
+class ComeFalseView(BaseComeView):
+    come_value = 0
+    message = "Клиент отмечен как недошедший"

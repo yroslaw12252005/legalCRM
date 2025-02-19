@@ -1,6 +1,7 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from company.models import Companys
+from felial.models import Felial
 
 
 class User(AbstractUser):
@@ -10,4 +11,9 @@ class User(AbstractUser):
         on_delete=models.CASCADE,
         null = True
     )
-# Create your models here.
+    felial = models.ForeignKey(
+        Felial,
+        on_delete=models.SET_NULL,
+        null = True
+    )
+

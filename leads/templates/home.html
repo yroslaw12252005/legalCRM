@@ -70,7 +70,7 @@ background-color: #212529;
    <tbody>
     {% if records %}
       {% for record in records %}
-      {% if user.companys.id == record.companys.id %}
+      {% if user.companys.id == record.companys.id and user.felial.id == record.felial.id %}
         {% if user.status == "Директор КЦ" and record.in_work == 0 or user.status == "Директор КЦ" and record.in_work == 1 or user.status == "Директор ЮПП" and record.in_work == 1 or user.status == "Юрист пирвичник" and record.employees_UPP == user.username or user.status == "Оператор" and record.employees_KC == user.username or user.status == "Менеджер" or user.status == "Администратор"%}
             <tr>
               <td class="table-default"><p><a href="{% url 'record' record.id %}">{{ record.name }}</a></p></td>

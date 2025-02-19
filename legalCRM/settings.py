@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'todolist',
     'cost',
     'company',
+    'felial',
 ]
 
 MIDDLEWARE = [

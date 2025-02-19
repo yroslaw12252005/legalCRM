@@ -25,7 +25,8 @@ urlpatterns = [
     path('com/', include('coming.urls')),
     path('todolist/', include('todolist.urls')),
     path('cost/', include('cost.urls')),
-    path('companys/', include('company.urls'))
+    path('companys/', include('company.urls')),
+    path('felial/', include('felial.urls'))
 
 
 ]

@@ -1,6 +1,6 @@
 from django.db import models
 from company.models import Companys
-
+from felial.models import Felial
 class Record(models.Model):
     name = models.CharField(max_length=50,default=None, null=True)
     phone = models.CharField(max_length=50, default=None, null=True)
@@ -14,6 +14,11 @@ class Record(models.Model):
         Companys,
         on_delete=models.CASCADE,
          default="Не прикреплен"
+    )
+    felial = models.ForeignKey(
+        Felial,
+        on_delete=models.SET_NULL,
+        null = True
     )
     in_work = models.BooleanField(default=False)
 

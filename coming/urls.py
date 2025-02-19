@@ -1,10 +1,9 @@
-from django.contrib import admin
-from django.urls import path, include
-from coming.views import *
+from django.urls import path
+from coming.views import AppointmentsView, AddAppointmentView, ComeTrueView, ComeFalseView
 
 urlpatterns = [
-    path('', appointments, name='appointments'),
-    path('add_appointments/', add_appointment, name='add_appointments'),
-    path("come_True/<int:pk>/", come_True, name='come_True'),
-    path("come_False/<int:pk>/", come_False, name='come_False')
+    path('', AppointmentsView.as_view(), name='appointments'),
+    path('add/', AddAppointmentView.as_view(), name='add_appointments'),
+    path('come-true/<int:pk>/', ComeTrueView.as_view(), name='come_true'),
+    path('come-false/<int:pk>/', ComeFalseView.as_view(), name='come_false'),
 ]
