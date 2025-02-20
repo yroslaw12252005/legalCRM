@@ -6,9 +6,6 @@ from accounts.models import User
 from cost.models import Cost
 from felial.models import Felial
 from django.forms import ModelChoiceField
-from crum import get_current_request
-
-request = get_current_request()
 
 class AddRecordForm(forms.ModelForm):
     status = forms.ChoiceField(label="Статус заявки", choices=(
