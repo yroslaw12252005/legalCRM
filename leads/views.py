@@ -125,7 +125,7 @@ def delete_record(request, pk):
         return redirect("home")
 
 def add_record(request):
-    form = AddRecordForm(request.POST or None, request)
+    form = AddRecordForm(request.POST or None, user=request.user)
     if request.user.is_authenticated:
         if form.is_valid():
             add_record = form.save(commit=False)
@@ -133,7 +133,7 @@ def add_record(request):
             add_record.save()
             messages.success(request, f"Заявка  с именем {add_record.name} успешно создана")
             return redirect("home")
-        return render(request, "add_felial.html", {"form": form})
+        return render(request, "add_record.html", {"form": form})
     else:
         return redirect("home")
 

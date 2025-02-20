@@ -6,6 +6,7 @@ from .models import Companys
 from accounts.models import User
 from leads.models import Record
 from cost.models import Cost
+from felial.models import Felial
 
 from .forms import RegCompany
 from accounts.forms import AddEmployeesForm
@@ -15,6 +16,7 @@ def companys(request):
 
     all_companys = {}
     for company in companys:
+        id_companys = company.id
         #Число сотрудников
         users = len(User.objects.filter(companys=company.id))
 
@@ -40,8 +42,34 @@ def companys(request):
         re_qs = len(Record.objects.filter(companys=company.id, where="РЕ"))
 
 
-        all_companys[company.title] = {'users':users, 'leads':leads, 'try_leads':try_leads, "in_work_leads":in_work_leads, "vk_qs":vk_qs, "site_qs":site_qs, "call_qs":call_qs, "re_qs":re_qs}
+        all_companys[company.title] = {"id":id_companys, 'users':users, 'leads':leads, 'try_leads':try_leads, "in_work_leads":in_work_leads, "vk_qs":vk_qs, "site_qs":site_qs, "call_qs":call_qs, "re_qs":re_qs}
     return render(request, "companys.html", {"all_companys": all_companys})
+
+
+def company(request, pk):
+    companys = Companys.objects.get(id=pk)
+    felials = Felial.objects.filter(companys=companys.id)
+
+        # Число сотрудников
+    users = len(User.objects.filter(companys=companys.id))
+    # Число сделок
+    leads = len(Record.objects.filter(companys=companys.id))
+    # Число закрытх сделок
+    try_leads = len(Record.objects.filter(companys=companys.id, status="Акт"))
+    # Число сделок в работе
+    in_work_leads = leads - try_leads
+
+    # Число сделок с vk
+    vk_qs = len(Record.objects.filter(companys=companys.id, where="VK"))
+    site_qs = len(Record.objects.filter(companys=companys.id, where="Сайты"))
+    call_qs = len(Record.objects.filter(companys=companys.id, where="Звонки"))
+    re_qs = len(Record.objects.filter(companys=companys.id, where="РЕ"))
+
+    all_felial = {}
+    for felial in felials:
+        all_felial[felial.title] = felial.cites
+    return render(request, "company.html", {"all_felial":all_felial})
+
 
 def reg_company(request):
     form = RegCompany(request.POST or None)

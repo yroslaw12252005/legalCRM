@@ -6,6 +6,9 @@ from accounts.models import User
 from cost.models import Cost
 from felial.models import Felial
 from django.forms import ModelChoiceField
+from crum import get_current_request
+
+request = get_current_request()
 
 class AddRecordForm(forms.ModelForm):
     status = forms.ChoiceField(label="Статус заявки", choices=(
@@ -15,7 +18,13 @@ class AddRecordForm(forms.ModelForm):
     where = forms.ChoiceField(label="Источник", choices=(
         ("VK", "VK"), ("Tilda", "Tilda"), ("РЕ", "РЕ"), ("Звонок", "Звонок")))
 
-    felial = forms.ModelChoiceField(queryset=Felial.objects.all(),
+    def __init__(self, *args, **kwargs):
+        # Достаем пользователя из аргументов
+        self.user = kwargs.pop('user', None)
+        super().__init__(*args, **kwargs)
+        self.fields['felial'].queryset = Felial.objects.filter(companys=self.user.companys.id)
+
+    felial = forms.ModelChoiceField(queryset=Felial.objects.none(),
         initial = 0, label='Фелиал')
 
     class Meta:
