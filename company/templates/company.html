@@ -1,0 +1,49 @@
+
+{% extends "base.html" %}
+
+{% block content %}
+
+
+
+
+<h3 class="card-title">{{title}}</h3>
+
+<p>Сотрудников: {{users}}</p>
+<p>Сделок всего: {{leads}}</p>
+<p>Сделок закрытых: {{try_leads}}</p>
+<p>Сделок в работе: {{in_work_leads}}</p>
+<p>VK - {{vk_qs}}</p>
+<p>Сайты - {{site_qs}}</p>
+<p>Звонки- {{call_qs}}</p>
+<p>РЕ- {{re_qs}}</p>
+{% for key, values in all_felial.items %}
+<div class="row" style="margin-top:50px; margin-bottom: 50px;">
+  <div class="col-sm-6">
+    <div class="card">
+      <div class="card-body">
+        <h5 class="card-title">{{key}}</h5>
+        <p class="card-text"> {{values.cites}}</p>
+        <p class="card-text">Сотрудники: {{values.users_fl}}</p>
+        <p class="card-text">Сотрудников: {{values.users_fl}}</p>
+        <p class="card-text">Сделок всего: {{values.leads_fl}}</p>
+        <p class="card-text">Сделок закрытых: {{values.try_leads_fl}}</p>
+        <p class="card-text">Сделок в работе: {{values.in_work_leads_fl}}</p>
+        <p class="card-text">VK - {{values.vk_qs_fl}}</p>
+        <p class="card-text">Сайты - {{values.site_qs_fl}}</p>
+        <p class="card-text">Звонки- {{values.call_qs_fl}}</p>
+        <p class="card-text">РЕ- {{values.re_qs_fl}}</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endfor %}
+<div class="graph-container">
+    {{ graph|safe }}
+</div>
+
+
+</body>
+</html>
+
+{% endblock content %}
