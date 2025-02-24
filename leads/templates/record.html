@@ -1,6 +1,249 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
+<style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --background: #f8f9fa;
+            --danger: #e74c3c;
+            --success: #27ae60;
+        }
+
+        body {
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        /* Общие стили карточек */
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            margin-bottom: 1.5rem;
+            position: relative;
+            overflow: hidden;
+            transition: transform 0.3s ease;
+            margin-top:50px;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .card::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 4px;
+            height: 100%;
+            background: var(--secondary);
+            transition: all 0.3s ease;
+        }
+
+        /* Заголовки */
+        h2 {
+            color: var(--primary);
+            margin-top: 0;
+            margin-bottom: 1.5rem;
+            font-size: 1.5rem;
+        }
+
+        /* Сетка статистики */
+        .stats-grid {
+            display: grid;
+            gap: 1.5rem;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            margin: 1.5rem 0;
+        }
+
+        .stat-item {
+            padding: 1rem;
+            background: #f8fafc;
+            border-radius: 8px;
+            border: 1px solid #e2e8f0;
+        }
+
+        .stat-label {
+            color: #64748b;
+            font-size: 0.9rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .stat-value {
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        /* Поле ввода */
+        .input-field {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e2e8f0;
+            border-radius: 8px;
+            transition: all 0.3s ease;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: var(--secondary);
+            box-shadow: 0 0 0 3px rgba(52, 152, 219, 0.1);
+        }
+
+        /* Кнопки */
+        .action-buttons {
+            display: flex;
+            gap: 1rem;
+            flex-wrap: wrap;
+            margin-top: 2rem;
+        }
+
+        .btn {
+            padding: 0.8rem 1.5rem;
+            border: none;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            font-weight: 500;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn-primary {
+            background: var(--secondary);
+            color: white;
+        }
+
+        .btn-danger {
+            background: var(--danger);
+            color: white;
+        }
+
+        .btn-warning {
+            background: #f59e0b;
+            color: white;
+        }
+
+        .btn-success {
+            background: var(--success);
+            color: white;
+        }
+
+        .btn-secondary {
+            background: #64748b;
+            color: white;
+        }
+
+        /* Бейдж статуса */
+        .status-badge {
+            display: inline-block;
+            padding: 0.4rem 1rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            background: #fff5f5;
+            color: var(--danger);
+            border: 1px solid #fed7d7;
+        }
+
+        /* Анимации */
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .card {
+            animation: fadeIn 0.4s ease forwards;
+        }
+
+        /* Мобильная адаптация */
+        @media (max-width: 768px) {
+            body {
+                padding: 1rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .action-buttons {
+                flex-direction: column;
+            }
+
+            .btn {
+                width: 100%;
+                justify-content: center;
+            }
+        }
+    </style>
+    <div class="card">
+        <h2>{{ record.name }}</h2>
+        <div class="stat-item" style="margin-bottom: 1.5rem;">
+            <div class="stat-label">Комментарий</div>
+            <div class="stat-value">{{ record.description }}</div>
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-label">id</div>
+                <div class="stat-value">{{ record.id }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Телефон</div>
+                <div class="stat-value">{{ record.phone }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Дата поступления</div>
+                <div class="stat-value">{{ record.created_at }}</div>
+            </div>
+
+            <div class="stat-item">
+                <div class="stat-label">Статус звонка</div>
+                <div class="status-badge">{{ record.status }}</div>
+            </div>
+        </div>
+
+        <div class="stat-item" style="margin: 1.5rem 0;">
+            <div class="stat-label">Цена: {{ cost.cost }}</div>
+            <input type="text" class="input-field" placeholder="Указать">
+        </div>
+
+        <div class="stats-grid">
+            <div class="stat-item">
+                <div class="stat-label">Прикрепленные операторы</div>
+                <div class="stat-value" style="color: #94a3b8;">{{ record.employees_KC }}</div>
+                <button class="btn btn-primary" style="margin-top: 0.8rem;">
+                    Прикрепить оператора
+                </button>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Прикрепленные юристы</div>
+                <div class="stat-value" style="color: #94a3b8;">{{ record.employees_UPP }}</div>
+                <button class="btn btn-primary" style="margin-top: 0.8rem;">
+                    Прикрепить юриста
+                </button>
+            </div>
+        </div>
+
+        <div class="action-buttons">
+             <a href="{% url 'home' %}" class="btn btn-secondary">Вернуться к списку</a>
+    {% if user.status == "Администратор"%}
+
+      <a href="{% url 'delete_record' record.id %}" class="btn btn-danger">Удалить</a>
+    {% endif %}
+      <a href="{% url 'update_record' record.id %}" class="btn btn-success">Редактировать</a>
+    {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
+      <a href="{% url 'in_work' record.id %}" class="btn btn-primary">В работу</a>
+    {% endif %}
+      <a href="{% url 'home' %}" class="btn btn-secondary">Отмена</a>
+        </div>
+    </div>
+
+
+<!--
 <link rel="stylesheet" href="{% static 'css/lead.css' %}" />
 {% if user.is_authenticated %}
 
@@ -68,7 +311,7 @@
 
 
 
-<!--
+
     <div class="card w-75 mb-3">
 
         <div class="card-body">

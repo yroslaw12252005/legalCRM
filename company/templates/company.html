@@ -1,47 +1,206 @@
 
 {% extends "base.html" %}
-
+{% load static %}
 {% block content %}
 
 
+<link rel="stylesheet" href="{% static 'css/company.css' %}" />
 
 
-<h3 class="card-title">{{title}}</h3>
+    <style>
+        :root {
+            --primary: #2c3e50;
+            --secondary: #3498db;
+            --background: #f8f9fa;
+        }
 
-<p>Сотрудников: {{users}}</p>
-<p>Сделок всего: {{leads}}</p>
-<p>Сделок закрытых: {{try_leads}}</p>
-<p>Сделок в работе: {{in_work_leads}}</p>
-<p>VK - {{vk_qs}}</p>
-<p>Сайты - {{site_qs}}</p>
-<p>Звонки- {{call_qs}}</p>
-<p>РЕ- {{re_qs}}</p>
+        body {
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .dashboard {
+            display: grid;
+            gap: 1.5rem;
+        }
+
+        .card {
+            background: white;
+            border-radius: 12px;
+            padding: 1.5rem;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            transition: transform 0.2s;
+        }
+
+        .card:hover {
+            transform: translateY(-3px);
+        }
+
+        .header {
+            border-bottom: 2px solid var(--secondary);
+            padding-bottom: 1rem;
+            margin-bottom: 1.5rem;
+        }
+
+        h1 {
+            color: var(--primary);
+            margin: 0;
+            font-size: 2.2rem;
+        }
+
+        .stats-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 1.5rem;
+            margin: 1.5rem 0;
+        }
+
+        .stat-item {
+            text-align: center;
+            padding: 1rem;
+            background: #f1f4f7;
+            border-radius: 8px;
+        }
+
+        .stat-value {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: var(--secondary);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin: 1.5rem 0;
+        }
+
+        th, td {
+            padding: 1rem;
+            text-align: left;
+            border-bottom: 1px solid #eee;
+        }
+
+        th {
+            background: var(--primary);
+            color: white;
+        }
+
+        .progress-bars {
+            display: flex;
+            gap: 1rem;
+            margin: 1rem 0;
+        }
+
+        .progress-bar {
+            flex: 1;
+            height: 8px;
+            background: #eee;
+            border-radius: 4px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            height: 100%;
+            background: var(--secondary);
+            width: 60%;
+        }
+
+        .badge {
+            display: inline-block;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            background: #e74c3c;
+            color: white;
+        }
+    </style>
+    <div class="dashboard">
+        <div class="card">
+            <div class="header">
+                <h1>{{title}}</h1>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">{{users}}</div>
+                        Сотрудников
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{leads}}</div>
+                        Сделок всего
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{try_leads}}</div>
+                        Сделок закрытых
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{in_work_leads}}</div>
+                        Сделок в работе
+                    </div>
+
+            </div>
+            <div class="stats-grid">
+                                <div class="stat-item">
+                                    {{vk_qs}}
+                                    Сделок с VK
+                                </div>
+                                <div class="stat-item">
+                                    {{site_qs}}
+                                    Сделок с сайта
+                                </div>
+                                <div class="stat-item">
+                                    {{call_qs}}
+                                    Сделок с звонков
+                                </div>
+                                 <div class="stat-item">
+                                    {{re_qs}}
+                                    Сделок по рекомендации
+                                </div>
+                            </div>
+
+            </div>
 {% for key, values in all_felial.items %}
-<div class="row" style="margin-top:50px; margin-bottom: 50px;">
-  <div class="col-sm-6">
-    <div class="card">
-      <div class="card-body">
-        <h5 class="card-title">{{key}}</h5>
-        <p class="card-text"> {{values.cites}}</p>
-        <p class="card-text">Сотрудники: {{values.users_fl}}</p>
-        <p class="card-text">Сотрудников: {{values.users_fl}}</p>
-        <p class="card-text">Сделок всего: {{values.leads_fl}}</p>
-        <p class="card-text">Сделок закрытых: {{values.try_leads_fl}}</p>
-        <p class="card-text">Сделок в работе: {{values.in_work_leads_fl}}</p>
-        <p class="card-text">VK - {{values.vk_qs_fl}}</p>
-        <p class="card-text">Сайты - {{values.site_qs_fl}}</p>
-        <p class="card-text">Звонки- {{values.call_qs_fl}}</p>
-        <p class="card-text">РЕ- {{values.re_qs_fl}}</p>
-      </div>
-    </div>
-  </div>
-</div>
-
+            <!-- Филиал Вит -->
+            <div class="card" style="margin-top: 1.5rem;">
+                <h2>Филиал: {{key}}</h2>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        <div class="stat-value">{{values.users_fl}}</div>
+                        Сотрудников
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{values.leads_fl}}</div>
+                        Сделок всего
+                    </div>
+                    <div class="stat-item">
+                        <div class="stat-value">{{values.try_leads_fl}}</div>
+                        Сделок закрытых
+                    </div>
+                </div>
+                <h3>Сделок в работе: {{values.in_work_leads_fl}}</h3>
+                <div class="progress-bars">
+                    <div class="progress-bar">
+                        <div class="progress-fill" style="width: 0%"></div>
+                    </div>
+                </div>
+                <div class="stats-grid">
+                    <div class="stat-item">
+                        VK: {{values.vk_qs_fl}}
+                    </div>
+                    <div class="stat-item">
+                        Сайты: {{values.site_qs_fl}}
+                    </div>
+                    <div class="stat-item">
+                        Звонок: {{values.call_qs_fl}}
+                    </div>
+                </div>
+            </div>
 {% endfor %}
-<div class="graph-container">
-    {{ graph|safe }}
-</div>
-
+            <!-- Таблица заявок -->
+            <div class="card" style="margin-top: 1.5rem;">
+                       <div class="graph-container">
+                        {{ graph|safe }}
+                        </div>
+            </div>
+        </div>
+    </div>
 
 </body>
 </html>
