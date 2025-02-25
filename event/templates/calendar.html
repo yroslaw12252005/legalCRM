@@ -44,6 +44,8 @@
     margin: 20px 0;
 }
 </style>
+
+
 <div class="calendar-nav">
     <a href="?month={{ prev_month }}&year={{ prev_year }}">← Предыдущий месяц</a>
     <h2>{{ month_name }} {{ current_year }}</h2>
@@ -74,7 +76,6 @@
                     {% load lower_filter %}
                     {% for event in events_by_day|get_item:day %}
                     <div class="event-card">
-                        <h4>{{ event.title }}</h4>
                         <p>Клиент: {{ event.client.name }}</p>
                         <p>Время: {{ event.time }}</p>
                     </div>

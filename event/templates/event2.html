@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <style>
+        .schedule-container {
+            position: relative;
+            height: 720px; /* 12 часов * 60px */
+            margin: 20px;
+        }
+
+        .time-column {
+            position: absolute;
+            left: 0;
+            width: 60px;
+            height: 100%;
+        }
+
+        .time-slot {
+            height: 60px;
+            border-bottom: 1px solid #eee;
+            text-align: right;
+            padding-right: 5px;
+        }
+
+        .bookings-container {
+            position: absolute;
+            left: 60px;
+            right: 0;
+            height: 100%;
+            background: #f8f9fa;
+        }
+
+        .booking-card {
+            position: absolute;
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 8px;
+            overflow: hidden;
+            box-sizing: border-box;
+            border-radius: 4px;
+        }
+
+        .navigation {
+            margin: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+    <div class="navigation">
+        <a href="?date={{ previous_date|date:'Y-m-d' }}">← Previous</a>
+        <span style="margin: 0 20px;">{{ selected_date|date:"d.m.Y" }}</span>
+        <a href="?date={{ next_date|date:'Y-m-d' }}">Next →</a>
+    </div>
+
+    <div class="schedule-container">
+        <!-- Временная шкала -->
+        <div class="time-column">
+            {% for hour in 9|get_range:18 %}
+                <div class="time-slot" style="height: 60px;">
+                    {{ hour }}:00
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Карточки записей -->
+        <div class="bookings-container">
+            {% for booking in bookings %}
+                {% with start=booking.start_time.time %}
+                {% with top=start.hour|add:-9|multiply:60|add:start.minute %}
+                {% with height=booking.duration_minutes %}
+                <div class="booking-card"
+                     style="top: {{ top }}px;
+                            height: {{ height }}px;
+                            left: 10px;
+                            right: 10px;">
+                    <strong>{{ booking.client }}</strong><br>
+                    {{ booking.service }}<br>
+                    {{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}
+                </div>
+                {% endwith %}{% endwith %}{% endwith %}
+            {% endfor %}
+        </div>
+    </div>
+</body>
+</html>
