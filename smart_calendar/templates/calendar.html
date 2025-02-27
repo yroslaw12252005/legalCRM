@@ -1,6 +1,5 @@
-<!DOCTYPE html>
-<html>
-<head>
+{% extends "base.html" %}
+{% block content %}
     <style>
         .schedule-container {
             position: relative;
@@ -45,12 +44,18 @@
             text-align: center;
         }
     </style>
-</head>
-<body>
+
+{% load custom_tags %}
+{% load static %}
+<a href="{% url 'add_event' %}"><img src="{% static 'img/add_event.png' %}" alt=""></a>
     <div class="navigation">
-        <a href="?date={{ previous_date|date:'Y-m-d' }}">← Previous</a>
-        <span style="margin: 0 20px;">{{ selected_date|date:"d.m.Y" }}</span>
-        <a href="?date={{ next_date|date:'Y-m-d' }}">Next →</a>
+
+        <h3 style="margin: 0 20px;"><a href="?date={{ previous_date|date:'Y-m-d' }}" style="color: black;
+    font-size: 35px;
+    text-decoration: none;">←</a>  {{ selected_date|date:"d.m.Y" }}  <a href="?date={{ next_date|date:'Y-m-d' }}" style="color: black;
+    font-size: 35px;
+    text-decoration: none;">→</a></h3>
+
     </div>
 
     <div class="schedule-container">
@@ -75,12 +80,10 @@
                             left: 10px;
                             right: 10px;">
                     <strong>{{ booking.client }}</strong><br>
-                    {{ booking.service }}<br>
                     {{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}
                 </div>
                 {% endwith %}{% endwith %}{% endwith %}
             {% endfor %}
         </div>
     </div>
-</body>
-</html>
+{% endblock content %}

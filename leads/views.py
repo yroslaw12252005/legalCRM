@@ -8,7 +8,6 @@ from django.db.models import Q
 
 from .models import Record
 from todolist.models import ToDoList
-from coming.models import Coming
 from django.db.models import Sum
 from cost.models import Cost
 from cost.models import Surcharge
@@ -33,7 +32,6 @@ def home(request):
     now = f"{year}-{month}-{day}"
     todolist = ToDoList.objects.all()
     records = Record.objects.all()
-    coming = Coming.objects.all()
     user  =  User.objects.all()
     if request.method == "POST":
         username = request.POST["username"]
@@ -59,7 +57,7 @@ def home(request):
         #    else:
         #        cost_upp = sum(items.values_list('caunt', flat=True))
 
-        return render(request, "home.html", {"records": records, 'users':user, 'todolist':todolist, "comings":coming, "now":now})
+        return render(request, "home.html", {"records": records, 'users':user, 'todolist':todolist, "now":now})
 
 def filter(request, status):
     records = Record.objects.filter(status=status)

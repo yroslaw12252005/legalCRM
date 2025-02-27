@@ -7,7 +7,7 @@ import django.db.models.deletion
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('coming', '0001_initial'),
+        #('coming', '0001_initial'),
         ('leads', '0005_record_reporter'),
     ]
 

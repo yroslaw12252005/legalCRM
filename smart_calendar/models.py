@@ -1,0 +1,14 @@
+from django.db import models
+
+class Booking(models.Model):
+    client = models.CharField(max_length=100)
+    start_time = models.DateTimeField()
+    end_time = models.DateTimeField()
+
+    def duration_minutes(self):
+        """Рассчет длительности в минутах"""
+        diff = self.end_time - self.start_time
+        return int(diff.total_seconds() // 60)
+
+    def __str__(self):
+        return f"{self.client}"

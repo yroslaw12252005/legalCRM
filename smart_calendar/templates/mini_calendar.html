@@ -1,0 +1,70 @@
+<div class="mini-calendar">
+    <a href=""></a>
+    <div class="calendar-header"><h4>{{ month_name }}</h4></div>
+    <table>
+        <thead>
+            <tr>
+                {% for day in header %}
+                    <th>{{ day }}</th>
+                {% endfor %}
+            </tr>
+        </thead>
+        <tbody>
+            {% for week in weeks %}
+                <tr>
+                    {% for day in week %}
+                        <td class="{% if day == 0 %}other-month{% elif month == 2 and day == 19 %}current-day{% endif %}">
+                            <a href="{% url 'calendar'%}?date={{year}}-{{current_month}}-{{day}}" style="    text-decoration: none;">{% if day != 0 %}{{ day }}{% endif %}</a>
+                        </td>
+                    {% endfor %}
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.mini-calendar {
+    top: 20px;
+    right: 20px;
+    padding: 10px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    z-index: 1000;
+}
+
+.calendar-header {
+    text-align: center;
+    font-weight: bold;
+    margin-bottom: 8px;
+}
+
+.mini-calendar table {
+    border-collapse: collapse;
+    font-size: 0.8em;
+        margin-top: 0px;
+        width: 100%;
+}
+
+.mini-calendar th,
+.mini-calendar td {
+    width: 24px;
+    height: 24px;
+    text-align: center;
+    padding: 2px;
+    font-size:20px;
+}
+.mini-calendar td a {
+font-size:20px;
+color:#fff;
+}
+
+.mini-calendar td.other-month {
+    color: #ccc;
+}
+
+.mini-calendar td.current-day {
+    background: #2196F3;
+    color: white;
+    border-radius: 50%;
+}
+</style>
