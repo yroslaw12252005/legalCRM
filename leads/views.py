@@ -9,11 +9,10 @@ from django.db.models import Q
 from .models import Record
 from todolist.models import ToDoList
 from django.db.models import Sum
-from cost.models import Cost
 from cost.models import Surcharge
 from accounts.models import User
 
-from .forms import AddRecordForm, StatusForm, Employees_KCForm, Employees_UPPForm, Cost_form
+from .forms import AddRecordForm, StatusForm, Employees_KCForm, Employees_UPPForm, CostForm
 
 import json
 from django.http import HttpResponse
@@ -73,13 +72,12 @@ def logout_user(request):
 
 def record(request, pk):
     if request.user.is_authenticated:
-        cost = Cost.objects.filter(record_id=pk)
         record = Record.objects.get(id=pk)
         surcharge = Surcharge.objects.filter(record_id=pk)
         form_status = StatusForm(request.POST or None, instance=record)
         form_employees_KC = Employees_KCForm(request.POST or None, instance=record)
         form_employees_UPP = Employees_UPPForm(request.POST or None, instance=record)
-        cost_form = Cost_form(request.POST or None)
+        cost_form = CostForm(request.POST or None, instance=record)
         if form_status.is_valid():
             form_status.save()
             messages.success(request, f"Статус был успешно обнавлена")
@@ -96,20 +94,12 @@ def record(request, pk):
             return redirect("home")
 
         elif  cost_form.is_valid():
-            cost =  cost_form.save(commit=False)
-            if  cost_form.record_id == "null":
-                 cost_form.record_id = pk
-                 cost_form.save()
-            else:
-               a = Cost.objects.get(record_id=pk)
-               a.cost = cost.cost
-               a.save()
-
+            cost_form.save()
             messages.success(request, f"Цена указана")
             return redirect("home")
 
 
-        return render(request, "record.html", {"record": record, "form_status":form_status, "form_employees_KC":form_employees_KC, "form_employees_UPP":form_employees_UPP, "cost":cost, "surcharge":surcharge})
+        return render(request, "record.html", {"record": record, "form_status":form_status, "form_employees_KC":form_employees_KC, "form_employees_UPP":form_employees_UPP, "cost":cost_form, "surcharge":surcharge})
     else:
         return redirect("home")
 

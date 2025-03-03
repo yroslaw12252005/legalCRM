@@ -10,6 +10,7 @@ class Record(models.Model):
     employees_KC = models.CharField(max_length=50, default="Не прикреплен")
     employees_UPP = models.CharField(max_length=50,default="Не прикреплен")
     where = models.CharField(max_length=50, null=True)
+    cost = models.DecimalField(max_digits=10, decimal_places=0, null=True)
     companys = models.ForeignKey(
         Companys,
         on_delete=models.CASCADE,

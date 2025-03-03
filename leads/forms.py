@@ -3,7 +3,6 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from .models import Record
 from accounts.models import User
-from cost.models import Cost
 from felial.models import Felial
 from django.forms import ModelChoiceField
 
@@ -60,9 +59,11 @@ class Employees_UPPForm(forms.ModelForm):
         fields = ['employees_UPP']
         labels = {'status': ''}
 
-class Cost_form(forms.ModelForm):
+
+class CostForm(forms.ModelForm):
     cost = forms.DecimalField()
+
     class Meta:
-        model = Cost
+        model = Record
         fields = ['cost']
         labels = {'cost': 'Стоимость'}

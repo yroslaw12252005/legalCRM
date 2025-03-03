@@ -207,8 +207,31 @@
         </div>
 
         <div class="stat-item" style="margin: 1.5rem 0;">
-            <div class="stat-label">Цена: {{ cost.cost }}</div>
-            <input type="text" class="input-field" placeholder="Указать">
+            <div class="stat-label">Цена: {{ record.cost }}</div>
+                <form class="form_add_lead" method="post">
+                    {% csrf_token %}
+                    {{cost.as_p}}
+                    <button type="submit" class="btn btn-primary" style="margin-top: 0.8rem;">Создать заявку</button>
+                </form>
+            <table class="table table-striped table-hover rounded-3" style="margin-top:50px">
+                <thead>
+                 <tr class="table-primary">
+                   <th scope="col"><p>Цена</p></th>
+                   <th scope="col"><p>Дата</p></th>
+                </tr>
+              </thead>
+
+               <tbody>
+               {% for surcharge in surcharge %}
+                    <tr>
+                        <td class="table-default"><p>{{surcharge.cost}}</p></td>
+                        <td class="table-default"><p>{{surcharge.date}}</p></td>
+                    </tr>
+               {% endfor %}
+                </tbody>
+            </table>
+            <a href="{% url 'cost' record.id %}">Внести доплату</a>
+            <!--<input type="text" class="input-field" placeholder="Указать">-->
         </div>
 
         <div class="stats-grid">

@@ -6,7 +6,6 @@ from django.views.generic import TemplateView
 from .models import Companys
 from accounts.models import User
 from leads.models import Record
-from cost.models import Cost
 from felial.models import Felial
 
 from .forms import RegCompany

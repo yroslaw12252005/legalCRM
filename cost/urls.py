@@ -1,5 +1,5 @@
 from django.urls import path, include
 from cost import views
 urlpatterns = [
-    path("", views.cost, name='cost'),
+    path("/<int:pk>/", views.cost, name='cost'),
 ]
