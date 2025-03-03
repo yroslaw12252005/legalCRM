@@ -47,7 +47,6 @@
 
 {% load custom_tags %}
 {% load static %}
-<a href="{% url 'add_event' %}"><img src="{% static 'img/add_event.png' %}" alt=""></a>
     <div class="navigation">
 
         <h3 style="margin: 0 20px;"><a href="?date={{ previous_date|date:'Y-m-d' }}" style="color: black;
@@ -86,4 +85,5 @@
             {% endfor %}
         </div>
     </div>
+<a href="{% url 'add_event' %}" class="btn btn-success" style="margin-top:50px">Добавить запись</a>
 {% endblock content %}

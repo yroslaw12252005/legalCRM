@@ -19,7 +19,11 @@ header{
   border: none;
   background-color: #EFF0F1;
 }
-
+ .search_btn{
+    width: 200px;
+    background-color: #85cbf2;
+    border: none;
+}
 
 
 .dropdown {

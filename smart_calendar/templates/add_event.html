@@ -3,15 +3,114 @@
 {% load static %}
 {% block content %}
 <link rel="stylesheet" href="{% static 'css/add_lead.css' %}" />
-<div class="row" style="justify-content: center;">
-    <div class="pole">
-    <h3 class="add_lead_title">Записать на прием в офис</h3>
-    <form action="{% url 'add_event' %}" class="form_add_lead" method="post">
-        {% csrf_token %}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Запись на приём в офис</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            font-family: 'Roboto', Arial, sans-serif;
+        }
+
+
+
+        .form-container {
+            background: white;
+            padding: 2.5rem;
+            border-radius: 12px;
+            box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+            width: 100%;
+            max-width: 500px;
+        }
+
+        h1 {
+            color: #2c3e50;
+            margin-bottom: 2rem;
+            font-size: 1.8rem;
+            text-align: center;
+        }
+
+        .form-group {
+            margin-bottom: 1.5rem;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 0.5rem;
+            color: #34495e;
+            font-weight: 500;
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 0.8rem;
+            border: 2px solid #e0e6ed;
+            border-radius: 6px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: #3498db;
+        }
+
+        .time-inputs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+       .submit_event {
+            background: #3498db;
+            color: white;
+            padding: 1rem 2rem;
+            border: none;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            width: 100%;
+            transition: background 0.3s ease;
+        }
+
+        button:hover {
+            background: #2980b9;
+        }
+
+        @media (max-width: 480px) {
+            .form-container {
+                padding: 1.5rem;
+            }
+
+            .time-inputs {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="row" style="justify-content: center; margin-top:50px;">
+     <div class="form-container">
+        <h1>📅 Запись на приём</h1>
+        <form>
+
+
+            <div class="form-group">
+                {% csrf_token %}
         {{form.as_p}}
-        <button type="submit" class="btn btn-success">Создать запись</button>
-    </form>
+            </div>
+
+            <button class="submit_event" type="submit">Записать на приём</button>
+        </form>
     </div>
+
 </div>
+
+</body>
+</html>
+
 
 {% endblock content %}

@@ -12,7 +12,8 @@
     {% mini_calendar %}
   <div class="nav-line"></div>
   <div class="nav_right blok-nav">
-      <p style="font-size: 30px;">Панель навигации</p>
+      <h4>Панель навигации</h4>
+
     <ul>
       {% if user.is_authenticated %}
 
@@ -49,7 +50,7 @@
                     <li class="nav-item"><a class="nav-link"  href="{% url 'reg'%}"><img src="{% static 'img/add_user.png' %}" alt=""> добавить польователя</a></li>
                     <li class="nav-item"><a class="nav-link"  href="{% url 'employees'%}"><img src="{% static 'img/employee.png' %}" alt=""> пользователи</a></li>
                     <li><a href="{% url 'cost'%}"><img src="{% static 'img/payment.png' %}" alt=""> Добавить доплату</a></li>
-                    <li><a href="{% url 'add_felial'%}">Создать фелиал</a></li>
+                    <li><a href="{% url 'add_felial'%}"><img src="{% static 'img/add_felial.png' %}" alt="">Создать фелиал</a></li>
         {% endif %}
 
         {% if user.username == "Yrik" or user.username == "Сергей" %}
