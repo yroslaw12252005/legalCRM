@@ -1,3 +1,4 @@
+
 <div class="mini-calendar">
     <a href=""></a>
     <div class="calendar-header"><h4>{{ month_name }}</h4></div>
@@ -12,9 +13,16 @@
         <tbody>
             {% for week in weeks %}
                 <tr>
-                    {% for day in week %}
-                        <td class="{% if day == 0 %}other-month{% elif month == 2 and day == 19 %}current-day{% endif %}">
-                            <a href="{% url 'calendar'%}?date={{year}}-{{current_month}}-{{day}}" style="    text-decoration: none;">{% if day != 0 %}{{ day }}{% endif %}</a>
+                    {% for day_data in week %}
+                        <td>
+
+                            {% if day_data.day != 0 %}
+                                 {% if day_data.count > 0 %}
+                                    <div class="booking-count current-day">{{ day_data.count }}</div>
+                                {% endif %}
+
+                            <div class="day-number"><a href="{% url 'calendar'%}?date={{day_data.year}}-{{day_data.month}}-{{day_data.day}}" style="    text-decoration: none;">{{ day_data.day }}</a></div>
+                            {% endif %}
                         </td>
                     {% endfor %}
                 </tr>
@@ -62,9 +70,11 @@ color:#fff;
     color: #ccc;
 }
 
-.mini-calendar td.current-day {
-    background: #2196F3;
-    color: white;
+.current-day {
+        background: #2196F3;
     border-radius: 50%;
+    margin-left: 20px;
 }
 </style>
+
+

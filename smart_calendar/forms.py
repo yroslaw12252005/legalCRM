@@ -8,7 +8,8 @@ class AddEventForm(forms.ModelForm):
         model = Booking
         fields = ['client', 'start_time', 'end_time']
         widgets = {
-            "name": forms.DateTimeInput(attrs={"id": "start-time", "label": "Your name"})
+            "start_time": forms.TextInput(attrs={"type": "datetime-local"}),
+            "end_time": forms.TextInput(attrs={"type": "datetime-local"}),
 
         }
         labels = {'client': 'Клиент', "start_time":"Начло приема", "end_time":"Конец приема"}

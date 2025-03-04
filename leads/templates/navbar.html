@@ -1,6 +1,6 @@
 {% load static %}
+{% load mini_calendar_tags %}
 {% if user.is_authenticated %}
-
 <link rel="stylesheet" href="{% static 'css/nav.css' %}" />
 <link rel="stylesheet" href="{% static 'css/style.css' %}" />
 <nav role="main container col">
@@ -9,6 +9,8 @@
     <p class="employees_name">{{ user.username }}<br><span class="mail">{{ user.email }}</span></p>
       <a class="nav-link"  href="{% url 'logout'%}"><img src="{% static 'img/logout.png' %}" alt=""></a>
   </div>
+
+    {% mini_calendar %}
   <div class="nav-line"></div>
   <div class="nav_right blok-nav">
       <h4>Панель навигации</h4>
@@ -49,7 +51,7 @@
                     <li class="nav-item"><a class="nav-link"  href="{% url 'reg'%}"><img src="{% static 'img/add_user.png' %}" alt=""> добавить польователя</a></li>
                     <li class="nav-item"><a class="nav-link"  href="{% url 'employees'%}"><img src="{% static 'img/employee.png' %}" alt=""> пользователи</a></li>
 
-                    <li><a href="{% url 'add_felial'%}"><img src="{% static 'img/add_felial.png' %}" alt="">Создать фелиал</a></li>
+                    <li><a href="{% url 'add_felial'%}"><img src="{% static 'img/add_felial.png' %}" alt=""> Создать фелиал</a></li>
         {% endif %}
 
         {% if user.username == "Yrik" or user.username == "Сергей" %}
