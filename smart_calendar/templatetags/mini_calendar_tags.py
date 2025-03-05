@@ -2,7 +2,8 @@ from django import template
 import calendar
 from datetime import date, datetime, timedelta
 from smart_calendar.models import Booking
-
+from cost.models import Surcharge
+from collections import defaultdict
 register = template.Library()
 
 
@@ -10,37 +11,51 @@ register = template.Library()
 def mini_calendar():
     today = date.today()
     year, month = today.year, today.month
-    cal = calendar.Calendar(firstweekday=7)  # Воскресенье первый день
+    cal = calendar.Calendar(firstweekday=7)
     month_days = cal.monthdayscalendar(year, month)
 
-    # Определение границ месяца
+    # Границы месяца
     start_date = date(year, month, 1)
-    end_date = start_date + timedelta(days=31)
+    end_date = (start_date + timedelta(days=31)).replace(day=1)
 
-    # Получение всех записей, пересекающихся с текущим месяцем
+    # Получение данных
     bookings = Booking.objects.filter(
         start_time__lt=end_date,
         end_time__gte=start_date
     )
 
-    # Подсчет записей для каждого дня
-    bookings_per_day = {}
+    # Исправленный фильтр для доплат
+    surcharges = Surcharge.objects.filter(dat__range=(start_date, end_date))
+
+    # Подсчет доплат
+    surcharges_per_day = defaultdict(int)
+    for surcharge in surcharges:
+        current_day = surcharge.dat.date()
+        if start_date <= current_day < end_date:
+            surcharges_per_day[current_day.day] += 1
+
+    # Подсчет бронирований
+    bookings_per_day = defaultdict(int)
     for booking in bookings:
         current_day = booking.start_time.date()
         end_day = booking.end_time.date()
         while current_day <= end_day:
             if start_date <= current_day < end_date:
-                day_key = current_day.day
-                bookings_per_day[day_key] = bookings_per_day.get(day_key, 0) + 1
+                bookings_per_day[current_day.day] += 1
             current_day += timedelta(days=1)
 
-    # Форматирование данных для шаблона
+    # Форматирование данных
     formatted_weeks = []
     for week in month_days:
         formatted_week = []
         for day in week:
-            count = bookings_per_day.get(day, 0) if day != 0 else 0
-            formatted_week.append({'day': day,'year':year, 'month':month, 'count': count})
+            formatted_week.append({
+                'day': day,
+                'year': year,
+                'month': month,
+                'count': bookings_per_day.get(day, 0),
+                'surcharges_count': surcharges_per_day.get(day, 0)
+            })
         formatted_weeks.append(formatted_week)
 
     return {

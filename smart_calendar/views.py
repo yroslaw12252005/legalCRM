@@ -2,18 +2,30 @@ from django.shortcuts import redirect, render
 from django.contrib import messages
 from django.shortcuts import render
 from datetime import datetime, time, timedelta
+from datetime import date
+
 from .models import Booking
+from cost.models import Surcharge
+
 from .forms import AddEventForm
 
-
+from datetime import datetime, time
 def smart_calendar(request):
     # Обработка даты
     selected_date = datetime.today().date()
     if 'date' in request.GET:
         try:
             selected_date = datetime.strptime(request.GET['date'], '%Y-%m-%d').date()
+
         except ValueError:
             pass
+
+
+
+    start_dat = datetime.combine(selected_date, time.min)
+    end_dat = datetime.combine(selected_date, time.max)
+
+    surcharges = Surcharge.objects.filter(dat__range=(start_dat, end_dat))
 
     # Навигация по датам
     prev_date = selected_date - timedelta(days=1)
@@ -32,6 +44,7 @@ def smart_calendar(request):
         'selected_date': selected_date,
         'previous_date': prev_date,
         'next_date': next_date,
+        'surcharges':surcharges,
     }
     return render(request, 'calendar.html', context)
 

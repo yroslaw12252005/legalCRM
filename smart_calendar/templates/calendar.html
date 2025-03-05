@@ -8,7 +8,6 @@
         }
 
         .time-column {
-            position: absolute;
             left: 0;
             width: 60px;
             height: 100%;
@@ -22,7 +21,6 @@
         }
 
         .bookings-container {
-            position: absolute;
             left: 60px;
             right: 0;
             height: 100%;
@@ -30,13 +28,24 @@
         }
 
         .booking-card {
-            position: absolute;
+                position: relative;
             background: #e3f2fd;
             border-left: 4px solid #2196f3;
             padding: 8px;
             overflow: hidden;
             box-sizing: border-box;
             border-radius: 4px;
+            #baffdf
+        }
+        .surcharge-card {
+                position: relative;
+            background: #baffdf;
+            border-left: 4px solid #009b53;
+            padding: 8px;
+            overflow: hidden;
+            box-sizing: border-box;
+            border-radius: 4px;
+            #baffdf
         }
 
         .navigation {
@@ -56,10 +65,16 @@
     text-decoration: none;">→</a></h3>
 
     </div>
+<div class="" style="    display: flex
+;
+    justify-content: space-evenly;">
+    <h3>Записи в офис</h3>
+    <h3>Доплаты</h3>
+</div>
 
-    <div class="schedule-container">
+    <div class="schedule-container row">
         <!-- Временная шкала -->
-        <div class="time-column">
+        <div class="time-column col-1">
             {% for hour in 9|get_range:18 %}
                 <div class="time-slot" style="height: 60px;">
                     {{ hour }}:00
@@ -68,7 +83,7 @@
         </div>
 
         <!-- Карточки записей -->
-        <div class="bookings-container">
+        <div class="bookings-container col-5">
             {% for booking in bookings %}
                 {% with start=booking.start_time.time %}
                 {% with top=start.hour|add:-9|multiply:60|add:start.minute %}
@@ -80,6 +95,23 @@
                             right: 10px;">
                     <strong>{{ booking.client }}</strong><br>
                     {{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}
+                </div>
+                {% endwith %}{% endwith %}{% endwith %}
+            {% endfor %}
+        </div>
+
+         <div class="bookings-container col-5">
+
+            {% for surcharge in surcharges %}
+                {% with start=surcharge.dat.time %}
+                {% with top=start.hour|add:-9|multiply:60|add:start.minute %}
+                {% with height=60 %}
+                <div class="surcharge-card"
+                     style="top: {{ top }}px;
+                            height: {{ height }}px;
+                            left: 10px;
+                            right: 10px;">
+                    <strong>{{ surcharge.record }}</strong><br>
                 </div>
                 {% endwith %}{% endwith %}{% endwith %}
             {% endfor %}

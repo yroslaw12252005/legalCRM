@@ -44,6 +44,7 @@ INSTALLED_APPS = [
     'cost',
     'company',
     'felial',
+    'smart_calendar',
 ]
 
 MIDDLEWARE = [

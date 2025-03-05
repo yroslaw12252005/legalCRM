@@ -25,7 +25,8 @@ urlpatterns = [
     path('todolist/', include('todolist.urls')),
     path('cost/', include('cost.urls')),
     path('companys/', include('company.urls')),
-    path('felial/', include('felial.urls'))
+    path('felial/', include('felial.urls')),
+    path('calendar/', include('smart_calendar.urls'))
 
 
 ]
