@@ -74,7 +74,7 @@
 
     <div class="schedule-container row">
         <!-- Временная шкала -->
-        <div class="time-column col-1">
+        <div class="time-column col-1" style="margin-top:28px">
             {% for hour in 9|get_range:18 %}
                 <div class="time-slot" style="height: 60px;">
                     {{ hour }}:00
@@ -84,37 +84,56 @@
 
         <!-- Карточки записей -->
         <div class="bookings-container col-5">
-            {% for booking in bookings %}
-                {% with start=booking.start_time.time %}
-                {% with top=start.hour|add:-9|multiply:60|add:start.minute %}
-                {% with height=booking.duration_minutes %}
-                <div class="booking-card"
-                     style="top: {{ top }}px;
-                            height: {{ height }}px;
-                            left: 10px;
-                            right: 10px;">
-                    <strong>{{ booking.client }}</strong><br>
-                    {{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}
+            <div class="row">
+                {% for user in users %}
+                <div class="col-4"><h4 style="    color: #595959;     border-bottom: 1px solid; text-align: center;">{{ user.username}}</h4>
+                    {% for booking in bookings %}
+                        {% if booking.employees.id == user.id %}
+                            {% with start=booking.start_time.time %}
+                            {% with top=start.hour|add:-9|multiply:60|add:start.minute %}
+                            {% with height=booking.duration_minutes %}
+                            <div class="booking-card"
+                                 style="top: {{ top }}px;
+                                        height: {{ height }}px;
+                                        left: 10px;
+                                        right: 10px;">
+                                <strong>{{ booking.client }}</strong><br>
+                                {{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}
+                            </div>
+                            {% endwith %}{% endwith %}{% endwith %}
+                        {% endif %}
+                    {% endfor %}
                 </div>
-                {% endwith %}{% endwith %}{% endwith %}
-            {% endfor %}
+                {% endfor %}
+            </div>
         </div>
 
          <div class="bookings-container col-5">
+                <div class="row">
+                    {% for user in users %}
+                        <div class="col-4"><h4 style="color: #595959; border-bottom: 1px solid; text-align: center;">{{ user.username}}</h4>
+                            {% for surcharge in surcharges %}
+                            {% if surcharge.responsible.id == user.id %}
+                            {% with start=surcharge.dat.time %}
+                            {% with top=start.hour|add:-9|multiply:60|add:start.minute %}
+                            {% with height=60 %}
+                            <div class="surcharge-card"
+                                 style="top: {{ top }}px;
+                                                       height: {{ height }}px;
+                                                       left: 10px;
+                                                       right: 10px;">
+                                <strong>{{ surcharge.record }}</strong><br>
+                            </div>
+                            {% endwith %}{% endwith %}{% endwith %}
+                            {% endif %}
+                            {% endfor %}
 
-            {% for surcharge in surcharges %}
-                {% with start=surcharge.dat.time %}
-                {% with top=start.hour|add:-9|multiply:60|add:start.minute %}
-                {% with height=60 %}
-                <div class="surcharge-card"
-                     style="top: {{ top }}px;
-                            height: {{ height }}px;
-                            left: 10px;
-                            right: 10px;">
-                    <strong>{{ surcharge.record }}</strong><br>
+                        </div>
+                        {% endfor %}
+
                 </div>
-                {% endwith %}{% endwith %}{% endwith %}
-            {% endfor %}
+
+
         </div>
     </div>
 <a href="{% url 'add_event' %}" class="btn btn-success" style="margin-top:50px">Добавить запись</a>

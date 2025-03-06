@@ -5,6 +5,7 @@ from datetime import datetime, time, timedelta
 from datetime import date
 
 from .models import Booking
+from accounts.models import User
 from cost.models import Surcharge
 
 from .forms import AddEventForm
@@ -27,6 +28,8 @@ def smart_calendar(request):
 
     surcharges = Surcharge.objects.filter(dat__range=(start_dat, end_dat))
 
+    users = User.objects.all()
+
     # Навигация по датам
     prev_date = selected_date - timedelta(days=1)
     next_date = selected_date + timedelta(days=1)
@@ -45,6 +48,7 @@ def smart_calendar(request):
         'previous_date': prev_date,
         'next_date': next_date,
         'surcharges':surcharges,
+        'users':users,
     }
     return render(request, 'calendar.html', context)
 

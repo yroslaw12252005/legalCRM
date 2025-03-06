@@ -1,10 +1,14 @@
 from django.db import models
-
+from accounts.models import User
 class Booking(models.Model):
     client = models.CharField(max_length=100)
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
-
+    employees = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True
+    )
     def duration_minutes(self):
         """Рассчет длительности в минутах"""
         diff = self.end_time - self.start_time

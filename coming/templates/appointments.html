@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+
+{% block content %}
+<h1>Календарь записей</h1>
+<table class="table table-striped table-bordered table-hover">
+      <thead class="table-success">
+        <tr>
+          <th scope="col">Дата записи</th>
+            <th scope="col">Клиент</th>
+            {% if user.status == "Менеджер" %}
+            <th scope="col"> Действия</th>
+            {% endif %}
+
+            {% if user.status == "Директор ЮПП" or user.status == "Директор КЦ" or user.status == "Администратор" or user.status == "Менеджер" %}
+                  <th scope="col">Дошёл/Не дошёл</th>
+            {% endif %}
+            </tr>
+      </thead>
+
+      <tbody>
+         {% for come in comings %}
+         <tr>
+            <td><a href="{% url 'record' come.lead_id %}">{{ come.date|date:"j.n.Y" }}</a></td>
+             <td><a href="{% url 'record' come.lead_id %}">{{ come.lead }}</a></td>
+             {% for i in come.lead_id.all %}
+                <td><a href="{% url 'record' come.lead_id %}">1</a></td>
+             {% endfor %}
+
+            {% if user.status == "Менеджер" %}
+            <td><a href="{% url 'come_True' come.id %}" class="btn btn-success">Пришел</a> <a href="{% url 'come_False' come.id %}" class="btn btn-danger">Не пришел</a></td>
+            {% endif %}
+                {% if user.status == "Директор ЮПП" or user.status == "Директор КЦ" or user.status == "Администратор" or user.status == "Менеджер"%}
+                    {% if come.come == 0 %}
+                    <td style="background-color: red;" ></td>
+                    {% else %}
+                    <td style="background-color: green;" ></td>
+                    {% endif %}
+               {% endif %}
+
+         </tr>
+      {% endfor %}
+      </tbody>
+    </table>
+    {% endblock content %}
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js" integrity="sha384-qKXV1j0HvMUeCBQ+QVp7JcfGl760yU08IQ+GpUo5hlbpg51QRiuqHAJz8+BrxE/N" crossorigin="anonymous"></script>

@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<link rel="stylesheet" href="{% static 'css/add_lead.css' %}" />
+<div class="pole">
+    <h1>Записать в офис</h1>
+
+    <form method="post">
+    {% csrf_token %}
+    {{form.as_p}}
+    <input type="submit" class="btn btn-success" value="Submit">
+</form>
+
+</div>
+
+
+
+
+{% endblock content %}
