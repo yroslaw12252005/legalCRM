@@ -211,7 +211,7 @@
                 <form class="form_add_lead" method="post">
                     {% csrf_token %}
                     {{cost.as_p}}
-                    <button type="submit" class="btn btn-primary" style="margin-top: 0.8rem;">Создать заявку</button>
+                    <button type="submit" class="btn btn-primary" style="margin-top: 0.8rem;">Добавить стоимость</button>
                 </form>
             <table class="table table-striped table-hover rounded-3" style="margin-top:50px">
                 <thead>
@@ -225,7 +225,7 @@
                {% for surcharge in surcharge %}
                     <tr>
                         <td class="table-default"><p>{{surcharge.cost}}</p></td>
-                        <td class="table-default"><p>{{surcharge.date}}</p></td>
+                        <td class="table-default"><p>{{surcharge.dat}}</p></td>
                     </tr>
                {% endfor %}
                 </tbody>
