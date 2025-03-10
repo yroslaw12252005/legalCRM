@@ -17,7 +17,7 @@
             <tbody>
                 {% for user in users %}
         <tr>
-          <td class="table-default"><p>{{ user.username }}</p></td>
+          <td class="table-default"><a href="{% url 'user_inform' user.id %}">{{ user.username }}</a></td>
           <td class="table-default"><p>{{ user.email }}</p></td>
           <td class="table-default"><p><span class="status-badge manager">{{ user.status }}</span></p></td>
         </tr>
