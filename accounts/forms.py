@@ -19,6 +19,7 @@ class AddEmployeesForm(UserCreationForm):
     )
 
     status = forms.ChoiceField(choices=(("Менеджер", "Менеджер"),("Администратор", "Администратор"),("Директор КЦ", "Директор КЦ"), ("Оператор", "Оператор"), ("Директор ЮПП", "Директор ЮПП"), ("Юрист пирвичник", "Юрист пирвичник"), ("Директор представителей", "Директор представителей"), ("Представитель", "Представитель")))
+    type_zp = forms.ChoiceField(choices=(("Процент", "Процент"),("Оклад", "Оклад"),("Процент + Ставка", "Процент + Ставка")))
 
     password1 = forms.PasswordInput(attrs={"class": "form-control", "placeholder": "Пароль"})
 
@@ -30,6 +31,10 @@ class AddEmployeesForm(UserCreationForm):
             "username",
             "email",
             "status",
+            "type_zp",
+            "percent",
+            "bet",
             "password1",
             "password2",
         )
+        labels = {'type_zp': 'Тип ЗП', 'percent':"%", "bet":"Ставка"}

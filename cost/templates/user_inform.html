@@ -1,2 +1,8 @@
+{% extends "base.html" %}
+
+{% block content %}
+{% load static %}
+
 <p>Касса - {{ cash.cost__sum }}</p>
 <p>ЗП - {{ zp }}</p>
+{% endblock content %}

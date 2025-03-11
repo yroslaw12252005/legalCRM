@@ -19,13 +19,37 @@ def cost(request, pk):
         return render(request, "surcharge.html",
                   {"surcharge_form": surcharge_form})
 
-def percent(request, pk):
-    cash = Record.objects.filter(employees_UPP=pk).aggregate(Sum('cost'))
-    percent_user = User.objects.get(id=pk)
-    zp = float(cash['cost__sum'])*float(percent_user.percent)
+def calculating_salaries(request, pk):
+    user = User.objects.get(id=pk)
+    if user.type_zp == "Процент":
+        return percent(request, user)
+    elif user.type_zp == "Ставка":
+        return bet(request, user)
+    elif user.type_zp == "Процент + Ставка":
+        return percent_and_bet(request, user)
+
+def percent(request, user):
+    if user.status == "Юрист пирвичник":
+        cash = Record.objects.filter(employees_UPP=user.id).aggregate(Sum('cost'))
+    elif user.status == "Оператор кц":
+        cash = Record.objects.filter(employees_KC=user.id).aggregate(Sum('cost'))
+
+    zp = float(cash['cost__sum'])*float(user.percent)
     return render(request, "user_inform.html",
                   {"zp": zp, "cash":cash})
-def bet(request, pk):
-    pass
-def percent_and_bet(request):
-    pass
+
+def bet(request, user):
+    zp = user.bet
+    cash = "Не предусмотренно"
+    return render(request, "user_inform.html",
+                  {"zp": zp, "cash": cash})
+
+def percent_and_bet(request, user):
+    if user.status == "Юрист пирвичник":
+        cash = Record.objects.filter(employees_UPP=user.id).aggregate(Sum('cost'))
+    elif user.status == "Оператор":
+        cash = Record.objects.filter(employees_KC=user.id).aggregate(Sum('cost'))
+
+    zp = float(cash['cost__sum']) * float(user.percent)+float(user.bet)
+    return render(request, "user_inform.html",
+                  {"zp": zp, "cash": cash})

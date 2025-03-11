@@ -16,7 +16,7 @@ class User(AbstractUser):
         on_delete=models.SET_NULL,
         null = True
     )
-    percent = models.DecimalField(null=True, max_digits=3, decimal_places=3)
-    bet = models.DecimalField(null=True, max_digits=6, decimal_places=3)
+    percent = models.DecimalField(null=True, max_digits=6, decimal_places=3)
+    bet = models.DecimalField(null=True, max_digits=12, decimal_places=6)
     type_zp = models.CharField(null=True, max_length=30)
 
