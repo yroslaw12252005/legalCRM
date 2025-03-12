@@ -120,7 +120,7 @@ def companys(request):
 
 from django.views.generic import TemplateView
 from django.shortcuts import get_object_or_404
-import plotly.offline as opy
+#import plotly.offline as opy
 
 
 class CompanyView(TemplateView):

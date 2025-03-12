@@ -30,7 +30,7 @@ def home(request):
     day = current_time.day
     now = f"{year}-{month}-{day}"
     todolist = ToDoList.objects.all()
-    records = Record.objects.all()
+    get_records = Record.objects.filter(companys=request.user.companys, felial=request.user.felial)
     user  =  User.objects.all()
     if request.method == "POST":
         username = request.POST["username"]
@@ -56,7 +56,7 @@ def home(request):
         #    else:
         #        cost_upp = sum(items.values_list('caunt', flat=True))
 
-        return render(request, "home.html", {"records": records, 'users':user, 'todolist':todolist, "now":now})
+        return render(request, "home.html", {"records": get_records, 'users':user, 'todolist':todolist, "now":now})
 
 def filter(request, status):
     records = Record.objects.filter(status=status)
@@ -117,7 +117,7 @@ def add_record(request):
     if request.user.is_authenticated:
         if form.is_valid():
             add_record = form.save(commit=False)
-            add_record.companys = request.user.companys  # The logged-in user
+            add_record.companys = request.user.companys  # Прикрепляется к крмпании
             add_record.save()
             messages.success(request, f"Заявка  с именем {add_record.name} успешно создана")
             return redirect("home")

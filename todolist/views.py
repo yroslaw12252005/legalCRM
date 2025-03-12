@@ -7,17 +7,17 @@ from django.contrib import messages
 from .forms import AddTaskForm
 
 def todolist(request):
-    todolist = ToDoList.objects.all()
+    todolist = ToDoList.objects.filter(user=request.user.id)
     return render(request, "todolist.html", {'todolist':todolist})
 
 
 def add_task(request):
-    form = AddTaskForm(request.POST or None)
+    get_form_task = AddTaskForm(request.POST or None)
     if request.method == "POST":
-        if form.is_valid():
-            add_task = form.save(commit=False)
-            add_task.user = request.user.id  # The logged-in user
-            add_task.save()
-            messages.success(request, f"Задача {add_task.title} успешно создана")
+        if get_form_task.is_valid():
+            get_form_task = get_form_task.save(commit=False)
+            get_form_task.user = request.user.id  # The logged-in user
+            get_form_task.save()
+            messages.success(request, f"Задача {get_form_task.title} успешно создана")
             return redirect("todolist")
-    return render(request, "add_task.html", {"form": form, 'pk':request.user.id})
+    return render(request, "add_task.html", {"form": get_form_task, 'pk':request.user.id})

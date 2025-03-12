@@ -8,7 +8,7 @@ register = template.Library()
 
 
 @register.inclusion_tag('mini_calendar.html')
-def mini_calendar():
+def mini_calendar(employee_id):
     today = date.today()
     year, month = today.year, today.month
     cal = calendar.Calendar(firstweekday=7)
@@ -21,11 +21,12 @@ def mini_calendar():
     # Получение данных
     bookings = Booking.objects.filter(
         start_time__lt=end_date,
-        end_time__gte=start_date
+        end_time__gte=start_date,
+        employees=employee_id
     )
 
     # Исправленный фильтр для доплат
-    surcharges = Surcharge.objects.filter(dat__range=(start_date, end_date))
+    surcharges = Surcharge.objects.filter(dat__range=(start_date, end_date), responsible=employee_id)
 
     # Подсчет доплат
     surcharges_per_day = defaultdict(int)

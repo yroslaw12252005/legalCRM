@@ -8,8 +8,8 @@ from .models import User
 
 
 def employees(request):
-    user = User.objects.all()
-    return render(request, "employees.html", {"users": user})
+    get_employees = User.objects.filter(companys=request.user.companys, felial=request.user.felial)
+    return render(request, "employees.html", {"employees": get_employees})
 
 def register_employees(request):
     form = AddEmployeesForm()

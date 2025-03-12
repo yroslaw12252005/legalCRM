@@ -28,7 +28,7 @@ def smart_calendar(request):
 
     surcharges = Surcharge.objects.filter(dat__range=(start_dat, end_dat))
 
-    users = User.objects.all()
+    get_all_employees = User.objects.filter(companys=request.user.companys, felial=request.user.felial)
 
     # Навигация по датам
     prev_date = selected_date - timedelta(days=1)
@@ -39,7 +39,8 @@ def smart_calendar(request):
     end_datetime = datetime.combine(selected_date, time.max)
     bookings = Booking.objects.filter(
         start_time__gte=start_datetime,
-        end_time__lte=end_datetime
+        end_time__lte=end_datetime,
+        employees=request.user.id
     ).order_by('start_time')
 
     context = {
@@ -48,7 +49,7 @@ def smart_calendar(request):
         'previous_date': prev_date,
         'next_date': next_date,
         'surcharges':surcharges,
-        'users':users,
+        'users':get_all_employees,
     }
     return render(request, 'calendar.html', context)
 

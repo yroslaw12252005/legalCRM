@@ -15,11 +15,11 @@
                 </tr>
             </thead>
             <tbody>
-                {% for user in users %}
+                {% for employee in employees %}
         <tr>
-          <td class="table-default"><a href="{% url 'user_inform' user.id %}">{{ user.username }}</a></td>
+          <td class="table-default"><a href="{% url 'user_inform' user.id %}">{{ employee.username }}</a></td>
           <td class="table-default"><p>{{ user.email }}</p></td>
-          <td class="table-default"><p><span class="status-badge manager">{{ user.status }}</span></p></td>
+          <td class="table-default"><p><span class="status-badge manager">{{ employee.status }}</span></p></td>
         </tr>
         {% endfor %}
 

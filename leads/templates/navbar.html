@@ -10,7 +10,7 @@
       <a class="nav-link"  href="{% url 'logout'%}"><img src="{% static 'img/logout.png' %}" alt=""></a>
   </div>
 
-    {% mini_calendar %}
+    {% mini_calendar user.id%}
   <div class="nav-line"></div>
   <div class="nav_right blok-nav">
       <h4>Панель навигации</h4>

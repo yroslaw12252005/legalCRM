@@ -1,5 +1,7 @@
 from django.shortcuts import redirect, render
 from felial.models import Felial
+from leads.models import Record
+
 from .forms import AddFelialForm
 from django.contrib import messages
 
@@ -15,3 +17,10 @@ def add_felial(request):
         return render(request, "add_felial.html", {"form": form})
     else:
         return redirect("home")
+
+def felials(request):
+    get_felials = Felial.objects.filter(companys=request.user.companys)
+    return render(request, "felials.html", {"felials": get_felials})
+def felial_info(request, id_feleal):
+    get_recrds_felial = Record.objects.filter(companys=request.user.companys, felial=id_feleal)
+    return render(request, "home.html", {"records": get_recrds_felial})
