@@ -24,39 +24,41 @@ import datetime
 from django.views.decorators.csrf import csrf_exempt
 
 def home(request):
-    current_time = datetime.datetime.now()
-    year = current_time.year
-    month = current_time.month
-    day = current_time.day
-    now = f"{year}-{month}-{day}"
-    todolist = ToDoList.objects.all()
-    get_records = Record.objects.filter(companys=request.user.companys, felial=request.user.felial)
-    user  =  User.objects.all()
-    if request.method == "POST":
-        username = request.POST["username"]
-        password = request.POST["password"]
-        
-        user = authenticate(request, username=username, password=password)
+    print(request.user)
+    if request.user != 'AnonymousUser':
+        current_time = datetime.datetime.now()
+        year = current_time.year
+        month = current_time.month
+        day = current_time.day
+        now = f"{year}-{month}-{day}"
+        todolist = ToDoList.objects.all()
+        get_records = Record.objects.filter(companys=request.user.companys, felial=request.user.felial)
+        user  =  User.objects.all()
+        if request.method == "POST":
+            username = request.POST["username"]
+            password = request.POST["password"]
 
-        if user is not None:
-            login(request, user)
-            return redirect("home")
+            user = authenticate(request, username=username, password=password)
+
+            if user is not None:
+                login(request, user)
+                return redirect("home")
+            else:
+                messages.warning(request, "Не правельный логин или пароль")
+                return redirect("home")
         else:
-            messages.warning(request, "Не правельный логин или пароль")
-            return redirect("home")
-    else:
-        ##cost_upp = Record.objects.aggregate(Sum('caunt'))
-        #items = Cost.objects.all()
-        #cost_upp = 0
-        #if request.user.is_authenticated:
+            ##cost_upp = Record.objects.aggregate(Sum('caunt'))
+            #items = Cost.objects.all()
+            #cost_upp = 0
+            #if request.user.is_authenticated:
 
-        #    if request.user.status == "Юрист пирвичник":
-        #        items = items.filter( employees_UPP = request.user.username)
-        #        cost_upp = sum(items.values_list('caunt', flat=True))
-        #    else:
-        #        cost_upp = sum(items.values_list('caunt', flat=True))
+            #    if request.user.status == "Юрист пирвичник":
+            #        items = items.filter( employees_UPP = request.user.username)
+            #        cost_upp = sum(items.values_list('caunt', flat=True))
+            #    else:
+            #        cost_upp = sum(items.values_list('caunt', flat=True))
 
-        return render(request, "home.html", {"records": get_records, 'users':user, 'todolist':todolist, "now":now})
+            return render(request, "home.html", {"records": get_records, 'users':user, 'todolist':todolist, "now":now})
 
 def filter(request, status):
     records = Record.objects.filter(status=status)
