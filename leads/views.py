@@ -6,6 +6,7 @@ from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic import TemplateView, ListView
 from django.db.models import Q
 
+from felial.views import felials
 from .models import Record
 from todolist.models import ToDoList
 from django.db.models import Sum
@@ -153,7 +154,7 @@ def get_tilda_lead(request):
             elif key == "Textarea":
                 textarea = value
 
-        led = Record(phone=phone, name=name,  description=textarea)
+        led = Record(phone=phone, name=name,  description=textarea, felial=5)
         led.save()
         print(200)
         return HttpResponse(200)
