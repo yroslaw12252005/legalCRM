@@ -14,7 +14,7 @@ class Record(models.Model):
     companys = models.ForeignKey(
         Companys,
         on_delete=models.CASCADE,
-         default="Не прикреплен"
+         default=1
     )
     felial = models.ForeignKey(
         Felial,
