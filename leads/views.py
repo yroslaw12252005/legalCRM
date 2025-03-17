@@ -107,7 +107,10 @@ def add_record(request):
     if request.user.is_authenticated:
         if form.is_valid():
             add_record = form.save(commit=False)
-            add_record.companys = request.user.companys  # Прикрепляется к крмпании
+            add_record.companys = request.user.companys
+            if request.user.status =="Оператор":
+                add_record.employees_KC = request.user.username
+             # Прикрепляется к крмпании
             add_record.save()
             messages.success(request, f"Заявка  с именем {add_record.name} успешно создана")
             return redirect("home")
