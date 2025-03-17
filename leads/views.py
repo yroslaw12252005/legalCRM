@@ -15,6 +15,7 @@ from cost.models import Surcharge
 from accounts.models import User
 
 from .forms import AddRecordForm, StatusForm, Employees_KCForm, Employees_UPPForm, CostForm
+from smart_calendar.forms import comeEventForm
 
 import json
 from django.http import HttpResponse
@@ -68,6 +69,7 @@ def record(request, pk):
         form_status = StatusForm(request.POST or None, instance=record)
         form_employees_KC = Employees_KCForm(request.POST or None, instance=record)
         form_employees_UPP = Employees_UPPForm(request.POST or None, instance=record)
+        form_come_event = comeEventForm(request.POST or None, instance=record)
         cost_form = CostForm(request.POST or None, instance=record)
         if form_status.is_valid():
             form_status.save()
@@ -77,6 +79,10 @@ def record(request, pk):
         elif form_employees_KC.is_valid():
             form_employees_KC.save()
             messages.success(request, f"Оператор прикреплен")
+            return redirect("home")
+
+        elif form_come_event.is_valid():
+            form_come_event.save()
             return redirect("home")
 
         elif form_employees_UPP.is_valid():
@@ -90,7 +96,7 @@ def record(request, pk):
             return redirect("home")
 
 
-        return render(request, "record.html", {"record": record, "form_status":form_status, "form_employees_KC":form_employees_KC, "form_employees_UPP":form_employees_UPP, "cost":cost_form, "surcharge":surcharge})
+        return render(request, "record.html", {"record": record, "form_status":form_status, "form_employees_KC":form_employees_KC, "form_employees_UPP":form_employees_UPP, "cost":cost_form, "surcharge":surcharge, "form_come_event":form_come_event })
     else:
         return redirect("home")
 

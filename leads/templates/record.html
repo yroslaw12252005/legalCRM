@@ -236,6 +236,7 @@
 {% endif %}
         <div class="stats-grid">
             {% if user.status == "Директор КЦ" or user.status == "Администратор"%}
+            <form method="post" style="display: flex;     flex-direction: column;">{% csrf_token %}{{form_come_event.as_p}}<input type="submit" class="btn btn-primary" style="margin-top: 0.8rem;" value="Отметить"></form>
             <div class="stat-item">
                 <div class="stat-label">Прикрепленные операторы</div>
                 <div class="stat-value" style="color: #94a3b8;">{{ record.employees_KC }}</div>
