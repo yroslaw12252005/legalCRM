@@ -1,0 +1,92 @@
+
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+
+<h1 style="text-align: center;">Фелиалы</h1>
+
+<div class="locations-block">
+  <div class="locations-container">
+
+    {% for felial in felials %}
+    <a href="{% url 'felial_info' felial.id %}" style="text-decoration: none;">
+      <div class="location-card">
+        <div class="city">{{felial.cites}}</div>
+        <div class="description">{{felial.title}}</div>
+        <div class="decor-line"></div>
+      </div>
+      </a>
+    {% endfor %}
+
+  </div>
+</div>
+
+<style>
+.locations-block {
+  padding: 40px 20px;
+}
+
+.locations-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 30px;
+}
+
+.location-card {
+  background: white;
+  padding: 30px;
+  border-radius: 15px;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+  transition: transform 0.3s ease;
+  position: relative;
+  overflow: hidden;
+}
+
+.location-card:hover {
+  transform: translateY(-5px);
+}
+
+.city {
+  font-family: 'Arial', sans-serif;
+  font-size: 24px;
+  font-weight: 700;
+  color: #2d3436;
+  margin-bottom: 8px;
+}
+
+.description {
+  font-family: 'Arial', sans-serif;
+  font-size: 18px;
+  color: #636e72;
+  line-height: 1.4;
+}
+
+.decor-line {
+  width: 60px;
+  height: 3px;
+  background: #0984e3;
+  margin-top: 20px;
+  transition: width 0.3s ease;
+}
+
+.location-card:hover .decor-line {
+  width: 100px;
+}
+
+@media (max-width: 768px) {
+  .locations-container {
+    grid-template-columns: 1fr;
+  }
+
+  .location-card {
+    padding: 25px;
+  }
+}
+</style>
+
+
+
+{% endblock content %}
