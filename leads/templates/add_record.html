@@ -5,7 +5,7 @@
 <link rel="stylesheet" href="{% static 'css/add_lead.css' %}" />
 <div class="row" style="justify-content: center;">
     <div class="pole">
-    <h3 class="add_lead_title">Записать на прием в офис</h3>
+    <h3 class="add_lead_title">Добавить заявку</h3>
     <form action="{% url 'add_record' %}" class="form_add_lead" method="post">
         {% csrf_token %}
         {{form.as_p}}

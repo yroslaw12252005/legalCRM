@@ -49,7 +49,7 @@ def home(request):
     return render(request, "home.html", {"records": get_records, 'users':user, 'todolist':todolist, "now":now})
 
 def filter(request, status):
-    records = Record.objects.filter(status=status)
+    records = Record.objects.filter(status=status, companys=request.user.companys, felial=request.user.felial)
     return render(request, "home.html", {"records": records})
 
 def brak(request):
