@@ -2,8 +2,14 @@ from django.db import models
 from accounts.models import User
 from company.models import Companys
 from felial.models import Felial
+from leads.models import Record
+
 class Booking(models.Model):
-    client = models.CharField(max_length=100)
+    client = models.ForeignKey(
+        Record,
+        on_delete=models.CASCADE,
+        null=True
+    )
     start_time = models.DateTimeField()
     end_time = models.DateTimeField()
     employees = models.ForeignKey(
@@ -11,6 +17,7 @@ class Booking(models.Model):
         on_delete=models.SET_NULL,
         null=True
     )
+    come = models.IntegerField(default=0)
     companys = models.ForeignKey(
         Companys,
         on_delete=models.CASCADE,

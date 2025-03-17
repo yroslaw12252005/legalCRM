@@ -98,7 +98,7 @@
                                         height: {{ height }}px;
                                         left: 10px;
                                         right: 10px;">
-                                <strong>{{ booking.client }} <br> {{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}</strong><br>
+                                <strong> <a href="{% url 'record' booking.client.id %}">{{ booking.client }}</a> <br> {{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}</strong><br>
 
                             </div>
                             {% endwith %}{% endwith %}{% endwith %}

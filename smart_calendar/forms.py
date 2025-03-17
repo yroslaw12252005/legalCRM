@@ -1,4 +1,6 @@
 from django import forms
+
+from leads.models import Record
 from .models import Booking
 from accounts.models import User
 from django.forms import ModelChoiceField
@@ -10,6 +12,7 @@ class AddEventForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['employees'].queryset = User.objects.filter(companys=self.user.companys.id, status="Юрист пирвичник")
 
+    client = forms.ModelChoiceField(queryset=Record.objects.filter(status="Запись в офис"), label="")
     employees = forms.ModelChoiceField(queryset=User.objects.none(),
         initial = 0, label='Сотруднк')
 
