@@ -154,7 +154,7 @@ def get_tilda_lead(request):
             elif key == "Textarea":
                 textarea = value
 
-        led = Record(phone=phone, name=name,  description=textarea, felial=5)
+        led = Record(phone=phone, name=name,  description=textarea)
         led.save()
         print(200)
         return HttpResponse(200)

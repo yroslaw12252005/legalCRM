@@ -7,8 +7,8 @@ class Record(models.Model):
     description  = models.CharField(max_length=500, default=None, null=True)
     status = models.CharField(max_length=50,  default='Новая', null=True)
     created_at = models.DateTimeField(auto_now_add=True)
-    employees_KC = models.CharField(max_length=50,null=True)
-    employees_UPP = models.CharField(max_length=50,null=True)
+    employees_KC = models.CharField(max_length=50,null=True, default="Не прикреплённ")
+    employees_UPP = models.CharField(max_length=50,null=True,default="Не прикреплённ")
     where = models.CharField(max_length=50, null=True)
     cost = models.DecimalField(max_digits=10, decimal_places=0, null=True)
     companys = models.ForeignKey(
@@ -19,7 +19,8 @@ class Record(models.Model):
     felial = models.ForeignKey(
         Felial,
         on_delete=models.SET_NULL,
-        null = True
+        null = True,
+        default=5
     )
     in_work = models.BooleanField(default=False)
 
