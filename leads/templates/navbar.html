@@ -19,33 +19,33 @@
       {% if user.is_authenticated %}
 
       {% if user.status == "Директор КЦ" %}
-            <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> лиды</a></li>
+            <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></li>
             <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> список задач</a></li>
       {% endif %}
 
       {% if user.status == "Оператор" %}
-        <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> лиды</a></li>
+        <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></li>
         <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> список задач</a></li>
       {% endif %}
 
       {% if user.status == "Директор ЮПП" %}
-        <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> лиды</a></li>
+        <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></li>
         <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> список задач</a></li>
       {% endif %}
 
       {% if user.status == "Юрист пирвичник" %}
-              <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> лиды</a></li>
+              <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></li>
               <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> список задач</a></li>
       {% endif %}
 
       {% if user.status == "Менеджер" %}
-              <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> лиды</a></li>
+              <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></li>
               <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> список задач</a></li>
 
       {% endif %}
 
       {% if user.status == "Администратор" %}
-                   <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> лиды</a></li>
+                   <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></li>
                     <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> список задач</a></li>
                     <li><a href="{% url 'brak'%}"><img src="{% static 'img/brak.png' %}" alt=""> бракованные сделки</a></li>
                     <li class="nav-item"><a class="nav-link"  href="{% url 'reg'%}"><img src="{% static 'img/add_user.png' %}" alt=""> добавить польователя</a></li>
