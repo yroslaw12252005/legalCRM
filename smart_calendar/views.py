@@ -40,7 +40,7 @@ def smart_calendar(request):
     bookings = Booking.objects.filter(
         start_time__gte=start_datetime,
         end_time__lte=end_datetime,
-        employees=request.user.id
+        companys=request.user.companys, felial=request.user.felial
     ).order_by('start_time')
 
     context = {
@@ -56,11 +56,14 @@ def smart_calendar(request):
 
 
 def add_event(request):
-    form = AddEventForm(request.POST or None)
+    form = AddEventForm(request.POST or None, user=request.user)
     if request.user.is_authenticated:
         if form.is_valid():
-            event = form.save()
-            messages.success(request, f"Запись на прием {event.client} успешно создана")
+            get_event_form = form.save(commit=False)
+            get_event_form.companys = request.user.companys
+            get_event_form.felial = request.user.felial# Прикрепляется к крмпании
+            get_event_form.save()
+            messages.success(request, f"Запись на прием {get_event_form} успешно создана")
             return redirect("home")
         return render(request, "add_event.html", {"form": form})
     else:
