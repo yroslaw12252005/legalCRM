@@ -137,6 +137,7 @@ def in_work(request, pk):
 @require_POST
 def get_tilda_lead(request):
     if request.POST.get('test', False):
+        print(200)
         return HttpResponse("test")
     else:
         data = request.POST
@@ -154,6 +155,7 @@ def get_tilda_lead(request):
 
         led = Record(phone=phone, name=name,  description=textarea)
         led.save()
+        print(200)
         return HttpResponse(200)
 
 class SearchView(ListView):
