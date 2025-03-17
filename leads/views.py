@@ -117,7 +117,7 @@ def add_record(request):
 def update_record(request, pk):
     if request.user.is_authenticated:
         record = Record.objects.get(id=pk)
-        form = AddRecordForm(request.POST or None, instance=record)
+        form = AddRecordForm(request.POST or None, instance=record,  user=request.user)
         if form.is_valid():
             updated_record = form.save()
             messages.success(request, f"Запись '{updated_record.name}' обнавлена")

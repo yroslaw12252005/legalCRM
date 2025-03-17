@@ -205,7 +205,7 @@
                 <div class="status-badge">{{ record.status }}</div>
             </div>
         </div>
-
+{% if user.status == "Менеджер" or user.status == "Администратор"%}
         <div class="stat-item" style="margin: 1.5rem 0;">
             <div class="stat-label">Цена: {{ record.cost }}</div>
                 <form class="form_add_lead" method="post">
@@ -233,22 +233,26 @@
             <a href="{% url 'cost' record.id %}">Внести доплату</a>
             <!--<input type="text" class="input-field" placeholder="Указать">-->
         </div>
-
+{% endif %}
         <div class="stats-grid">
+            {% if user.status == "Директор КЦ" or user.status == "Администратор"%}
             <div class="stat-item">
                 <div class="stat-label">Прикрепленные операторы</div>
                 <div class="stat-value" style="color: #94a3b8;">{{ record.employees_KC }}</div>
-                <button class="btn btn-primary" style="margin-top: 0.8rem;">
-                    Прикрепить оператора
-                </button>
+                <form method="post" style="display: flex;     flex-direction: column;">{% csrf_token %}{{form_employees_KC.as_p}}<input type="submit" class="btn btn-primary" style="margin-top: 0.8rem;" value="Прикрепить оператора"></form>
             </div>
+            {% endif %}
+            {% if user.status == "Директор ЮПП" or user.status == "Администратор"%}
             <div class="stat-item">
                 <div class="stat-label">Прикрепленные юристы</div>
                 <div class="stat-value" style="color: #94a3b8;">{{ record.employees_UPP }}</div>
-                <button class="btn btn-primary" style="margin-top: 0.8rem;">
-                    Прикрепить юриста
-                </button>
+                <form method="post"  style="display: flex;     flex-direction: column;">
+                                  {% csrf_token %}
+                                  {{form_employees_UPP.as_p}}
+                                  <input type="submit" class="btn btn-primary" style="margin-top: 0.8rem;" value="Прикрепить юриста">
+                    </form>
             </div>
+             {% endif %}
         </div>
 
         <div class="action-buttons">
