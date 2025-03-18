@@ -17,7 +17,7 @@ def mini_calendar(employee_id, employee_status):
     # Границы месяца
     start_date = date(year, month, 1)
     end_date = (start_date + timedelta(days=31)).replace(day=1)
-    if employee_status == "Менеджер":
+    if employee_status == "Менеджер" or employee_status == "Админестратор" or employee_status == "Директор ЮПП":
         # Получение данных
         bookings = Booking.objects.filter(
             start_time__lt=end_date,

@@ -69,32 +69,49 @@ def record(request, pk):
         form_status = StatusForm(request.POST or None, instance=record)
         form_employees_KC = Employees_KCForm(request.POST or None, instance=record)
         form_employees_UPP = Employees_UPPForm(request.POST or None, instance=record)
-        form_come_event = comeEventForm(request.POST or None, instance=record)
         cost_form = CostForm(request.POST or None, instance=record)
+        form_come_event = comeEventForm(request.POST or None, instance=record)
+        if form_come_event.is_valid():
+            form_come_event.save()
+            return redirect("home")
         if form_status.is_valid():
             form_status.save()
             messages.success(request, f"Статус был успешно обнавлена")
-            return redirect("home")
+            return render(request, "record.html",
+                          {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+                           "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
+                           "form_come_event": form_come_event})
+
 
         elif form_employees_KC.is_valid():
             form_employees_KC.save()
             messages.success(request, f"Оператор прикреплен")
-            return redirect("home")
+            return render(request, "record.html",
+                          {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+                           "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
+                           "form_come_event": form_come_event})
 
-        elif form_come_event.is_valid():
-            form_come_event.save()
-            return redirect("home")
+
+
+
+
 
         elif form_employees_UPP.is_valid():
             form_employees_UPP.save()
             messages.success(request, f"Юрист прикреплен")
-            return redirect("home")
+            return render(request, "record.html",
+                          {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+                           "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
+                           "form_come_event": form_come_event})
+
 
         elif  cost_form.is_valid():
             cost_form.save()
             messages.success(request, f"Цена указана")
-            return redirect("home")
-
+            return render(request, "record.html",
+                          {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+                           "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
+                           "form_come_event": form_come_event})
 
         return render(request, "record.html", {"record": record, "form_status":form_status, "form_employees_KC":form_employees_KC, "form_employees_UPP":form_employees_UPP, "cost":cost_form, "surcharge":surcharge, "form_come_event":form_come_event })
     else:

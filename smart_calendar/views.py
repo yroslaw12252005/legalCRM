@@ -55,16 +55,32 @@ def smart_calendar(request):
 
 
 
-def add_event(request):
-    form = AddEventForm(request.POST or None, user=request.user)
-    if request.user.is_authenticated:
+def add_event(request, pk):
+    # Получаем выбранную дату из pk (предполагается формат YYYYMMDD)
+
+    selected_date = pk
+
+
+    # Генерируем временные слоты и исключаем занятые
+    TIME_CHOICES = [(f"{h:02}:{m:02}") for h in range(9, 19) for m in (0, 15, 30, 45)]
+    booked_times = Booking.objects.filter(start_time__date=selected_date).values_list('start_time__time', flat=True)
+    available_times = [t for t in TIME_CHOICES if datetime.strptime(t, "%H:%M").time() not in booked_times]
+
+    # Передаем параметры в форму
+    form = AddEventForm(
+        user=request.user,
+        available_times=available_times,
+        selected_date=selected_date,
+        data=request.POST or None
+    )
+
+    if request.user.is_authenticated and request.method == "POST":
         if form.is_valid():
-            get_event_form = form.save(commit=False)
-            get_event_form.companys = request.user.companys
-            get_event_form.felial = request.user.felial# Прикрепляется к крмпании
-            get_event_form.save()
-            messages.success(request, f"Запись на прием {get_event_form} успешно создана")
-            return redirect("home")
-        return render(request, "add_event.html", {"form": form})
-    else:
-        return redirect("home")
+            event = form.save(commit=False)
+            event.companys = request.user.companys
+            event.felial = request.user.felial
+            event.save()
+            messages.success(request, "Запись успешно создана")
+            return redirect("calendar_view")  # Измените на нужный роут
+
+    return render(request, "add_event.html", {"form": form})

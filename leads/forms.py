@@ -61,7 +61,7 @@ class Employees_UPPForm(forms.ModelForm):
 
 
 class CostForm(forms.ModelForm):
-    cost = forms.DecimalField()
+    cost = forms.DecimalField(label="Стоимость" )
 
     class Meta:
         model = Record

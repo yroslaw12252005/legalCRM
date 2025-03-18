@@ -23,7 +23,7 @@
         .bookings-container {
             left: 60px;
             right: 0;
-            height: 100%;
+            height: 4800px;
             background: #f8f9fa;
         }
 
@@ -53,6 +53,7 @@
             text-align: center;
         }
     </style>
+<a href="{% url 'add_event' selected_date%}" class="btn btn-success" style="margin-top:50px">Добавить запись</a>
 
 {% load custom_tags %}
 {% load static %}
@@ -75,8 +76,8 @@
     <div class="schedule-container row">
         <!-- Временная шкала -->
         <div class="time-column col-1" style="margin-top:28px; font-size: 16px;">
-            {% for hour in 9|get_range:18 %}
-                <div class="time-slot" style="height: 60px;">
+            {% for hour in 9|get_range:20 %}
+                <div class="time-slot" style="height: 400px;">
                     <p style="font-size: 16px;">{{ hour }}:00</p>
                 </div>
             {% endfor %}
@@ -91,8 +92,8 @@
                     {% for booking in bookings %}
                         {% if booking.employees.id == user.id %}
                             {% with start=booking.start_time.time %}
-                            {% with top=start.hour|add:-9|multiply:60|add:start.minute %}
-                            {% with height=booking.duration_minutes %}
+                            {% with top=start.hour|add:-9|multiply:400|add:start.minute %}
+                            {% with height=booking.duration_minutes|multiply:6 %}
                             <div class="booking-card"
                                  style="top: {{ top }}px;
                                         height: {{ height }}px;
@@ -147,5 +148,5 @@
         </div>
 
     </div>
-<a href="{% url 'add_event' %}" class="btn btn-success" style="margin-top:50px">Добавить запись</a>
+
 {% endblock content %}

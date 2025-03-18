@@ -28,6 +28,11 @@ class Booking(models.Model):
         on_delete=models.SET_NULL,
         null=True
     )
+    felial = models.ForeignKey(
+        Felial,
+        on_delete=models.SET_NULL,
+        null=True
+    )
     def duration_minutes(self):
         """Рассчет длительности в минутах"""
         diff = self.end_time - self.start_time

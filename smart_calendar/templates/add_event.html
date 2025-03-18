@@ -92,19 +92,15 @@
     </style>
 </head>
 <body>
+
 <div class="row" style="justify-content: center; margin-top:50px;">
      <div class="form-container">
         <h1>📅 Запись на приём</h1>
-        <form method="post" >
-
-
-            <div class="form-group">
-                {% csrf_token %}
-                {{form.as_p}}
-            </div>
-
-            <button class="submit_event" type="submit">Записать на приём</button>
-        </form>
+        <form method="post">
+    {% csrf_token %}
+    {{ form.as_p }}
+    <button type="submit" class="btn btn-success">Сохранить</button>
+</form>
     </div>
 
 </div>
