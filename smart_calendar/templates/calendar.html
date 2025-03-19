@@ -28,7 +28,7 @@
         }
 
         .booking-card {
-                position: relative;
+                position: absolute;
             background: #e3f2fd;
             border-left: 4px solid #2196f3;
             padding: 8px;
@@ -78,7 +78,8 @@
         <div class="time-column col-1" style="margin-top:28px; font-size: 16px;">
             {% for hour in 9|get_range:20 %}
                 <div class="time-slot" style="height: 400px;">
-                    <p style="font-size: 16px;">{{ hour }}:00</p>
+                    <p style="font-size: 16px;    margin-bottom: 170px;">{{ hour }}:00</p>
+                    <p style="font-size: 14px; ">{{ hour }}:30</p>
                 </div>
             {% endfor %}
         </div>
@@ -88,18 +89,18 @@
             <div class="row">
                 {% for user in users %}
                 {% if user.status == "Юрист пирвичник" %}
-                <div class="col-3"><h4 style="    color: #595959; border-bottom: 1px solid; text-align: center;">{{ user.username}}</h4>
+                <div class="col-3" style="position: relative;"><h4 style="    color: #595959; border-bottom: 1px solid; text-align: center;">{{ user.username}}</h4>
                     {% for booking in bookings %}
                         {% if booking.employees.id == user.id %}
-                            {% with start=booking.start_time.time %}
-                            {% with top=start.hour|add:-9|multiply:400|add:start.minute %}
-                            {% with height=booking.duration_minutes|multiply:6 %}
+                            {% with start=booking.time %}
+                            {% with top=start|math:400%}
+                            {% with height=100 %}
                             <div class="booking-card"
                                  style="top: {{ top }}px;
                                         height: {{ height }}px;
                                         left: 10px;
-                                        right: 10px;">
-                                <strong> <a href="{% url 'record' booking.client.id %}">{{ booking.client }}</a> <br> {{ booking.start_time|time:"H:i" }} - {{ booking.end_time|time:"H:i" }}</strong><br>
+                                        right: 10px; margin-top:15px;">
+                                <strong> <a href="{% url 'record' booking.client.id %}" style="    color: #7e7f7f; text-decoration: none;">{{ booking.client }}</a></strong><br>
 
                             </div>
                             {% endwith %}{% endwith %}{% endwith %}

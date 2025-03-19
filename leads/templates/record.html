@@ -231,12 +231,26 @@
                 </tbody>
             </table>
             <a href="{% url 'cost' record.id %}">Внести доплату</a>
-            <!--<input type="text" class="input-field" placeholder="Указать">-->
+        </div>
+        {% if record.status == "Запись в офис"%}
+         <div class="stat-item">
+        {% if booking.come == 0 %}
+            <div class="stat-label">записан на встречу</div>
+
+        {% endif %}
+        {% if booking.come == 1 %}
+            <div class="stat-label">дошёл</div>
+
+        {% endif %}
+        {% if booking.come == 2 %}
+            <div class="stat-label">не дошёл</div>
+        {% endif %}
+                            <form method="post" style="display: flex;     flex-direction: column;">{% csrf_token %}{{form_come_event.as_p}}<input type="submit" class="btn btn-primary" style="margin-top: 0.8rem;" value="Отметить"></form>
         </div>
 {% endif %}
+        {% endif %}
         <div class="stats-grid">
             {% if user.status == "Директор КЦ" or user.status == "Администратор"%}
-            <form method="post" style="display: flex;     flex-direction: column;">{% csrf_token %}{{form_come_event.as_p}}<input type="submit" class="btn btn-primary" style="margin-top: 0.8rem;" value="Отметить"></form>
             <div class="stat-item">
                 <div class="stat-label">Прикрепленные операторы</div>
                 <div class="stat-value" style="color: #94a3b8;">{{ record.employees_KC }}</div>

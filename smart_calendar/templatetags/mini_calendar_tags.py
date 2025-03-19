@@ -17,11 +17,11 @@ def mini_calendar(employee_id, employee_status):
     # Границы месяца
     start_date = date(year, month, 1)
     end_date = (start_date + timedelta(days=31)).replace(day=1)
-    if employee_status == "Менеджер" or employee_status == "Админестратор" or employee_status == "Директор ЮПП":
+    if employee_status == "Менеджер" or employee_status == "Администратор" or employee_status == "Директор ЮПП":
         # Получение данных
         bookings = Booking.objects.filter(
-            start_time__lt=end_date,
-            end_time__gte=start_date
+            date__lt=end_date,
+            date__gte=start_date
         )
 
         # Исправленный фильтр для доплат
@@ -29,8 +29,8 @@ def mini_calendar(employee_id, employee_status):
     else:
         # Получение данных
         bookings = Booking.objects.filter(
-            start_time__lt=end_date,
-            end_time__gte=start_date,
+            date__lt=end_date,
+            date__gte=start_date,
             employees=employee_id
         )
 
@@ -47,12 +47,10 @@ def mini_calendar(employee_id, employee_status):
     # Подсчет бронирований
     bookings_per_day = defaultdict(int)
     for booking in bookings:
-        current_day = booking.start_time.date()
-        end_day = booking.end_time.date()
-        while current_day <= end_day:
-            if start_date <= current_day < end_date:
-                bookings_per_day[current_day.day] += 1
-            current_day += timedelta(days=1)
+        current_day = booking.date
+        if start_date <= current_day < end_date:
+            bookings_per_day[current_day.day] += 1
+        current_day += timedelta(days=1)
 
     # Форматирование данных
     formatted_weeks = []

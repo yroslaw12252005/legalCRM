@@ -16,14 +16,14 @@ class AddEventForm(forms.ModelForm):
 
         self.fields['employees'].queryset = User.objects.filter(companys=self.user.companys.id,
                                                                 status="Юрист пирвичник")
-        self.fields['time_slot'].choices = [(t, t) for t in available_times]
+        self.fields['time'].choices = [(t, t) for t in available_times if t != 'none']
 
     client = forms.ModelChoiceField(
         queryset=Record.objects.filter(status="Запись в офис"),
         label="Клиент"
     )
 
-    time_slot = forms.ChoiceField(
+    time = forms.ChoiceField(
         choices=(),
         label="Время приема"
     )
@@ -35,16 +35,9 @@ class AddEventForm(forms.ModelForm):
 
     class Meta:
         model = Booking
-        fields = ['client', 'employees', 'time_slot']
+        fields = ['client', 'employees', 'time']
 
-    def save(self, commit=True):
-        instance = super().save(commit=False)
-        time_obj = datetime.strptime(self.cleaned_data['time_slot'], "%H:%M").time()
-        instance.start_time = datetime.combine(self.selected_date, time_obj)
-        instance.end_time = instance.start_time + timedelta(minutes=15)
-        if commit:
-            instance.save()
-        return instance
+
 
 
 class comeEventForm(forms.ModelForm):

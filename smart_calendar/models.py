@@ -10,8 +10,9 @@ class Booking(models.Model):
         on_delete=models.CASCADE,
         null=True
     )
-    start_time = models.DateTimeField()
-    end_time = models.DateTimeField()
+    time = models.CharField(max_length=50, null=True)
+    date = models.DateField(null=True)
+
     employees = models.ForeignKey(
         User,
         on_delete=models.SET_NULL,
@@ -38,5 +39,3 @@ class Booking(models.Model):
         diff = self.end_time - self.start_time
         return int(diff.total_seconds() // 60)
 
-    def __str__(self):
-        return f"{self.client}"
