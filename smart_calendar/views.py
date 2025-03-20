@@ -77,7 +77,7 @@ def add_event(request, pk):
         if form.is_valid():
             event = form.save(commit=False)
             if Booking.objects.filter(client_id=event.client).exists():
-                messages.success(request, "Этот клиент уже записанБ удалите предыдущую запись")
+                messages.success(request, "Этот клиент уже записан удалите предыдущую запись")
                 return redirect("calendar")
             else:
                 event = form.save(commit=False)
@@ -89,3 +89,13 @@ def add_event(request, pk):
                 return redirect("calendar")  # Измените на нужный роут
 
     return render(request, "add_event.html", {"form": form})
+
+
+def delete_come(request, pk):
+    if request.user.is_authenticated:
+        del_come = Booking.objects.get(client_id=pk)
+        del_come.delete()
+        messages.success(request, "Вы спешно удалил запись на прием")
+        return redirect("home")
+    else:
+        return redirect("home")

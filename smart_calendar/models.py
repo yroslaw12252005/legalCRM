@@ -18,6 +18,12 @@ class Booking(models.Model):
         on_delete=models.SET_NULL,
         null=True
     )
+    registering = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        null=True,
+        related_name='registering'
+    )
     come = models.IntegerField(default=0)
     companys = models.ForeignKey(
         Companys,
@@ -28,6 +34,7 @@ class Booking(models.Model):
         Felial,
         on_delete=models.SET_NULL,
         null=True
+
     )
     def duration_minutes(self):
         """Рассчет длительности в минутах"""

@@ -245,6 +245,7 @@
         {% if booking.come == 2 %}
             <div class="stat-label">не дошёл</div>
         {% endif %}
+             <a href="{% url 'delete_come' record.id %}" class="btn btn-danger" style="margin-top: 0.8rem;" value="Удалить запись на прием"></a>
                             <form method="post" style="display: flex;     flex-direction: column;">{% csrf_token %}{{form_come_event.as_p}}<input type="submit" class="btn btn-primary" style="margin-top: 0.8rem;" value="Отметить"></form>
         </div>
 {% endif %}
