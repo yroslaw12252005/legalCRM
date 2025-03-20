@@ -35,7 +35,7 @@ def smart_calendar(request):
     next_date = selected_date + timedelta(days=1)
 
     bookings = Booking.objects.filter(
-        date__gte=selected_date,
+        date=selected_date,
         companys=request.user.companys, felial=request.user.felial
     ).order_by('time')
 
@@ -76,11 +76,16 @@ def add_event(request, pk):
     if request.user.is_authenticated and request.method == "POST":
         if form.is_valid():
             event = form.save(commit=False)
-            event.companys = request.user.companys
-            event.felial = request.user.felial
-            event.date = selected_date
-            event.save()
-            messages.success(request, "Запись успешно создана")
-            return redirect("calendar")  # Измените на нужный роут
+            if Booking.objects.filter(client_id=event.client).exists():
+                messages.success(request, "Этот клиент уже записанБ удалите предыдущую запись")
+                return redirect("calendar")
+            else:
+                event = form.save(commit=False)
+                event.companys = request.user.companys
+                event.felial = request.user.felial
+                event.date = selected_date
+                event.save()
+                messages.success(request, "Запись успешно создана")
+                return redirect("calendar")  # Измените на нужный роут
 
     return render(request, "add_event.html", {"form": form})

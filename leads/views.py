@@ -179,7 +179,7 @@ def get_tilda_lead(request):
         phone = None
         name = None
         textarea = None
-
+        print(data.items())
         for key, value in data.items():
             if key == "Phone":
                 phone = value
