@@ -18,6 +18,12 @@ class Booking(models.Model):
         on_delete=models.SET_NULL,
         null=True
     )
+    registrar = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        related_name='registrar'
+    )
 
     come = models.IntegerField(default=0)
     companys = models.ForeignKey(
