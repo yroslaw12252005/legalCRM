@@ -33,11 +33,17 @@ def smart_calendar(request):
     # Навигация по датам
     prev_date = selected_date - timedelta(days=1)
     next_date = selected_date + timedelta(days=1)
+    if request.user.status != "Администратор" or request.user.status != "Менеджер":
+        bookings = Booking.objects.filter(
+            date=selected_date,
+            companys=request.user.companys, felial=request.user.felial, registrar=User.objects.get(id=request.user.id)
+        ).order_by('time')
+    else:
+        bookings = Booking.objects.filter(
+            date=selected_date,
+            companys=request.user.companys, felial=request.user.felial
+        ).order_by('time')
 
-    bookings = Booking.objects.filter(
-        date=selected_date,
-        companys=request.user.companys, felial=request.user.felial
-    ).order_by('time')
 
     context = {
         'bookings': bookings,
@@ -84,6 +90,7 @@ def add_event(request, pk):
                 event.companys = request.user.companys
                 event.felial = request.user.felial
                 event.date = selected_date
+                event.registrar = User.objects.get(id=request.user.id)
                 event.save()
                 messages.success(request, "Запись успешно создана")
                 return redirect("calendar")  # Измените на нужный роут

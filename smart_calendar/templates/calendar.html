@@ -120,7 +120,7 @@
                             {% for surcharge in surcharges %}
                             {% if surcharge.responsible.id == user.id %}
                             {% with start=surcharge.dat.time %}
-                            {% with top=start.hour|add:-9|multiply:60|add:start.minute %}
+                            {% with top=start.hour %}
                             {% with height=60 %}
                             <div class="surcharge-card"
                                  style="top: {{ top }}px;
