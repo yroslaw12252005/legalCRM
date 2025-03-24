@@ -3,6 +3,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login, logout
 from django.views.generic import TemplateView
 
+from accounts.views import employees
 from .models import Companys
 from accounts.models import User
 from leads.models import Record
@@ -37,8 +38,8 @@ def companys(request):
 
         # Число сделок с vk
         vk_qs = len(Record.objects.filter(companys=company.id, where="VK"))
-        site_qs = len(Record.objects.filter(companys=company.id, where="Сайты"))
-        call_qs = len(Record.objects.filter(companys=company.id, where="Звонки"))
+        site_qs = len(Record.objects.filter(companys=company.id, where="Tilda"))
+        call_qs = len(Record.objects.filter(companys=company.id, where="Звонок"))
         re_qs = len(Record.objects.filter(companys=company.id, where="РЕ"))
 
 
@@ -144,13 +145,17 @@ class CompanyView(TemplateView):
 
         # Генерация графика
         plot_div = self._generate_plot(company)
+        plot_operator = self._generate_plot_operator(company)
+        plot_urist = self._generate_plot_urist(company)
 
         # Сборка контекста
         context.update({
             "title": company.title,
             **company_stats,
             "all_felial": branch_stats,
-            "graph": plot_div
+            "graph": plot_div,
+            "graph_operator": plot_operator,
+            "graph_urist": plot_urist,
         })
         return context
 
@@ -165,8 +170,8 @@ class CompanyView(TemplateView):
             "try_leads": records.filter(status="Акт").count(),
             "in_work_leads": records.exclude(status="Акт").count(),
             "vk_qs": records.filter(where="VK").count(),
-            "site_qs": records.filter(where="Сайты").count(),
-            "call_qs": records.filter(where="Звонки").count(),
+            "site_qs": records.filter(where="Tilda").count(),
+            "call_qs": records.filter(where="Звонок").count(),
             "re_qs": records.filter(where="РЕ").count(),
         }
 
@@ -183,8 +188,8 @@ class CompanyView(TemplateView):
                 "try_leads_fl": records.filter(status="Акт").count(),
                 "in_work_leads_fl": records.exclude(status="Акт").count(),
                 "vk_qs_fl": records.filter(where="VK").count(),
-                "site_qs_fl": records.filter(where="Сайты").count(),
-                "call_qs_fl": records.filter(where="Звонки").count(),
+                "site_qs_fl": records.filter(where="Tilda").count(),
+                "call_qs_fl": records.filter(where="Звонок").count(),
                 "re_qs_fl": records.filter(where="РЕ").count(),
             }
         return branch_stats
@@ -192,18 +197,12 @@ class CompanyView(TemplateView):
     def _generate_plot(self, company):
         """Генерация графика Plotly."""
 
-        import numpy as np
+
         import plotly
         import plotly.graph_objects as go
-        import plotly.offline as pyo
+        import plotly.offline as opy
         feleals = []
         records = []
-        # countries on x-axis
-        #for i in Felial.objects.filter(companys=company):
-        #    feleals = [i.title]
-        #    for l in Record.objects.filter(felial=i.id):
-        #        records = [l]
-
         for i in Felial.objects.filter(companys=company):
             feleals.append(i.title)
             records.append(Record.objects.filter(felial=i.id).count())
@@ -211,6 +210,37 @@ class CompanyView(TemplateView):
         fig = go.Figure([go.Bar(y=records,x=feleals
                                 )],layout=layout)
         return opy.plot(fig, auto_open=False, output_type='div')
+
+    def _generate_plot_operator(self, company):
+        """Генерация графика По операторам"""
+        import plotly
+        import plotly.graph_objects as go
+        import plotly.offline as opy
+        operators = []
+        records = []
+        for i in User.objects.filter(companys=company, status="Оператор"):
+            operators.append(i.username)
+            records.append(Record.objects.filter(employees_KC=i.username).count())
+        layout=go.Layout(title="Число заявок на оператора", xaxis={'title':'Оператор'}, yaxis={'title':'Заявки'})
+        fig = go.Figure([go.Bar(y=records,x=operators
+                                )],layout=layout)
+        return opy.plot(fig, auto_open=False, output_type='div')
+
+    def _generate_plot_urist(self, company):
+        """Генерация графика По операторам"""
+        import plotly
+        import plotly.graph_objects as go
+        import plotly.offline as opy
+        operators = []
+        records = []
+        for i in User.objects.filter(companys=company, status="Юрист пирвичник"):
+            operators.append(i.username)
+            records.append(Record.objects.filter(employees_UPP=i.username).count())
+        layout=go.Layout(title="Число заявок на юриста", xaxis={'title':'Юрист'}, yaxis={'title':'Заявки'})
+        fig = go.Figure([go.Bar(y=records,x=operators
+                                )],layout=layout)
+        return opy.plot(fig, auto_open=False, output_type='div')
+
 def reg_company(request):
     form = RegCompany(request.POST or None)
     if request.method == "POST":
