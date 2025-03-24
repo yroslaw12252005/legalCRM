@@ -31,7 +31,7 @@ class AddRecordForm(forms.ModelForm):
             "description": forms.TextInput(attrs={"class": "form-control"}),
             "phone": forms.TextInput(attrs={"class": "form-control"}),
         }
-        labels = {'name': 'Имя', "description":"Описание", "phone":"Телефон", "status":"Статус", "employees_KC":"Оператор", "employees_UPP":"Юрист",  'where':'Источник', 'felial':'Фелиал'}
+        labels = {'name': 'Имя', "description":"Описание", "phone":"Телефон", "status":"Статус", "employees_KC":"Оператор", "employees_UPP":"Юрист",  'where':'Источник', 'felial':'Филиал'}
 
 class StatusForm(forms.ModelForm):
     status = forms.ChoiceField(label="Статус заявки", choices=(
