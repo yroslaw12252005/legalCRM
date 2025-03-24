@@ -65,6 +65,9 @@ background-color: #212529;
         {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
             <th scope="col"><p>В работе</p></th>
          {% endif %}
+         {% if user.status == "Директор ЮПП" or user.status == "Администратор" or user.status == "Менеджер"%}
+            <th scope="col"><p>Прикрепленный юрист</p></th>
+         {% endif %}
      </tr>
    </thead>
    <tbody>
@@ -93,6 +96,8 @@ background-color: #212529;
                 <td class="table-default" style="background-color: #E1C645;"><p style="color:#fff;">{{ record.status }}</p></td>
                 {% elif record.status == "Акт" %}
                 <td class="table-default" style="background-color: #22C061;"><p style="color:#fff;">{{ record.status }}</p></td>
+                {% elif record.status == "Договор" %}
+                <td class="table-default" style="background-color: #CCCCFF;"><p style="color:#fff;">{{ record.status }}</p></td>
                 {%endif%}
 {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
             {% if record.in_work == 1%}
@@ -101,7 +106,9 @@ background-color: #212529;
             <td style="background-color: #C51010;"><p style="color:#fff;">Нет</p></td>
             {% endif %}
             {% endif %}
-
+                 {% if user.status == "Директор ЮПП" or user.status == "Администратор" or user.status == "Менеджер"%}
+             <td class="table-default"><p>{{ record.employees_UPP }}</p></td>
+         {% endif %}
 
 
             </tr>

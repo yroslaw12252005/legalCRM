@@ -17,7 +17,7 @@ def mini_calendar(employee_id, employee_status):
     # Границы месяца
     start_date = date(year, month, 1)
     end_date = (start_date + timedelta(days=31)).replace(day=1)
-    if employee_status == "Менеджер" or employee_status == "Администратор" or employee_status == "Директор ЮПП":
+    if employee_status == "Менеджер" or employee_status == "Администратор" or employee_status == "Директор ЮПП" or employee_status == "Директор КЦ":
         # Получение данных
         bookings = Booking.objects.filter(
             date__lt=end_date,
@@ -27,12 +27,19 @@ def mini_calendar(employee_id, employee_status):
         # Исправленный фильтр для доплат
         surcharges = Surcharge.objects.filter(dat__range=(start_date, end_date))
     else:
-        # Получение данных
-        bookings = Booking.objects.filter(
-            date__lt=end_date,
-            date__gte=start_date,
-            employees=employee_id
-        )
+        if employee_status != "Юрист пирвичник":
+            bookings = Booking.objects.filter(
+                date__lt=end_date,
+                date__gte=start_date,
+                registrar=employee_id
+            )
+        else:
+            bookings = Booking.objects.filter(
+                date__lt=end_date,
+                date__gte=start_date,
+                employees=employee_id
+            )
+
 
         # Исправленный фильтр для доплат
         surcharges = Surcharge.objects.filter(dat__range=(start_date, end_date), responsible=employee_id)

@@ -33,15 +33,15 @@ def smart_calendar(request):
     # Навигация по датам
     prev_date = selected_date - timedelta(days=1)
     next_date = selected_date + timedelta(days=1)
-    if request.user.status != "Администратор" or request.user.status != "Менеджер":
+    if request.user.status == "Администратор" or request.user.status == "Менеджер" or request.user.status == "Директор ЮПП" or request.user.status == "Директор КЦ":
         bookings = Booking.objects.filter(
             date=selected_date,
-            companys=request.user.companys, felial=request.user.felial, registrar=User.objects.get(id=request.user.id)
+            companys=request.user.companys, felial=request.user.felial
         ).order_by('time')
     else:
         bookings = Booking.objects.filter(
             date=selected_date,
-            companys=request.user.companys, felial=request.user.felial
+            companys=request.user.companys, felial=request.user.felial, registrar=User.objects.get(id=request.user.id).id
         ).order_by('time')
 
 
