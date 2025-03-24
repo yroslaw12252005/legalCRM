@@ -195,7 +195,7 @@ class CompanyView(TemplateView):
         return branch_stats
 
     def _generate_plot(self, company):
-        """Генерация графика Plotly."""
+        """Генерация графика Plotly.,"""
 
 
         import plotly
