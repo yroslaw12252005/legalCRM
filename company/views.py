@@ -194,52 +194,52 @@ class CompanyView(TemplateView):
             }
         return branch_stats
 
-    def _generate_plot(self, company):
-        """Генерация графика Plotly.,"""
-
-
-        import plotly
-        import plotly.graph_objects as go
-        import plotly.offline as opy
-        feleals = []
-        records = []
-        for i in Felial.objects.filter(companys=company):
-            feleals.append(i.title)
-            records.append(Record.objects.filter(felial=i.id).count())
-        layout=go.Layout(title="Число заявок на филиал", xaxis={'title':'Фелиалы'}, yaxis={'title':'Заявки'})
-        fig = go.Figure([go.Bar(y=records,x=feleals
-                                )],layout=layout)
-        return opy.plot(fig, auto_open=False, output_type='div')
-
-    def _generate_plot_operator(self, company):
-        """Генерация графика По операторам"""
-        import plotly
-        import plotly.graph_objects as go
-        import plotly.offline as opy
-        operators = []
-        records = []
-        for i in User.objects.filter(companys=company, status="Оператор"):
-            operators.append(i.username)
-            records.append(Record.objects.filter(employees_KC=i.username).count())
-        layout=go.Layout(title="Число заявок на оператора", xaxis={'title':'Оператор'}, yaxis={'title':'Заявки'})
-        fig = go.Figure([go.Bar(y=records,x=operators
-                                )],layout=layout)
-        return opy.plot(fig, auto_open=False, output_type='div')
-
-    def _generate_plot_urist(self, company):
-        """Генерация графика По операторам"""
-        import plotly
-        import plotly.graph_objects as go
-        import plotly.offline as opy
-        operators = []
-        records = []
-        for i in User.objects.filter(companys=company, status="Юрист пирвичник"):
-            operators.append(i.username)
-            records.append(Record.objects.filter(employees_UPP=i.username).count())
-        layout=go.Layout(title="Число заявок на юриста", xaxis={'title':'Юрист'}, yaxis={'title':'Заявки'})
-        fig = go.Figure([go.Bar(y=records,x=operators
-                                )],layout=layout)
-        return opy.plot(fig, auto_open=False, output_type='div')
+   # def _generate_plot(self, company):
+   #     """Генерация графика Plotly.,"""
+#
+#
+   #     import plotly
+   #     import plotly.graph_objects as go
+   #     import plotly.offline as opy
+   #     feleals = []
+   #     records = []
+   #     for i in Felial.objects.filter(companys=company):
+   #         feleals.append(i.title)
+   #         records.append(Record.objects.filter(felial=i.id).count())
+   #     layout=go.Layout(title="Число заявок на филиал", xaxis={'title':'Фелиалы'}, yaxis={'title':'Заявки'})
+   #     fig = go.Figure([go.Bar(y=records,x=feleals
+   #                             )],layout=layout)
+   #     return opy.plot(fig, auto_open=False, output_type='div')
+#
+   # def _generate_plot_operator(self, company):
+   #     """Генерация графика По операторам"""
+   #     import plotly
+   #     import plotly.graph_objects as go
+   #     import plotly.offline as opy
+   #     operators = []
+   #     records = []
+   #     for i in User.objects.filter(companys=company, status="Оператор"):
+   #         operators.append(i.username)
+   #         records.append(Record.objects.filter(employees_KC=i.username).count())
+   #     layout=go.Layout(title="Число заявок на оператора", xaxis={'title':'Оператор'}, yaxis={'title':'Заявки'})
+   #     fig = go.Figure([go.Bar(y=records,x=operators
+   #                             )],layout=layout)
+   #     return opy.plot(fig, auto_open=False, output_type='div')
+#
+   # def _generate_plot_urist(self, company):
+   #     """Генерация графика По операторам"""
+   #     import plotly
+   #     import plotly.graph_objects as go
+   #     import plotly.offline as opy
+   #     operators = []
+   #     records = []
+   #     for i in User.objects.filter(companys=company, status="Юрист пирвичник"):
+   #         operators.append(i.username)
+   #         records.append(Record.objects.filter(employees_UPP=i.username).count())
+   #     layout=go.Layout(title="Число заявок на юриста", xaxis={'title':'Юрист'}, yaxis={'title':'Заявки'})
+   #     fig = go.Figure([go.Bar(y=records,x=operators
+   #                             )],layout=layout)
+   #     return opy.plot(fig, auto_open=False, output_type='div')
 
 def reg_company(request):
     form = RegCompany(request.POST or None)
