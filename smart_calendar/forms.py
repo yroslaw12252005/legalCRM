@@ -39,10 +39,3 @@ class AddEventForm(forms.ModelForm):
 
 
 
-
-class comeEventForm(forms.ModelForm):
-    come = forms.ChoiceField(label="Дошел/Не дошел", choices=(
-        (1,"Дошел"), (2,"Не дошел")))
-    class Meta:
-        model = Booking
-        fields = ['come']

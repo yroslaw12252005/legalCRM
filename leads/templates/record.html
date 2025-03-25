@@ -232,24 +232,8 @@
             </table>
             <a href="{% url 'cost' record.id %}">Внести доплату</a>
         </div>
-        {% if record.status == "Запись в офис"%}
-         <div class="stat-item">
-        {% if booking.come == 0 %}
-            <div class="stat-label">записан на встречу</div>
-
-        {% endif %}
-        {% if booking.come == 1 %}
-            <div class="stat-label">дошёл</div>
-
-        {% endif %}
-        {% if booking.come == 2 %}
-            <div class="stat-label">не дошёл</div>
-        {% endif %}
-             <a href="{% url 'delete_come' record.id %}" class="btn btn-danger" style="margin-top: 0.8rem;" value="Удалить запись на прием">Удалить запись на прием</a>
-                            <form method="post" style="display: flex;     flex-direction: column;">{% csrf_token %}{{form_come_event.as_p}}<input type="submit" class="btn btn-primary" style="margin-top: 0.8rem;" value="Отметить"></form>
-        </div>
+    </div>
 {% endif %}
-        {% endif %}
         <div class="stats-grid">
             {% if user.status == "Директор КЦ" or user.status == "Администратор"%}
             <div class="stat-item">
@@ -281,6 +265,9 @@
     {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
       <a href="{% url 'in_work' record.id %}" class="btn btn-primary">В работу</a>
     {% endif %}
+            <a href="{% url 'come_true' record.id %}" class="btn btn-success" style="margin-top: 0.8rem;" >Дошел</a>
+            <a href="{% url 'come_false' record.id %}" class="btn btn-primary" style="margin-top: 0.8rem;" >Не дошел</a>
+            <a href="{% url 'delete_come' record.id %}" class="btn btn-danger" style="margin-top: 0.8rem;" value="Удалить запись на прием">Удалить запись на прием</a>
       <a href="{% url 'home' %}" class="btn btn-secondary">Отмена</a>
         </div>
     </div>

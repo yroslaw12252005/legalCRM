@@ -16,7 +16,6 @@ from accounts.models import User
 from smart_calendar.models import Booking
 
 from .forms import AddRecordForm, StatusForm, Employees_KCForm, Employees_UPPForm, CostForm
-from smart_calendar.forms import comeEventForm
 
 import json
 from django.http import HttpResponse
@@ -67,20 +66,13 @@ def record(request, pk):
     if request.user.is_authenticated:
         record = Record.objects.get(id=pk)
         surcharge = Surcharge.objects.filter(record_id=pk)
-        form_come_event = comeEventForm(request.POST or None)
-        booking = 0
-        if Booking.objects.filter(client_id=pk).exists():
-            booking = Booking.objects.get(client_id=pk)
-            form_come_event = comeEventForm(request.POST or None, instance=booking)
-
         form_status = StatusForm(request.POST or None, instance=record)
         form_employees_KC = Employees_KCForm(request.POST or None, instance=record)
         form_employees_UPP = Employees_UPPForm(request.POST or None, instance=record)
         cost_form = CostForm(request.POST or None, instance=record)
 
-        if form_come_event.is_valid():
-            form_come_event.save()
-            return redirect("home")
+
+
         if form_status.is_valid():
             form_status.save()
             messages.success(request, f"Статус был успешно обнавлена")
@@ -120,7 +112,7 @@ def record(request, pk):
                            "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
                            "form_come_event": form_come_event})
 
-        return render(request, "record.html", {"record": record,'booking':booking, "form_status":form_status, "form_employees_KC":form_employees_KC, "form_employees_UPP":form_employees_UPP, "cost":cost_form, "surcharge":surcharge, "form_come_event":form_come_event })
+        return render(request, "record.html", {"record": record,"form_status":form_status, "form_employees_KC":form_employees_KC, "form_employees_UPP":form_employees_UPP, "cost":cost_form, "surcharge":surcharge})
     else:
         return redirect("home")
 
@@ -199,6 +191,8 @@ class SearchView(ListView):
 
     def get_queryset(self):
         query = self.request.GET.get('q')
-        # новый
-        return Record.objects.filter(Q(name=query) | Q(phone=query))
+        return Record.objects.filter(
+            Q(name__icontains=query) |  # Поиск по части имени
+            Q(phone__icontains=query)
+        )
 

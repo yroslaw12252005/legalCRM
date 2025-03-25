@@ -106,3 +106,16 @@ def delete_come(request, pk):
         return redirect("home")
     else:
         return redirect("home")
+
+
+def come_True(request, pk):
+    bookin = Booking.objects.get(client_id=pk)
+    bookin.come = 1
+    bookin.save()
+    return redirect("home")
+
+def come_False(request, pk):
+    bookin = Booking.objects.get(client_id=pk)
+    bookin.come = 0
+    bookin.save()
+    return redirect("home")

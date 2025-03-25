@@ -25,7 +25,7 @@ class Booking(models.Model):
         related_name='registrar'
     )
 
-    come = models.IntegerField(null=True)
+    come = models.BooleanField(null=True)
     companys = models.ForeignKey(
         Companys,
         on_delete=models.CASCADE,
