@@ -65,6 +65,9 @@ background-color: #212529;
         {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
             <th scope="col"><p>В работе</p></th>
          {% endif %}
+                  {% if user.status == "Директор КЦ" or user.status == "Администратор" or user.status == "Менеджер"%}
+            <th scope="col"><p>Прикрепленный оператор</p></th>
+         {% endif %}
          {% if user.status == "Директор ЮПП" or user.status == "Администратор" or user.status == "Менеджер"%}
             <th scope="col"><p>Прикрепленный юрист</p></th>
          {% endif %}
@@ -106,6 +109,9 @@ background-color: #212529;
             <td style="background-color: #C51010;"><p style="color:#fff;">Нет</p></td>
             {% endif %}
             {% endif %}
+                                 {% if user.status == "Директор КЦ" or user.status == "Администратор" or user.status == "Менеджер"%}
+             <td class="table-default"><p>{{ record.employees_KC }}</p></td>
+         {% endif %}
                  {% if user.status == "Директор ЮПП" or user.status == "Администратор" or user.status == "Менеджер"%}
              <td class="table-default"><p>{{ record.employees_UPP }}</p></td>
          {% endif %}
