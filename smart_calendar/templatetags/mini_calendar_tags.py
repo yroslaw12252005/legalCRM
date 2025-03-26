@@ -4,12 +4,19 @@ from datetime import date, datetime, timedelta
 from smart_calendar.models import Booking
 from cost.models import Surcharge
 from collections import defaultdict
+
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+
 register = template.Library()
 
-
+@csrf_exempt
+@require_POST
 @register.inclusion_tag('mini_calendar.html')
-def mini_calendar(employee_id, employee_status):
+def mini_calendar(request, employee_id, employee_status):
     today = date.today()
+    if request.method == "POST":
+        today = request.POST['date']
     year, month = today.year, today.month
     cal = calendar.Calendar(firstweekday=7)
     month_days = cal.monthdayscalendar(year, month)

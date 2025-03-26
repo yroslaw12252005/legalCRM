@@ -8,6 +8,7 @@ from django.db.models import Q
 
 from accounts.views import employees
 from felial.views import felials
+
 from .models import Record
 from todolist.models import ToDoList
 from django.db.models import Sum
@@ -196,3 +197,8 @@ class SearchView(ListView):
             Q(phone__icontains=query)
         )
 
+@csrf_exempt
+@require_POST
+def get_time(request):
+    print(request.POST['text'])
+    return HttpResponse(200)
