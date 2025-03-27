@@ -79,8 +79,7 @@ def record(request, pk):
             messages.success(request, f"Статус был успешно обнавлена")
             return render(request, "record.html",
                           {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
-                           "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                           "form_come_event": form_come_event})
+                           "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge})
 
 
         elif form_employees_KC.is_valid():
@@ -88,8 +87,7 @@ def record(request, pk):
             messages.success(request, f"Оператор прикреплен")
             return render(request, "record.html",
                           {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
-                           "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                           "form_come_event": form_come_event})
+                           "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge})
 
 
 
@@ -102,7 +100,7 @@ def record(request, pk):
             return render(request, "record.html",
                           {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                            "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                           "form_come_event": form_come_event})
+                           })
 
 
         elif  cost_form.is_valid():
@@ -111,7 +109,7 @@ def record(request, pk):
             return render(request, "record.html",
                           {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                            "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                           "form_come_event": form_come_event})
+                         })
 
         return render(request, "record.html", {"record": record,"form_status":form_status, "form_employees_KC":form_employees_KC, "form_employees_UPP":form_employees_UPP, "cost":cost_form, "surcharge":surcharge})
     else:
@@ -196,9 +194,3 @@ class SearchView(ListView):
             Q(name__icontains=query) |  # Поиск по части имени
             Q(phone__icontains=query)
         )
-
-@csrf_exempt
-@require_POST
-def get_time(request):
-    print(request.POST['text'])
-    return HttpResponse(200)
