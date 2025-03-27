@@ -267,7 +267,7 @@
             </div>
              {% endif %}
         </div>
-
+</div>
         <div class="action-buttons">
              <a href="{% url 'home' %}" class="btn btn-secondary">Вернуться к списку</a>
     {% if user.status == "Администратор"%}
@@ -286,7 +286,7 @@
             <a href="{% url 'delete_come' record.id %}" class="btn btn-danger" style="margin-top: 0.8rem;" value="Удалить запись на прием">Удалить запись на прием</a>
       <a href="{% url 'home' %}" class="btn btn-secondary">Отмена</a>
         </div>
-    </div>
+
 
 
 <!--
