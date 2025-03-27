@@ -9,8 +9,65 @@
     <p class="employees_name">{{ user.username }}<br><span class="mail">{{ user.email }}</span></p>
       <a class="nav-link"  href="{% url 'logout'%}"><img src="{% static 'img/logout.png' %}" alt=""></a>
   </div>
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
+<script>
+let currentDate = new Date(); // Текущая дата
 
-    {% mini_calendar user.id user.status %}
+// Функция для форматирования даты в YYYY-MM-DD
+function formatDate(date) {
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
+}
+
+// Функция обновления календаря
+function updateCalendar(newDate) {
+    const formattedDate = formatDate(newDate);
+
+    $.ajax({
+        type: "POST",
+        url: "/get_time/",
+        headers: { "X-CSRFToken": "{{ csrf_token }}" },
+        data: { date: formattedDate },
+        success: function(data) {
+            $("#content-container").html(data);
+            currentDate = newDate;
+        },
+        error: function(xhr) {
+            console.error("Ошибка:", xhr.responseText);
+        }
+    });
+}
+
+// Обработчики кнопок
+$(document).ready(function() {
+    updateCalendar(currentDate);
+
+    $("#last_date").on("click", function(e) {
+        e.preventDefault();
+        const newDate = new Date(currentDate);
+        newDate.setMonth(newDate.getMonth() - 1); // Уменьшаем месяц на 1
+        updateCalendar(newDate);
+    });
+
+    $("#next_date").on("click", function(e) {
+        e.preventDefault();
+        const newDate = new Date(currentDate);
+        newDate.setMonth(newDate.getMonth() + 1); // Увеличиваем месяц на 1
+        updateCalendar(newDate);
+    });
+});
+ </script>
+    <div class="" style="display: flex
+;
+    justify-content: space-around;">
+        <p id="last_date" style="font-size: 14px;">← Предыдущий месяц</p>
+<p id="next_date" style="font-size: 14px;">Следующий месяц →</p>
+    </div>
+
+    <div id="content-container"></div>
   <div class="nav-line"></div>
   <div class="nav_right blok-nav">
       <h4>Панель навигации</h4>

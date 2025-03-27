@@ -1,9 +1,7 @@
 
 <div class="mini-calendar">
-    <a href=""></a>
-    <!--<button id="last_date" type="button"></button>-->
+
     <div class="calendar-header"><h4>{{ month_name }}</h4></div>
-    <!--<button id="next_date" type="button"></button>-->
     <table>
         <thead>
             <tr>
@@ -38,46 +36,7 @@
         </tbody>
     </table>
 </div>
-<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
- <!-- Изменил type на button -->
-<script>
-    $(document).ready(function() { // Добавил обертку для гарантии загрузки DOM
-        $("#last_date").on("click", function(e) { // Изменил submit на click
-            e.preventDefault(); // Блокируем действие по умолчанию
-            console.log(200);
-            $.ajax({
-                url: '/get_time/',
-                method: 'post',
-                dataType: 'html',
-                data: { date: '2025-04-01' },
-                success: function(data) {
-                    alert(200);
-                },
-                error: function(xhr, status, error) { // Добавил обработчик ошибок
-                    console.error('Error:', error);
-                }
-            });
-        });
-
-        $("#next_date").on("click", function(e) { // Изменил submit на click
-            e.preventDefault(); // Блокируем действие по умолчанию
-            console.log(200);
-            $.ajax({
-                url: '/get_time/',
-                method: 'post',
-                dataType: 'html',
-                data: { text: 'Текст' },
-                success: function(data) {
-                    alert(200);
-                },
-                error: function(xhr, status, error) { // Добавил обработчик ошибок
-                    console.error('Error:', error);
-                }
-            });
-        });
-    });
-</script>
 <style>
 .mini-calendar {
     top: 20px;

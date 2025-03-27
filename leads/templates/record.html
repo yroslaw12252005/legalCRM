@@ -204,7 +204,19 @@
                 <div class="stat-label">Статус звонка</div>
                 <div class="status-badge">{{ record.status }}</div>
             </div>
+            {% if user.status == "Менеджер" or user.status == "Администратор"%}
+            <div class="stat-item">
+                <div class="stat-label">Статус прихода</div>
+                <div class="stat-value">{% if get_status_com.come == None %}
+            Записан на прием
+        {% elif get_status_com.come == 0 %}
+            Не дошел
+        {% elif get_status_com.come == 1 %}
+            Дошел
+        {% endif %}</div>
+            </div>
         </div>
+        {% endif %}
 {% if user.status == "Менеджер" or user.status == "Администратор"%}
         <div class="stat-item" style="margin: 1.5rem 0;">
             <div class="stat-label">Цена: {{ record.cost }}</div>
@@ -232,6 +244,7 @@
             </table>
             <a href="{% url 'cost' record.id %}">Внести доплату</a>
         </div>
+
     </div>
 {% endif %}
         <div class="stats-grid">

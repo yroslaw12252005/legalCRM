@@ -27,6 +27,17 @@ import datetime
 
 from django.views.decorators.csrf import csrf_exempt
 
+
+from django import template
+import calendar
+from datetime import date, datetime, timedelta
+from smart_calendar.models import Booking
+from cost.models import Surcharge
+from collections import defaultdict
+
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+
 def home(request):
     if not request.user.is_authenticated:
         if request.method == "POST":
@@ -41,7 +52,7 @@ def home(request):
                 return redirect("home")
         else:
             return render(request, "home.html")
-    current_time = datetime.datetime.now()
+    current_time = datetime.now()
     year = current_time.year
     month = current_time.month
     day = current_time.day
@@ -71,8 +82,9 @@ def record(request, pk):
         form_employees_KC = Employees_KCForm(request.POST or None, instance=record)
         form_employees_UPP = Employees_UPPForm(request.POST or None, instance=record)
         cost_form = CostForm(request.POST or None, instance=record)
-
-
+        get_status_com = 0
+        if Booking.objects.filter(client_id=pk).exists():
+            get_status_com = Booking.objects.get(client_id=pk)
 
         if form_status.is_valid():
             form_status.save()
@@ -81,18 +93,12 @@ def record(request, pk):
                           {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                            "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge})
 
-
         elif form_employees_KC.is_valid():
             form_employees_KC.save()
             messages.success(request, f"Оператор прикреплен")
             return render(request, "record.html",
                           {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                            "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge})
-
-
-
-
-
 
         elif form_employees_UPP.is_valid():
             form_employees_UPP.save()
@@ -111,7 +117,7 @@ def record(request, pk):
                            "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
                          })
 
-        return render(request, "record.html", {"record": record,"form_status":form_status, "form_employees_KC":form_employees_KC, "form_employees_UPP":form_employees_UPP, "cost":cost_form, "surcharge":surcharge})
+        return render(request, "record.html", {"record": record,"get_status_com":get_status_com, "form_status":form_status, "form_employees_KC":form_employees_KC, "form_employees_UPP":form_employees_UPP, "cost":cost_form, "surcharge":surcharge})
     else:
         return redirect("home")
 
@@ -194,3 +200,82 @@ class SearchView(ListView):
             Q(name__icontains=query) |  # Поиск по части имени
             Q(phone__icontains=query)
         )
+@csrf_exempt
+@require_POST
+def get_time(request):
+    if request.method == "POST":
+        employee_id =16
+        employee_status = "Менеджер"
+        today = date.today()
+        if request.method == "POST":
+           today = request.POST['date']
+           today = datetime.strptime(today, '%Y-%m-%d')
+        year, month = today.year, today.month
+        cal = calendar.Calendar(firstweekday=7)
+        month_days = cal.monthdayscalendar(year, month)
+
+        # Границы месяца
+        start_date = date(year, month, 1)
+        end_date = (start_date + timedelta(days=31)).replace(day=1)
+        if employee_status == "Менеджер" or employee_status == "Администратор" or employee_status == "Директор ЮПП" or employee_status == "Директор КЦ":
+            # Получение данных
+            bookings = Booking.objects.filter(
+                date__lt=end_date,
+                date__gte=start_date
+            )
+
+            # Исправленный фильтр для доплат
+            surcharges = Surcharge.objects.filter(dat__range=(start_date, end_date))
+        else:
+            if employee_status != "Юрист пирвичник":
+                bookings = Booking.objects.filter(
+                    date__lt=end_date,
+                    date__gte=start_date,
+                    registrar=employee_id
+                )
+            else:
+                bookings = Booking.objects.filter(
+                    date__lt=end_date,
+                    date__gte=start_date,
+                    employees=employee_id
+                )
+
+            # Исправленный фильтр для доплат
+            surcharges = Surcharge.objects.filter(dat__range=(start_date, end_date), responsible=employee_id)
+
+        # Подсчет доплат
+        surcharges_per_day = defaultdict(int)
+        for surcharge in surcharges:
+            current_day = surcharge.dat.date()
+            if start_date <= current_day < end_date:
+                surcharges_per_day[current_day.day] += 1
+
+        # Подсчет бронирований
+        bookings_per_day = defaultdict(int)
+        for booking in bookings:
+            current_day = booking.date
+            if start_date <= current_day < end_date:
+                bookings_per_day[current_day.day] += 1
+            current_day += timedelta(days=1)
+
+        # Форматирование данных
+        formatted_weeks = []
+        for week in month_days:
+            formatted_week = []
+            for day in week:
+                formatted_week.append({
+                    'day': day,
+                    'year': year,
+                    'month': month,
+                    'count': bookings_per_day.get(day, 0),
+                    'surcharges_count': surcharges_per_day.get(day, 0)
+                })
+            formatted_weeks.append(formatted_week)
+
+        return render(request, "mini_calendar.html", {
+            'month_name': f"{calendar.month_name[month]} {year}",
+            'header': ['П', 'В', 'С', 'Ч', 'П', 'С', 'В'],
+            'weeks': formatted_weeks,
+            'today': today.day
+        })
+    return HttpResponse("Метод не разрешён", status=405)
