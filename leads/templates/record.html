@@ -278,8 +278,11 @@
     {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
       <a href="{% url 'in_work' record.id %}" class="btn btn-primary">В работу</a>
     {% endif %}
+             {% if user.status == "Администратор" or user.status == "Менеджер"%}
             <a href="{% url 'come_true' record.id %}" class="btn btn-success" style="margin-top: 0.8rem;" >Дошел</a>
             <a href="{% url 'come_false' record.id %}" class="btn btn-primary" style="margin-top: 0.8rem;" >Не дошел</a>
+{% endif %}
+
             <a href="{% url 'delete_come' record.id %}" class="btn btn-danger" style="margin-top: 0.8rem;" value="Удалить запись на прием">Удалить запись на прием</a>
       <a href="{% url 'home' %}" class="btn btn-secondary">Отмена</a>
         </div>
