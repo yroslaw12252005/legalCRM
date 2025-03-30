@@ -179,6 +179,64 @@
             }
         }
     </style>
+
+<style>
+                            .form{
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background-color: #f8fafc;
+    color: #0f172a;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+                .form-select {
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background-color: #f8fafc;
+    color: #0f172a;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+.form-select:focus {
+    outline: none;
+    border-color: #94a3b8;
+    box-shadow: 0 0 0 2px rgba(148, 163, 184, 0.2);
+}
+
+/* Стили для формы */
+.custom-form {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;  /* Отступ между элементами */
+}
+
+/* Стили для кнопки */
+.btn-primary {
+    background-color: #3b82f6;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 14px;
+    transition: background-color 0.3s;
+}
+
+.btn-primary:hover {
+    background-color: #2563eb;
+}
+
+/* Убираем стандартные отступы у параграфов */
+.form-group p {
+    margin: 0;
+}
+
+            </style>
     <div class="card">
         <h2>{{ record.name }}</h2>
         <div class="stat-item" style="margin-bottom: 1.5rem;">
@@ -204,7 +262,7 @@
                 <div class="stat-label">Статус звонка</div>
                 <div class="status-badge">{{ record.status }}</div>
             </div>
-            {% if user.status == "Менеджер" or user.status == "Администратор"%}
+            {% if user.status == "Менеджер" and record.status == "Запись в офис" or user.status == "Администратор" and record.status == "Запись в офис" %}
             <div class="stat-item">
                 <div class="stat-label">Статус прихода</div>
                 <div class="stat-value">{% if get_status_com.come == None %}
@@ -214,9 +272,14 @@
         {% elif get_status_com.come == 1 %}
             Дошел
         {% endif %}</div>
+
+                 <a href="{% url 'come_true' record.id %}" class="btn btn-success" style="margin-top: 0.8rem;" >Дошел</a>
+            <a href="{% url 'come_false' record.id %}" class="btn btn-primary" style="margin-top: 0.8rem;" >Не дошел</a>
+
             </div>
-        </div>
+
         {% endif %}
+        </div>
 {% if user.status == "Менеджер" or user.status == "Администратор"%}
         <div class="stat-item" style="margin: 1.5rem 0;">
             <div class="stat-label">Цена: {{ record.cost }}</div>
@@ -244,7 +307,6 @@
             </table>
             <a href="{% url 'cost' record.id %}">Внести доплату</a>
         </div>
-
     </div>
 {% endif %}
         <div class="stats-grid">
@@ -267,7 +329,7 @@
             </div>
              {% endif %}
         </div>
-</div>
+
         <div class="action-buttons">
              <a href="{% url 'home' %}" class="btn btn-secondary">Вернуться к списку</a>
     {% if user.status == "Администратор"%}
@@ -278,13 +340,11 @@
     {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
       <a href="{% url 'in_work' record.id %}" class="btn btn-primary">В работу</a>
     {% endif %}
-             {% if user.status == "Администратор" or user.status == "Менеджер"%}
-            <a href="{% url 'come_true' record.id %}" class="btn btn-success" style="margin-top: 0.8rem;" >Дошел</a>
-            <a href="{% url 'come_false' record.id %}" class="btn btn-primary" style="margin-top: 0.8rem;" >Не дошел</a>
+
+{% if record.status == "Запись в офис" %}
+            <a href="{% url 'delete_come' record.id %}" class="btn btn-danger" value="Удалить запись на прием">Удалить запись на прием</a>
 {% endif %}
 
-            <a href="{% url 'delete_come' record.id %}" class="btn btn-danger" style="margin-top: 0.8rem;" value="Удалить запись на прием">Удалить запись на прием</a>
-      <a href="{% url 'home' %}" class="btn btn-secondary">Отмена</a>
         </div>
 
 

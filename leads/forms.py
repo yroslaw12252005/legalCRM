@@ -44,7 +44,10 @@ class StatusForm(forms.ModelForm):
         labels = {'status': 'Статус заявки'}
 
 class Employees_KCForm(forms.ModelForm):
-    employees_KC = forms.ModelChoiceField(queryset=User.objects.filter(status="Оператор"), label="")
+    employees_KC = forms.ModelChoiceField(queryset=User.objects.filter(status="Оператор"), widget=forms.Select(attrs={
+            'class': 'form-select',  # Добавляем класс для стилизации
+            'style': 'margin-bottom: 12px;'  # Опционально: inline-стили
+        }), label="")
 
     class Meta:
         model = User
@@ -52,7 +55,10 @@ class Employees_KCForm(forms.ModelForm):
         labels = {'status': 'Оператор'}
 
 class Employees_UPPForm(forms.ModelForm):
-    employees_UPP = forms.ModelChoiceField(queryset=User.objects.filter(status="Юрист пирвичник"), label="")
+    employees_UPP = forms.ModelChoiceField(queryset=User.objects.filter(status="Юрист пирвичник"), widget=forms.Select(attrs={
+            'class': 'form-select',  # Добавляем класс для стилизации
+            'style': 'margin-bottom: 12px;'  # Опционально: inline-стили
+        }), label="")
 
     class Meta:
         model = User
@@ -61,7 +67,10 @@ class Employees_UPPForm(forms.ModelForm):
 
 
 class CostForm(forms.ModelForm):
-    cost = forms.DecimalField(label="Стоимость" )
+    cost = forms.DecimalField(label="Стоимость", widget=forms.TextInput(attrs={
+            'class': 'form',  # Добавляем класс для стилизации
+            'style': 'margin-bottom: 12px;'  # Опционально: inline-стили
+        }) )
 
     class Meta:
         model = Record
