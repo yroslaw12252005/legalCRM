@@ -1,0 +1,41 @@
+@font-face {
+    font-family: 'tilda-sans-regular';
+    src: url('../fonts/tilda-sans-regular.woff') format('woff');
+}
+
+@font-face {
+    font-family: 'druktextwidecyr-medium';
+    src: url('../static/fonts/druktextwidecyr-medium.woff') format('woff');
+}
+
+body{
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.form-company{
+    width: 100%;
+    padding: 8px 12px;
+    border: 1px solid #e2e8f0;
+    border-radius: 6px;
+    background-color: #f8fafc;
+    color: #0f172a;
+    font-size: 14px;
+    transition: all 0.3s;
+}
+
+form{
+    display: flex;
+    flex-direction: column;
+}
+
+label{
+    font-size: 25px;
+    font-family:druktextwidecyr-medium;
+}
+
+p{
+    text-align: center;
+
+}

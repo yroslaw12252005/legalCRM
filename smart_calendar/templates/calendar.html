@@ -119,9 +119,9 @@
                         <div class="col-3"><h4 style="color: #595959; border-bottom: 1px solid; text-align: center;">{{ user.username}}</h4>
                             {% for surcharge in surcharges %}
                             {% if surcharge.responsible.id == user.id %}
-                            {% with start=surcharge.dat.time %}
-                            {% with top=start.hour %}
-                            {% with height=60 %}
+                            {% with start=surcharge.dat %}
+                            {% with top=start|multiply:400%}
+                            {% with height=100 %}
                             <div class="surcharge-card"
                                  style="top: {{ top }}px;
                                                        height: {{ height }}px;
@@ -129,10 +129,7 @@
                                                        right: 10px;">
                                 <strong><a href="{% url 'record' surcharge.record.id %}" style="color:#000;     text-decoration: none;">{{ surcharge.record }}</a> - {{ surcharge.cost }} ₽</strong><br>
                             </div>
-                            {% endwith %}
-                            {% endwith %}
-                            {% endwith %}
-
+{% endwith %}{% endwith %}{% endwith %}
                             {% endif %}
                             {% endfor %}
 

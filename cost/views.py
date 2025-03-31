@@ -1,6 +1,7 @@
 from django.shortcuts import render
 from django.contrib import messages
 from django.db.models import Sum
+from django.http import HttpResponse
 
 from .forms import Surcharge_form
 
@@ -21,24 +22,29 @@ def cost(request, pk):
 
 def calculating_salaries(request, pk):
     get_employee = User.objects.get(id=pk)
+
     if get_employee.type_zp == "Процент":
         return percent(request, get_employee)
     elif get_employee.type_zp == "Ставка":
         return bet(request, get_employee)
     elif get_employee.type_zp == "Процент + Ставка":
         return percent_and_bet(request, get_employee)
+    else:
+        return HttpResponse("Неизвестный тип зарплаты", status=400)
 
 def percent(request, get_employee):
     if get_employee.status == "Юрист пирвичник":
-        get_and_sum_cost_record = Record.objects.filter(employees_UPP=get_employee.id).aggregate(Sum('cost'))
+        get_and_sum_cost_record = Record.objects.filter(employees_UPP=get_employee.username).aggregate(Sum('cost'))
     elif get_employee.status == "Оператор кц":
-        get_and_sum_cost_record = Record.objects.filter(employees_KC=get_employee.id).aggregate(Sum('cost'))
+        get_and_sum_cost_record = Record.objects.filter(employees_KC=get_employee.username).aggregate(Sum('cost'))
     else:
         get_and_sum_cost_record = {"cost__sum":None}
 
     if get_and_sum_cost_record["cost__sum"] == None:
         get_and_sum_cost_record["cost__sum"] = 0.0
+
     calculation_salary_user  = float(get_and_sum_cost_record['cost__sum'])*float(get_employee.percent)
+
     return render(request, "user_inform.html",
                   {"zp": calculation_salary_user, "cash": get_and_sum_cost_record, "employee":get_employee})
 

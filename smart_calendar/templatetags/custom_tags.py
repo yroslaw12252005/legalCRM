@@ -8,8 +8,8 @@ def get_range(start, end):
 
 @register.filter
 def multiply(value, arg):
-    print(value)
-    return value[0:2] * arg
+    t = str(value.time())
+    return (int(t[0:2])-9) * arg
 
 @register.filter
 def math(value, arg):

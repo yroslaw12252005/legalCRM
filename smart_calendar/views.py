@@ -26,7 +26,7 @@ def smart_calendar(request):
     start_dat = datetime.combine(selected_date, time.min)
     end_dat = datetime.combine(selected_date, time.max)
 
-    surcharges = Surcharge.objects.filter(dat__range=(start_dat, end_dat))
+
 
     get_all_employees = User.objects.filter(companys=request.user.companys, felial=request.user.felial)
 
@@ -43,6 +43,10 @@ def smart_calendar(request):
             date=selected_date,
             companys=request.user.companys, felial=request.user.felial, registrar=User.objects.get(id=request.user.id).id
         ).order_by('time')
+
+    surcharges = None
+    if request.user.status == "Администратор" or request.user.status == "Менеджер" or request.user.status == "Директор ЮПП":
+        surcharges = Surcharge.objects.filter(dat__range=(start_dat, end_dat), record__companys=request.user.companys, record__felial=request.user.felial).order_by('dat')
 
 
     context = {

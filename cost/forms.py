@@ -4,7 +4,7 @@ class Surcharge_form(forms.ModelForm):
 
     class Meta:
         model = Surcharge
-        fields = ['cost', 'dat']
+        fields = ['cost']
         widgets = {
             'cost': forms.TextInput(attrs={'class': 'input'}),
             'dat': forms.TextInput(attrs={'class': 'input', 'type':'datetime-local'}),
