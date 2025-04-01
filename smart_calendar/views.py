@@ -65,8 +65,6 @@ def add_event(request, pk):
     # Получаем выбранную дату из pk (предполагается формат YYYYMMDD)
 
     selected_date = pk
-
-
     # Генерируем временные слоты и исключаем занятые
     TIME_CHOICES = [(f"{h:02}:{m:02}") for h in range(9, 19) for m in (0, 15, 30, 45)]
 
@@ -123,3 +121,21 @@ def come_False(request, pk):
     bookin.come = 0
     bookin.save()
     return redirect("home")
+
+#def update_come(request, pk):
+#    if request.user.is_authenticated:
+#        get_come = Booking.objects.get(client_id=pk)
+#        add_event_form = AddEventForm(request.POST or None, instance=get_come,  user=request.user)
+#        if form.is_valid():
+#            updated_come = add_event_form.save()
+#            messages.success(request, f"Клиент '{updated_come.name}' успешно перезаписан")
+#            return redirect("home")
+#        return render(request, "add_event.html", {"form": form})
+#    else:
+#        messages.error(request, "Что-то пошло не так")
+#        return redirect("home")
+
+
+
+
+

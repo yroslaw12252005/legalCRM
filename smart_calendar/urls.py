@@ -7,4 +7,5 @@ urlpatterns = [
     path('delete_come/<str:pk>/', views.delete_come, name='delete_come'),
     path('come/true/<int:pk>/', views.come_True, name='come_true'),
     path('come/false/<int:pk>/', views.come_False, name='come_false'),
+    #path('come/update/<int:pk>/', views.update_come, name='update_come'),
 ]

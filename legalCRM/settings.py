@@ -117,13 +117,14 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/5.1/topics/i18n/
 
-LANGUAGE_CODE = 'en-us'
 
+LANGUAGE_CODE = 'ru-ru'  # Русский язык по умолчанию
+TIME_ZONE = 'Europe/Moscow'  # Часовой пояс
+USE_I18N = True  # Включить интернационализацию
+USE_L10N = True  # Локализация форматов дат/чисел
+USE_TZ = True  # Использовать часовой пояс
 TIME_ZONE = 'Europe/Moscow'
 
-USE_I18N = True
-
-USE_TZ = True
 
 CSRF_TRUSTED_ORIGINS = ["https://yroslaw12252005-legalcrm-0294.twc1.net",'https://127.0.0.1']
 
@@ -148,3 +149,7 @@ L10N=False
 USE_TZ=False
 
 CSRF_COOKIE_SECURE = True
+
+
+#Access key b26d84b299ec4ba9a1596fc165d4bfc2
+#Secret key e0b7e758b8c6497eb441ea7f93ae5f88

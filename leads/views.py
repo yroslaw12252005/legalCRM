@@ -200,9 +200,12 @@ class SearchView(ListView):
             Q(name__icontains=query) |  # Поиск по части имени
             Q(phone__icontains=query)
         )
+
 @csrf_exempt
 @require_POST
 def get_time(request):
+    import locale
+    locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
     if request.method == "POST":
         employee_id =16
         employee_status = "Менеджер"
