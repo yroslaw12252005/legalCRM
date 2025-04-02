@@ -27,7 +27,6 @@ import datetime
 
 from django.views.decorators.csrf import csrf_exempt
 
-
 from django import template
 import calendar
 from datetime import date, datetime, timedelta
