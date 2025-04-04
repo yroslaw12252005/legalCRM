@@ -204,7 +204,7 @@ class SearchView(ListView):
 @require_POST
 def get_time(request):
     import locale
-    locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
+    locale.setlocale(locale.LC_ALL, 'C.utf8')
     if request.method == "POST":
         employee_id = request.user.id
         employee_status = request.user.status

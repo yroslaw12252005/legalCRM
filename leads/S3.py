@@ -17,7 +17,7 @@ class S3Client:
             "aws_access_key_id": access_key,
             "aws_secret_access_key": secret_key,
             "endpoint_url": endpoint_url,
-            "region_name": "ru-7"
+            "region_name": "ru-1"
         }
         self.bucket_name = bucket_name
         self.session = get_session()
@@ -66,15 +66,15 @@ class S3Client:
 
 async def main():
     s3_client = S3Client(
-        access_key="3bb06f08affc4c75b1692a61c21eb5f6",
-        secret_key="5f179e6fdebc4bb2bb66b0388a126a83",
-        endpoint_url="https://s3.ru-7.storage.selcloud.ru",  # для Selectel используйте https://s3.storage.selcloud.ru
-        bucket_name="vsecrm",
+        access_key="EEFJDEUXC1CROO48RUGL",
+        secret_key="bOWBlZckIVapgodQAZ4X9cMeAWwQ1i9nZ8rBVppE",
+        endpoint_url="https://s3.twcstorage.ru",  # для Selectel используйте https://s3.storage.selcloud.ru
+        bucket_name="edb6a103-vsecrm",
     )
 
     # Проверка, что мы можем загрузить, скачать и удалить файл
     #await s3_client.upload_file("1.png")
-    await s3_client.get_file("1.png", "text_local_file.png")
+    await s3_client.get_file("Баннер-5.pdf", "text_local_file.pdf")
     #await s3_client.delete_file("test.txt")
 
 
