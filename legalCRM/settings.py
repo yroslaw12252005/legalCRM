@@ -45,6 +45,7 @@ INSTALLED_APPS = [
     'company',
     'felial',
     'smart_calendar',
+    'landing',
 ]
 
 MIDDLEWARE = [
@@ -150,6 +151,8 @@ USE_TZ=False
 
 CSRF_COOKIE_SECURE = True
 
+MEDIA_URL = '/media/'
+MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 #Access key b26d84b299ec4ba9a1596fc165d4bfc2
 #Secret key e0b7e758b8c6497eb441ea7f93ae5f88

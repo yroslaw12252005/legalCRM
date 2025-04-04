@@ -73,9 +73,9 @@ async def main():
     )
 
     # Проверка, что мы можем загрузить, скачать и удалить файл
-    #await s3_client.upload_file("1.png")
-    await s3_client.get_file("Баннер-5.pdf", "text_local_file.pdf")
-    #await s3_client.delete_file("test.txt")
+    await s3_client.upload_file("rrr.txt")
+    #await s3_client.get_file("Баннер-5.pdf", "text_local_file.pdf")
+    #await s3_client.delete_file("Баннер-5.pdf")
 
 
 if __name__ == "__main__":

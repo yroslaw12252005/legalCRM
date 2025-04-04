@@ -76,3 +76,14 @@ class CostForm(forms.ModelForm):
         model = Record
         fields = ['cost']
         labels = {'cost': 'Стоимость'}
+
+
+from django.core.validators import FileExtensionValidator
+
+class FileUploadForm(forms.Form):
+    file = forms.FileField(
+        label='Выберите файл',
+        validators=[
+            FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx'])
+        ]
+    )
