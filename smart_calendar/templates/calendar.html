@@ -70,7 +70,6 @@
 ;
     justify-content: space-evenly;">
     <h3>Записи в офис</h3>
-    <h3>Доплаты</h3>
 </div>
 
     <div class="schedule-container row">
@@ -83,13 +82,14 @@
                 </div>
             {% endfor %}
         </div>
+
         <div class="col row">
                     <!-- Карточки записей -->
-        <div class="bookings-container col-6">
+        <div class="bookings-container col-12">
             <div class="row">
                 {% for user in users %}
                 {% if user.status == "Юрист пирвичник" %}
-                <div class="col-3" style="position: relative;"><h4 style="    color: #595959; border-bottom: 1px solid; text-align: center;">{{ user.username}}</h4>
+                <div style="position: relative;     width: 150px;"><h6 style="    color: #595959; border-bottom: 1px solid; text-align: center;">{{ user.username}}</h6>
                     {% for booking in bookings %}
                         {% if booking.employees.id == user.id %}
                             {% with start=booking.time %}
@@ -112,39 +112,10 @@
             </div>
         </div>
 
-         <div class="bookings-container col-6">
-                <div class="row">
-                    {% for user in users %}
-                    {% if user.status == "Юрист пирвичник" %}
-                        <div class="col-3"><h4 style="color: #595959; border-bottom: 1px solid; text-align: center;">{{ user.username}}</h4>
-                            {% for surcharge in surcharges %}
-                            {% if surcharge.responsible.id == user.id %}
-                            {% with start=surcharge.dat %}
-                            {% with top=start|multiply:400%}
-                            {% with height=100 %}
-                            <div class="surcharge-card"
-                                 style="top: {{ top }}px;
-                                                       height: {{ height }}px;
-                                                       left: 10px;
-                                                       right: 10px;">
-                                <strong><a href="{% url 'record' surcharge.record.id %}" style="color:#000;     text-decoration: none;">{{ surcharge.record }}</a> - {{ surcharge.cost }} ₽</strong><br>
-                            </div>
-{% endwith %}{% endwith %}{% endwith %}
-                            {% endif %}
-                            {% endfor %}
-
-                        </div>
-                    {% endif %}
-                        {% endfor %}
-
-                </div>
 
 
         </div>
+</div>
 
-
-        </div>
-
-    </div>
 
 {% endblock content %}

@@ -206,8 +206,8 @@ def get_time(request):
     import locale
     locale.setlocale(locale.LC_ALL, 'ru_RU.UTF-8')
     if request.method == "POST":
-        employee_id =16
-        employee_status = "Менеджер"
+        employee_id = request.user.id
+        employee_status = request.user.status
         today = date.today()
         if request.method == "POST":
            today = request.POST['date']
