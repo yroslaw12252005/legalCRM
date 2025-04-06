@@ -23,7 +23,7 @@ class Record(models.Model):
         default=5
     )
     in_work = models.BooleanField(default=False)
-
+    doc = models.URLField(max_length=200, null=True)
     def __str__(self):
         return f"{self.name}"
 

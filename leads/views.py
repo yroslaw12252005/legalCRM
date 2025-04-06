@@ -5,6 +5,12 @@ from django.http import HttpResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic import TemplateView, ListView
 from django.db.models import Q
+from django.conf import settings
+from django.core.files.storage import FileSystemStorage
+from django.http import HttpResponse
+from django.views.decorators.csrf import csrf_exempt
+from django.views.decorators.http import require_POST
+from django import template
 
 from accounts.views import employees
 from felial.views import felials
@@ -15,27 +21,87 @@ from django.db.models import Sum
 from cost.models import Surcharge
 from accounts.models import User
 from smart_calendar.models import Booking
-
-from .forms import AddRecordForm, StatusForm, Employees_KCForm, Employees_UPPForm, CostForm
-
-import json
-from django.http import HttpResponse
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
-
-import datetime
-
-from django.views.decorators.csrf import csrf_exempt
-
-from django import template
-import calendar
-from datetime import date, datetime, timedelta
 from smart_calendar.models import Booking
 from cost.models import Surcharge
+
+from .forms import AddRecordForm, StatusForm, Employees_KCForm, Employees_UPPForm, CostForm,FileUploadForm
+
+import asyncio
+from contextlib import asynccontextmanager
+from aiobotocore.session import get_session
+from botocore.exceptions import ClientError
+import os
+import json
+import datetime
+import calendar
+from datetime import date, datetime, timedelta
 from collections import defaultdict
 
-from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+class S3Client:
+    def __init__(
+            self,
+            access_key: str,
+            secret_key: str,
+            endpoint_url: str,
+            bucket_name: str,
+    ):
+        self.config = {
+            "aws_access_key_id": access_key,
+            "aws_secret_access_key": secret_key,
+            "endpoint_url": endpoint_url,
+            "region_name": "ru-1"
+        }
+        self.bucket_name = bucket_name
+        self.session = get_session()
+
+    @asynccontextmanager
+    async def get_client(self):
+        async with self.session.create_client("s3", **self.config) as client:
+            yield client
+
+    async def upload_file(
+            self,
+            file_path: str,
+    ):
+        object_name = file_path.split("/")[-1]  # /users/artem/cat.jpg
+        try:
+            async with self.get_client() as client:
+                with open(file_path, "rb") as file:
+                    await client.put_object(
+                        Bucket=self.bucket_name,
+                        Key=object_name,
+                        Body=file,
+                    )
+                print(f"File {object_name} uploaded to {self.bucket_name}")
+        except ClientError as e:
+            print(f"Error uploading file: {e}")
+
+    async def delete_file(self, object_name: str):
+        try:
+            async with self.get_client() as client:
+                await client.delete_object(Bucket=self.bucket_name, Key=object_name)
+                print(f"File {object_name} deleted from {self.bucket_name}")
+        except ClientError as e:
+            print(f"Error deleting file: {e}")
+
+    async def get_file(self, object_name: str, destination_path: str):
+        try:
+            async with self.get_client() as client:
+                response = await client.get_object(Bucket=self.bucket_name, Key=object_name)
+                data = await response["Body"].read()
+                with open(destination_path, "wb") as file:
+                    file.write(data)
+                print(f"File {object_name} downloaded to {destination_path}")
+        except ClientError as e:
+            print(f"Error downloading file: {e}")
+
+
+s3_client = S3Client(
+    access_key="EEFJDEUXC1CROO48RUGL",
+    secret_key="bOWBlZckIVapgodQAZ4X9cMeAWwQ1i9nZ8rBVppE",
+    endpoint_url="https://s3.twcstorage.ru",  # для Selectel исполpьзуйте https://s3.storage.selcloud.ru
+    bucket_name="edb6a103-vsecrm",
+)
 
 def home(request):
     if not request.user.is_authenticated:
@@ -81,6 +147,7 @@ def record(request, pk):
         form_employees_KC = Employees_KCForm(request.POST or None, instance=record)
         form_employees_UPP = Employees_UPPForm(request.POST or None, instance=record)
         cost_form = CostForm(request.POST or None, instance=record)
+        upload_file_form = FileUploadForm(request.POST, request.FILES)
         get_status_com = 0
         if Booking.objects.filter(client_id=pk).exists():
             get_status_com = Booking.objects.get(client_id=pk)
@@ -90,21 +157,25 @@ def record(request, pk):
             messages.success(request, f"Статус был успешно обнавлена")
             return render(request, "record.html",
                           {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
-                           "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge})
+                           "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
+                           'upload_file_form': upload_file_form
+                           })
 
         elif form_employees_KC.is_valid():
             form_employees_KC.save()
             messages.success(request, f"Оператор прикреплен")
             return render(request, "record.html",
                           {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
-                           "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge})
-
+                           "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
+                           'upload_file_form': upload_file_form
+                           })
         elif form_employees_UPP.is_valid():
             form_employees_UPP.save()
             messages.success(request, f"Юрист прикреплен")
             return render(request, "record.html",
                           {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                            "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
+                           'upload_file_form': upload_file_form
                            })
 
 
@@ -114,9 +185,28 @@ def record(request, pk):
             return render(request, "record.html",
                           {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                            "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                         })
+                           'upload_file_form': upload_file_form
+                           })
 
-        return render(request, "record.html", {"record": record,"get_status_com":get_status_com, "form_status":form_status, "form_employees_KC":form_employees_KC, "form_employees_UPP":form_employees_UPP, "cost":cost_form, "surcharge":surcharge})
+
+        #elif upload_file_form.is_valid():
+        #    uploaded_file = request.FILES['file']
+        #    fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'uploads'))
+        #    filename = fs.save(uploaded_file.name, uploaded_file)
+        #    await s3_client.upload_file(f'{settings.MEDIA_ROOT}/uploads/{uploaded_file.name}')
+        #    record.doc = f'https://s3.twcstorage.ru/edb6a103-vsecrm/{uploaded_file.name}'
+        #    record.save()
+        #    filename = fs.delete(uploaded_file.name)
+        #    return render(request, "record.html",
+        #                  {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+        #                   "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,'upload_file_form':upload_file_form
+        #                 })
+
+        return render(request, "record.html",
+                      {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+                       "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
+                       'upload_file_form': upload_file_form
+                       })
     else:
         return redirect("home")
 
@@ -279,99 +369,3 @@ def get_time(request):
             'today': today.day
         })
     return HttpResponse("Метод не разрешён", status=405)
-
-import asyncio
-from contextlib import asynccontextmanager
-
-from aiobotocore.session import get_session
-from botocore.exceptions import ClientError
-
-class S3Client:
-    def __init__(
-            self,
-            access_key: str,
-            secret_key: str,
-            endpoint_url: str,
-            bucket_name: str,
-    ):
-        self.config = {
-            "aws_access_key_id": access_key,
-            "aws_secret_access_key": secret_key,
-            "endpoint_url": endpoint_url,
-            "region_name": "ru-1"
-        }
-        self.bucket_name = bucket_name
-        self.session = get_session()
-
-    @asynccontextmanager
-    async def get_client(self):
-        async with self.session.create_client("s3", **self.config) as client:
-            yield client
-
-    async def upload_file(
-            self,
-            file_path: str,
-    ):
-        object_name = file_path.split("/")[-1]  # /users/artem/cat.jpg
-        try:
-            async with self.get_client() as client:
-                with open(file_path, "rb") as file:
-                    await client.put_object(
-                        Bucket=self.bucket_name,
-                        Key=object_name,
-                        Body=file,
-                    )
-                print(f"File {object_name} uploaded to {self.bucket_name}")
-        except ClientError as e:
-            print(f"Error uploading file: {e}")
-
-    async def delete_file(self, object_name: str):
-        try:
-            async with self.get_client() as client:
-                await client.delete_object(Bucket=self.bucket_name, Key=object_name)
-                print(f"File {object_name} deleted from {self.bucket_name}")
-        except ClientError as e:
-            print(f"Error deleting file: {e}")
-
-    async def get_file(self, object_name: str, destination_path: str):
-        try:
-            async with self.get_client() as client:
-                response = await client.get_object(Bucket=self.bucket_name, Key=object_name)
-                data = await response["Body"].read()
-                with open(destination_path, "wb") as file:
-                    file.write(data)
-                print(f"File {object_name} downloaded to {destination_path}")
-        except ClientError as e:
-            print(f"Error downloading file: {e}")
-
-
-
-
-from django.shortcuts import render, redirect
-from django.conf import settings
-from .forms import FileUploadForm
-import os
-from django.core.files.storage import FileSystemStorage
-
-
-async def upload_file(request):
-    if request.method == 'POST':
-        form = FileUploadForm(request.POST, request.FILES)
-        if form.is_valid():
-            uploaded_file = request.FILES['file']
-            s3_client = S3Client(
-                access_key="EEFJDEUXC1CROO48RUGL",
-                secret_key="bOWBlZckIVapgodQAZ4X9cMeAWwQ1i9nZ8rBVppE",
-                endpoint_url="https://s3.twcstorage.ru",  # для Selectel исполpьзуйте https://s3.storage.selcloud.ru
-                bucket_name="edb6a103-vsecrm",
-            )
-
-            fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'uploads'))
-            filename = fs.save(uploaded_file.name, uploaded_file)
-            await s3_client.upload_file(f'{settings.MEDIA_ROOT}/uploads/{uploaded_file.name}')
-            filename = fs.delete(uploaded_file.name)
-            return redirect('home')
-    else:
-        form = FileUploadForm()
-
-    return render(request, 'upload.html', {'form': form})

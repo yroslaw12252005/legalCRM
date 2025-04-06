@@ -14,7 +14,6 @@ urlpatterns = [
     path("brak/", views.brak, name='brak'),
     path('results/', views.SearchView.as_view(), name='search'),
     path('get_time/', views.get_time, name='get_time'),
-    path('upload/', views.upload_file, name='upload'),
 ]
 #path("delete_record/<int:pk>/", views.delete_record, name='delete_record'),
 #path("update_record/<int:pk>/", views.update_record, name='update_record'),
