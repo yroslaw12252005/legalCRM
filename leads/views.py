@@ -37,6 +37,20 @@ import calendar
 from datetime import date, datetime, timedelta
 from collections import defaultdict
 
+from asgiref.sync import sync_to_async
+from django.shortcuts import render, redirect
+from django.contrib import messages
+from django.core.files.storage import FileSystemStorage
+from django.conf import settings
+import os
+
+import asyncio
+from contextlib import asynccontextmanager
+
+from aiobotocore.session import get_session
+from botocore.exceptions import ClientError
+
+
 class S3Client:
     def __init__(
             self,
@@ -61,18 +75,18 @@ class S3Client:
 
     async def upload_file(
             self,
-            file_path: str,
+            file_path: str, file_name
     ):
-        object_name = file_path.split("/")[-1]  # /users/artem/cat.jpg
+        print(file_path)# /users/artem/cat.jpg
         try:
             async with self.get_client() as client:
                 with open(file_path, "rb") as file:
                     await client.put_object(
                         Bucket=self.bucket_name,
-                        Key=object_name,
+                        Key=file_name,
                         Body=file,
                     )
-                print(f"File {object_name} uploaded to {self.bucket_name}")
+                print(f"File {file_name} uploaded to {self.bucket_name}")
         except ClientError as e:
             print(f"Error uploading file: {e}")
 
@@ -139,76 +153,101 @@ def logout_user(request):
     logout(request)
     return redirect("home")
 
-def record(request, pk):
-    if request.user.is_authenticated:
-        record = Record.objects.get(id=pk)
-        surcharge = Surcharge.objects.filter(record_id=pk)
-        form_status = StatusForm(request.POST or None, instance=record)
-        form_employees_KC = Employees_KCForm(request.POST or None, instance=record)
-        form_employees_UPP = Employees_UPPForm(request.POST or None, instance=record)
-        cost_form = CostForm(request.POST or None, instance=record)
-        upload_file_form = FileUploadForm(request.POST, request.FILES)
-        get_status_com = 0
-        if Booking.objects.filter(client_id=pk).exists():
-            get_status_com = Booking.objects.get(client_id=pk)
-
-        if form_status.is_valid():
-            form_status.save()
-            messages.success(request, f"Статус был успешно обнавлена")
-            return render(request, "record.html",
-                          {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
-                           "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                           'upload_file_form': upload_file_form
-                           })
-
-        elif form_employees_KC.is_valid():
-            form_employees_KC.save()
-            messages.success(request, f"Оператор прикреплен")
-            return render(request, "record.html",
-                          {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
-                           "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                           'upload_file_form': upload_file_form
-                           })
-        elif form_employees_UPP.is_valid():
-            form_employees_UPP.save()
-            messages.success(request, f"Юрист прикреплен")
-            return render(request, "record.html",
-                          {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
-                           "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                           'upload_file_form': upload_file_form
-                           })
 
 
-        elif  cost_form.is_valid():
-            cost_form.save()
-            messages.success(request, f"Цена указана")
-            return render(request, "record.html",
-                          {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
-                           "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                           'upload_file_form': upload_file_form
-                           })
+async def record(request, pk):
 
+    # Асинхронное получение объектов из БД
+    get_record = sync_to_async(Record.objects.get, thread_sensitive=True)
+    record = await get_record(id=pk)
 
-        #elif upload_file_form.is_valid():
-        #    uploaded_file = request.FILES['file']
-        #    fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'uploads'))
-        #    filename = fs.save(uploaded_file.name, uploaded_file)
-        #    await s3_client.upload_file(f'{settings.MEDIA_ROOT}/uploads/{uploaded_file.name}')
-        #    record.doc = f'https://s3.twcstorage.ru/edb6a103-vsecrm/{uploaded_file.name}'
-        #    record.save()
-        #    filename = fs.delete(uploaded_file.name)
-        #    return render(request, "record.html",
-        #                  {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
-        #                   "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,'upload_file_form':upload_file_form
-        #                 })
+    filter_surcharge = sync_to_async(Surcharge.objects.filter, thread_sensitive=True)
+    surcharge = await filter_surcharge(record_id=pk)
 
-        return render(request, "record.html",
-                      {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+    # Инициализация форм
+    form_status = StatusForm(request.POST or None, instance=record)
+    form_employees_KC = Employees_KCForm(request.POST or None, instance=record)
+    form_employees_UPP = Employees_UPPForm(request.POST or None, instance=record)
+    cost_form = CostForm(request.POST or None, instance=record)
+    upload_file_form = FileUploadForm(request.POST, request.FILES)
+
+    # Проверка статуса бронирования
+    check_booking = sync_to_async(Booking.objects.filter(client_id=pk).exists, thread_sensitive=True)
+    booking_exists = await check_booking()
+    get_status_com = 0
+    if booking_exists:
+        get_booking = sync_to_async(Booking.objects.get, thread_sensitive=True)
+        get_status_com = await get_booking(client_id=pk)
+
+    # Обработка форм
+    if form_status.is_valid():
+        save_form = sync_to_async(form_status.save, thread_sensitive=True)
+        await save_form()
+        add_message = sync_to_async(messages.success, thread_sensitive=True)
+        await add_message(request, "Статус успешно обновлен")
+        return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
                        'upload_file_form': upload_file_form
                        })
-    else:
-        return redirect("home")
+
+    elif form_employees_KC.is_valid():
+        save_form = sync_to_async(form_employees_KC.save, thread_sensitive=True)
+        await save_form()
+        await sync_to_async(messages.success)(request, "Оператор прикреплен")
+        return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+                       "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
+                       'upload_file_form': upload_file_form
+                       })
+
+    elif form_employees_UPP.is_valid():
+        save_form = sync_to_async(form_employees_UPP.save, thread_sensitive=True)
+        await save_form()
+        await sync_to_async(messages.success)(request, "Юрист прикреплен")
+        return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+                       "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
+                       'upload_file_form': upload_file_form
+                       })
+
+    elif cost_form.is_valid():
+        save_form = sync_to_async(cost_form.save, thread_sensitive=True)
+        await save_form()
+        await sync_to_async(messages.success)(request, "Цена указана")
+        return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+                       "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
+                       'upload_file_form': upload_file_form
+                       })
+
+    elif upload_file_form.is_valid():
+        uploaded_file = request.FILES['file']
+        fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'uploads'))
+
+        # Асинхронное сохранение файла
+        save_file = sync_to_async(fs.save, thread_sensitive=True)
+        filename = await save_file(uploaded_file.name, uploaded_file)
+
+        full_path = os.path.join(settings.MEDIA_ROOT, 'uploads', filename)
+        # Асинхронная загрузка в S3
+        await s3_client.upload_file(full_path, file_name=filename)
+
+        # Обновление записи
+        record.doc = f'https://s3.twcstorage.ru/edb6a103-vsecrm/{uploaded_file.name}'
+        save_record = sync_to_async(record.save, thread_sensitive=True)
+        await save_record()
+
+        delete_file = sync_to_async(fs.delete, thread_sensitive=True)
+        await delete_file(filename)
+
+        return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+                       "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
+                       'upload_file_form': upload_file_form
+                       })
+
+    # Рендер страницы, если нет валидных форм
+    return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+                       "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
+                       'upload_file_form': upload_file_form
+                       })
+
 
 def delete_record(request, pk):
     if request.user.is_authenticated:

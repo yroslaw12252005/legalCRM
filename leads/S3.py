@@ -31,10 +31,12 @@ class S3Client:
             self,
             file_path: str,
     ):
-        object_name = file_path.split("/")[-1]  # /users/artem/cat.jpg
+
+        object_name = file_path.split("/")[-1]
+        print(file_path)# /users/artem/cat.jpg
         try:
             async with self.get_client() as client:
-                with open(file_path, "rb") as file:
+                with open('rrr.txt', "rb") as file:
                     await client.put_object(
                         Bucket=self.bucket_name,
                         Key=object_name,
@@ -74,7 +76,7 @@ async def main():
 
     # Проверка, что мы можем загрузить, скачать и удалить файл
     await s3_client.upload_file("rrr.txt")
-    #await s3_client.get_file("Баннер-5.pdf", "text_local_file.pdf")
+    #await s3_client.get_file("rrr.txt", "text_local_file.pdf")
     #await s3_client.delete_file("Баннер-5.pdf")
 
 
