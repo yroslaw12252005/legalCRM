@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-%8itp5v$26w6ge0^vn=edeh()b80@xroxy_uk=f&_mw@$e-41b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['yroslaw12252005-legalcrm-0294.twc1.net', '127.0.0.1', "78.40.217.164"]
+ALLOWED_HOSTS = ['yblochko.rosscrm.ru', '127.0.0.1', "78.40.217.164"]
 
 
 # Application definition
@@ -127,7 +127,7 @@ USE_TZ = True  # Использовать часовой пояс
 TIME_ZONE = 'Europe/Moscow'
 
 
-CSRF_TRUSTED_ORIGINS = ["https://yroslaw12252005-legalcrm-0294.twc1.net",'https://127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ["https://yblochko.rosscrm.ru",'https://127.0.0.1']
 
 
 # Static files (CSS, JavaScript, Images)
