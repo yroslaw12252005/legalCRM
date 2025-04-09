@@ -82,7 +82,8 @@ from django.core.validators import FileExtensionValidator
 
 class FileUploadForm(forms.Form):
     file = forms.FileField(
-        label='Выберите файл',
+        label='',
+        widget=forms.FileInput(attrs={'class': 'file'}),
         validators=[
             FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx'])
         ]

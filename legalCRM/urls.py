@@ -28,4 +28,5 @@ urlpatterns = [
     path('companys/', include('company.urls')),
     path('felial/', include('felial.urls')),
     path('calendar/', include('smart_calendar.urls')),
+    path('client/', include('client.urls')),
 ]

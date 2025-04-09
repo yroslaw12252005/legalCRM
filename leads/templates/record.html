@@ -179,7 +179,96 @@
             }
         }
     </style>
+<style>
 
+        .container {
+            background: white;
+            padding: 2rem;
+            border-radius: 10px;
+            box-shadow: 0 0 20px rgba(0,0,0,0.1);
+            width: 90%;
+            max-width: 500px;
+        }
+
+        .drag-area {
+            border: 2px dashed #3498db;
+            height: 300px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            margin: 10px 0;
+            transition: 0.3s;
+        }
+
+        .drag-area.active {
+            border-color: #27ae60;
+            background: rgba(39, 174, 96, 0.05);
+        }
+
+        .drag-area .icon {
+            font-size: 50px;
+            color: #3498db;
+        }
+
+        .drag-area header {
+            font-size: 1.5rem;
+            font-weight: 500;
+            color: #34495e;
+            margin: 15px 0;
+        }
+
+        .drag-area span {
+            font-size: 1rem;
+            color: #7f8c8d;
+            margin-bottom: 15px;
+        }
+
+        .drag-area button {
+            padding: 10px 25px;
+            font-size: 1rem;
+            font-weight: 500;
+            border: none;
+            outline: none;
+            background: #3498db;
+            color: white;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: 0.3s;
+        }
+
+        .drag-area button:hover {
+            background: #2980b9;
+        }
+
+        #file-input {
+            display: none;
+        }
+
+        .file-list {
+            margin-top: 20px;
+        }
+
+        .file-item {
+            display: flex;
+            align-items: center;
+            padding: 10px;
+            background: #f8f9fa;
+            margin-bottom: 10px;
+            border-radius: 5px;
+        }
+
+        .file-item span {
+            margin-left: 10px;
+            color: #2c3e50;
+        }
+
+        .file-item .size {
+            margin-left: auto;
+            color: #7f8c8d;
+        }
+    </style>
 <style>
                             .form{
     width: 100%;
@@ -248,6 +337,7 @@
             <div class="stat-item">
                 <div class="stat-label">id</div>
                 <div class="stat-value">{{ record.id }}</div>
+                <a href="{% url 'client_inform' record.id %}">aaa</a>
             </div>
             <div class="stat-item">
                 <div class="stat-label">Телефон</div>
@@ -259,9 +349,16 @@
             </div>
 
             <div class="stat-item">
-                <div class="stat-label">Статус звонка</div>
+                <div class="stat-label">Статус заявки</div>
                 <div class="status-badge">{{ record.status }}</div>
             </div>
+
+             {% if record.doc %}
+            <div class="stat-item">
+                <div class="stat-label">Выгрузить докоменты</div>
+               <a href="{{record.doc}}"><img style="width:40px;" src="{% static 'img/download.png' %}" alt=""></a>
+            </div>
+            {% endif %}
             {% if user.status == "Менеджер" and record.status == "Запись в офис" or user.status == "Администратор" and record.status == "Запись в офис" %}
             <div class="stat-item">
                 <div class="stat-label">Статус прихода</div>
@@ -309,12 +406,6 @@
         </div>
     </div>
 {% endif %}
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ upload_file_form.as_p }}
-    <button type="submit">Загрузить</button>
-</form>
-<a href="{{record.doc }}"> Договор</a>
         <div class="stats-grid">
             {% if user.status == "Директор КЦ" or user.status == "Администратор"%}
             <div class="stat-item">
@@ -336,6 +427,20 @@
              {% endif %}
         </div>
 
+    <div class="container">
+        <div class="drag-area">
+            <div class="icon">📁</div>
+            <header>Загрузка файла</header>
+            <form method="POST" enctype="multipart/form-data">
+                {% csrf_token %}
+                {{ upload_file_form.as_p }}
+                <button type="submit">Загрузить</button>
+            </form>
+
+
+        </div>
+        <div class="file-list" id="file-list"></div>
+    </div>
         <div class="action-buttons">
              <a href="{% url 'home' %}" class="btn btn-secondary">Вернуться к списку</a>
     {% if user.status == "Администратор"%}

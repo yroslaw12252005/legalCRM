@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Личный кабинет клиента</title>
+</head>
+<body>
+<div class="dashboard-container">
+  <div class="sidebar">...</div>
+
+  <div class="main-content">
+
+
+    <div class="welcome-section">
+      <h1>Добро пожаловать, <span class="gradient-text">{{info.name}}</span>! 👋</h1>
+      <p>Ваша договор <a href="{{info.doc}}">{{info.doc}}</a></p>
+    </div>
+
+    </div>
+  </div>
+</div>
+
+<style>
+    :root {
+  --primary-gradient: linear-gradient(135deg, #2A3F54 0%, #1B2838 100%);
+  --accent-color: #00E676;
+}
+
+.dashboard-container {
+  display: grid;
+  grid-template-columns: 240px 1fr;
+  min-height: 100vh;
+}
+
+.widget-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 1.5rem;
+}
+
+.widget-card {
+  background: white;
+  border-radius: 15px;
+  padding: 1.5rem;
+  box-shadow: 0 8px 24px rgba(0,0,0,0.05);
+  transition: transform 0.3s ease;
+}
+
+.widget-card:hover {
+  transform: translateY(-5px);
+}
+
+.gradient-text {
+  background: var(--primary-gradient);
+  -webkit-background-clip: text;
+  color: transparent;
+}
+
+
+</style>
+</body>
+</html>

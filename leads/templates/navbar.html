@@ -2,7 +2,7 @@
 {% if user.is_authenticated %}
 <link rel="stylesheet" href="{% static 'css/nav.css' %}" />
 <link rel="stylesheet" href="{% static 'css/style.css' %}" />
-<nav role="main container col">
+<nav class="sidebar" role="main container col">
 
   <div class="blok-nav user">
     <p class="employees_name">{{ user.username }}<br><span class="mail">{{ user.email }}</span></p>
@@ -61,9 +61,7 @@ $(document).ready(function() {
  </script>
 
 
-    <div class="" style="display: flex
-;
-    justify-content: space-around;">
+    <div class="" style="display: flex;justify-content: space-around;">
         <p id="last_date" style="font-size: 14px;">← Предыдущий месяц</p>
 <p id="next_date" style="font-size: 14px;">Следующий месяц →</p>
     </div>

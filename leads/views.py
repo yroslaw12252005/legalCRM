@@ -169,7 +169,7 @@ async def record(request, pk):
     form_employees_KC = Employees_KCForm(request.POST or None, instance=record)
     form_employees_UPP = Employees_UPPForm(request.POST or None, instance=record)
     cost_form = CostForm(request.POST or None, instance=record)
-    upload_file_form = FileUploadForm(request.POST, request.FILES)
+    upload_file_form = FileUploadForm(request.POST or None, request.FILES or None, use_required_attribute=False)
 
     # Проверка статуса бронирования
     check_booking = sync_to_async(Booking.objects.filter(client_id=pk).exists, thread_sensitive=True)

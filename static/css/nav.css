@@ -85,5 +85,9 @@ ul > li{
       height: 40vh;
     }
 }
-
+.sidebar {
+            overflow-y: auto; /* Включаем прокрутку по вертикали */
+            scrollbar-width: thin;
+            scrollbar-color: darkgrey transparent;
+        }
 /***************************/
