@@ -146,8 +146,8 @@
 </head>
 <body>
     <nav class="header">
-        <button class="nav-button login">Авторизоваться</button>
-        <button class="nav-button register">Зарегистрировать компанию</button>
+        <a href="{% url 'home'%}" class="nav-button login">Авторизоваться</a>
+        <a href="{% url 'reg_company'%}" class="nav-button register">Зарегистрировать компанию</a>
     </nav>
 
     <section class="hero">
@@ -156,11 +156,11 @@
             Профессиональная CRM-платформа для автоматизации юридической практики.
             Управляйте делами, клиентами и документами в едином цифровом пространстве.
         </p>
-
+<!--
         <div class="pricing">
             <div class="price">7 000 ₽/месяц</div>
             <div class="trial">Пробный период 1 месяц</div>
-        </div>
+        </div>-->
     </section>
 
     <section class="features">
