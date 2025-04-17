@@ -63,7 +63,11 @@
 <body>
     <div class="container">
         <h1>{{info.name}} Добро пожаловать!</h1>
-        <div class="greeting">Сумма договора - {{info.cost}}</div>
+        <div class="greeting">Сумма договора -
+            {% if info.cost == None %}
+           Не добавлена
+            {% else %}{{info.cost}}
+            {% endif %}</div>
 
         <div class="document-section">
             <p class="document-text">

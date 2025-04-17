@@ -8,16 +8,24 @@
 <div class="dropdown">
   <img src="{% static 'img/felters.png' %}">
   <div class="dropdown-content">
-          <a class="dropdown-item" href="{% url 'filter' 'Новая' %}">Новая</a>
+   <a class="dropdown-item" href="{% url 'filter' 'Новая' %}">Новая</a>
    <a class="dropdown-item" href="{% url 'filter' 'Брак' %}">Брак</a>
    <a class="dropdown-item" href="{% url 'filter' 'Недозвон' %}">Недозвон</a>
    <a class="dropdown-item" href="{% url 'filter' 'Перезвон' %}">Перезвон</a>
-      <a class="dropdown-item" href="{% url 'filter' 'Онлайн' %}">Онлайн</a>
-      <a class="dropdown-item" href="{% url 'filter' 'Договор' %}">Договор</a>
-      <a class="dropdown-item" href="{% url 'filter' 'Акт' %}">Акт</a>
+   <a class="dropdown-item" href="{% url 'filter' 'Онлайн' %}">Онлайн</a>
+   <a class="dropdown-item" href="{% url 'filter' 'Договор' %}">Договор</a>
+   <a class="dropdown-item" href="{% url 'filter' 'Акт' %}">Акт</a>
    <a class="dropdown-item" href="{% url 'filter' 'Запись в офис' %}">Запись в офис</a>
    <a class="dropdown-item" href="{% url 'filter' 'Отказ' %}">Отказ</a>
-
+      {% if user.status == "Директор ЮПП" or user.status == "Администратор"%}
+     <hr>
+      <a class="dropdown-item" href="{% url 'filter_upp' 'Ваня20200' %}">Ваня20200</a>
+   <a class="dropdown-item" href="{% url 'filter_upp' 'Катя20212' %}">Катя20212</a>
+   <a class="dropdown-item" href="{% url 'filter_upp' 'Дима20214' %}">Дима20214</a>
+   <a class="dropdown-item" href="{% url 'filter_upp' 'Тарон20196' %}">Тарон20196</a>
+   <a class="dropdown-item" href="{% url 'filter_upp' 'Алексей 20215' %}">Алексей 20215н</a>
+   <a class="dropdown-item" href="{% url 'filter_upp' 'Алексей 20216' %}">Алексей 20216</a>
+      {% endif %}
   </div>
 </div>
 

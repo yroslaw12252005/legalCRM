@@ -145,6 +145,10 @@ def filter(request, status):
     records = Record.objects.filter(status=status, companys=request.user.companys, felial=request.user.felial)
     return render(request, "home.html", {"records": records})
 
+def filter_upp(request, filter_upp):
+    records = Record.objects.filter(employees_UPP=filter_upp, companys=request.user.companys, felial=request.user.felial)
+    return render(request, "home.html", {"records": records})
+
 def brak(request):
     records = Record.objects.filter(status="Брак")
     return render(request, "home.html", {"records": records})
