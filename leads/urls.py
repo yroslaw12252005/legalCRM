@@ -7,6 +7,7 @@ urlpatterns = [
     path("record/<int:pk>/", views.record, name='record'),
     path("record/<status>/", views.filter, name='filter'),
     path("delete_record/<int:pk>/", views.delete_record, name='delete_record'),
+    path("delete_doc/<int:pk>/", views.delete_doc, name='delete_doc'),
     path("update_record/<int:pk>/", views.update_record, name='update_record'),
     path("in_work/<int:pk>/", views.in_work, name='in_work'),
     path("add_record/", views.add_record, name='add_record'),

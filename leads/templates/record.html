@@ -328,7 +328,7 @@
             </style>
     <div class="card">
         <h2>{{ record.name }}</h2>
-        <a href="{% url 'client_inform' record.id %}">https://yblochko.rosscrm.ru/{% url 'client_inform' record.id %}</a>
+        <a href="{% url 'client_inform' record.id %}"  style="color: black;     margin-bottom: 10px;">https://yblochko.rosscrm.ru/{% url 'client_inform' record.id %}</a>
         <div class="stat-item" style="margin-bottom: 1.5rem;">
             <div class="stat-label">Комментарий</div>
             <div class="stat-value">{{ record.description }}</div>
@@ -357,6 +357,7 @@
             <div class="stat-item">
                 <div class="stat-label">Выгрузить докоменты</div>
                <a href="{{record.doc}}"><img style="width:40px;" src="{% static 'img/download.png' %}" alt=""></a>
+                <a href="{% url 'delete_doc' record.id %}" style="color: black; margin-botton:5px">Удалить файл</a>
             </div>
             {% endif %}
             {% if user.status == "Менеджер" and record.status == "Запись в офис" or user.status == "Администратор" and record.status == "Запись в офис" %}
@@ -426,7 +427,7 @@
             </div>
              {% endif %}
         </div>
-
+{% if record.doc != 'NULL' %}
     <div class="container">
         <div class="drag-area">
             <div class="icon">📁</div>
@@ -441,6 +442,7 @@
         </div>
         <div class="file-list" id="file-list"></div>
     </div>
+{% endif %}
         <div class="action-buttons">
              <a href="{% url 'home' %}" class="btn btn-secondary">Вернуться к списку</a>
     {% if user.status == "Администратор"%}

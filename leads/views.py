@@ -258,6 +258,26 @@ def delete_record(request, pk):
     else:
         return redirect("home")
 
+
+async def delete_doc(request, pk):
+    get_record = sync_to_async(Record.objects.get)
+    save_record = sync_to_async(lambda instance: instance.save())
+    try:
+        del_doc = await get_record(id=pk)
+        # Если нужно удалить файл, используйте delete_file вместо upload_file
+        await s3_client.delete_file(object_name=del_doc.doc.replace('https://s3.twcstorage.ru/edb6a103-vsecrm/', ''))  # Проверьте атрибут имени файла
+        del_doc.doc = None
+        await save_record(del_doc)
+        # Асинхронная отправка сообщения
+        sync_messages = sync_to_async(messages.success, thread_sensitive=True)
+        await sync_messages(request, "Файл успешно удалён")
+    except Record.DoesNotExist:
+        sync_messages_error = sync_to_async(messages.error, thread_sensitive=True)
+        await sync_messages_error(request, "Документ не найден")
+    # Асинхронный редирект
+    sync_redirect = sync_to_async(redirect, thread_sensitive=True)
+    return await sync_redirect("home")
+
 def add_record(request):
     form = AddRecordForm(request.POST or None, user=request.user)
     if request.user.is_authenticated:
@@ -273,6 +293,7 @@ def add_record(request):
         return render(request, "add_record.html", {"form": form})
     else:
         return redirect("home")
+
 
 def update_record(request, pk):
     if request.user.is_authenticated:
