@@ -274,7 +274,7 @@ async def delete_doc(request, pk):
     except Record.DoesNotExist:
         sync_messages_error = sync_to_async(messages.error, thread_sensitive=True)
         await sync_messages_error(request, "Документ не найден")
-    # Асинхронный редирект
+    #  Асинхронный редирект
     sync_redirect = sync_to_async(redirect, thread_sensitive=True)
     return await sync_redirect("home")
 
