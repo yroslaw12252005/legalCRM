@@ -160,7 +160,6 @@ def logout_user(request):
 
 
 async def record(request, pk):
-
     # Асинхронное получение объектов из БД
     get_record = sync_to_async(Record.objects.get, thread_sensitive=True)
     record = await get_record(id=pk)
@@ -168,12 +167,21 @@ async def record(request, pk):
     filter_surcharge = sync_to_async(Surcharge.objects.filter, thread_sensitive=True)
     surcharge = await filter_surcharge(record_id=pk)
 
-    # Инициализация форм
-    form_status = StatusForm(request.POST or None, instance=record)
-    form_employees_KC = Employees_KCForm(request.POST or None, instance=record)
-    form_employees_UPP = Employees_UPPForm(request.POST or None, instance=record)
-    cost_form = CostForm(request.POST or None, instance=record)
-    upload_file_form = FileUploadForm(request.POST or None, request.FILES or None, use_required_attribute=False)
+    # Асинхронная инициализация форм
+    init_form = sync_to_async(lambda: StatusForm(request.POST or None, instance=record), thread_sensitive=True)
+    form_status = await init_form()
+
+    init_employees_KC = sync_to_async(lambda: Employees_KCForm(request.POST or None, instance=record), thread_sensitive=True)
+    form_employees_KC = await init_employees_KC()
+
+    init_employees_UPP = sync_to_async(lambda: Employees_UPPForm(request.POST or None, instance=record), thread_sensitive=True)
+    form_employees_UPP = await init_employees_UPP()
+
+    init_cost_form = sync_to_async(lambda: CostForm(request.POST or None, instance=record), thread_sensitive=True)
+    cost_form = await init_cost_form()
+
+    init_upload_form = sync_to_async(lambda: FileUploadForm(request.POST or None, request.FILES or None, use_required_attribute=False), thread_sensitive=True)
+    upload_file_form = await init_upload_form()
 
     # Проверка статуса бронирования
     check_booking = sync_to_async(Booking.objects.filter(client_id=pk).exists, thread_sensitive=True)
@@ -182,46 +190,54 @@ async def record(request, pk):
     if booking_exists:
         get_booking = sync_to_async(Booking.objects.get, thread_sensitive=True)
         get_status_com = await get_booking(client_id=pk)
-
+    form_employees_KC_valid = await sync_to_async(form_employees_KC.is_valid, thread_sensitive=True)()
+    form_employees_UPP_valid = await sync_to_async(form_employees_UPP.is_valid, thread_sensitive=True)()
+    cost_valid = await sync_to_async(cost_form.is_valid, thread_sensitive=True)()
+    upload_valid = await sync_to_async(upload_file_form.is_valid, thread_sensitive=True)()
     # Обработка форм
-    if form_status.is_valid():
+    form_status_valid = await sync_to_async(form_status.is_valid, thread_sensitive=True)()
+    if form_status_valid:
         save_form = sync_to_async(form_status.save, thread_sensitive=True)
         await save_form()
         add_message = sync_to_async(messages.success, thread_sensitive=True)
         await add_message(request, "Статус успешно обновлен")
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_comk
                        })
 
-    elif form_employees_KC.is_valid():
+
+    elif form_employees_KC_valid:
         save_form = sync_to_async(form_employees_KC.save, thread_sensitive=True)
         await save_form()
         await sync_to_async(messages.success)(request, "Оператор прикреплен")
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com
                        })
 
-    elif form_employees_UPP.is_valid():
+
+    elif form_employees_UPP_valid:
         save_form = sync_to_async(form_employees_UPP.save, thread_sensitive=True)
         await save_form()
         await sync_to_async(messages.success)(request, "Юрист прикреплен")
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com
                        })
 
-    elif cost_form.is_valid():
+
+    elif cost_valid:
         save_form = sync_to_async(cost_form.save, thread_sensitive=True)
         await save_form()
         await sync_to_async(messages.success)(request, "Цена указана")
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com
                        })
 
-    elif upload_file_form.is_valid():
+
+    elif upload_valid:
         uploaded_file = request.FILES['file']
         fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'uploads'))
 
@@ -243,15 +259,14 @@ async def record(request, pk):
 
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com
                        })
 
     # Рендер страницы, если нет валидных форм
     return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
-                       "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form
-                       })
-
+                   "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
+                   'upload_file_form': upload_file_form, 'get_status_com':get_status_com
+                   })
 
 def delete_record(request, pk):
     if request.user.is_authenticated:

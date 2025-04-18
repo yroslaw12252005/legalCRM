@@ -27,7 +27,7 @@ function updateCalendar(newDate) {
 
     $.ajax({
         type: "POST",
-        url: "get_time/",
+        url: "http://127.0.0.1:8000/home/get_time/",
         headers: { "X-CSRFToken": "{{ csrf_token }}" },
         data: { date: formattedDate },
         success: function(data) {
