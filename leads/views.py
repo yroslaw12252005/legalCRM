@@ -113,7 +113,7 @@ class S3Client:
 s3_client = S3Client(
     access_key="EEFJDEUXC1CROO48RUGL",
     secret_key="bOWBlZckIVapgodQAZ4X9cMeAWwQ1i9nZ8rBVppE",
-    endpoint_url="https://s3.twcstorageв.ru",  # для Selectel испол pьзуйте https://s3.storage.selcloud.ru
+    endpoint_url="https://s3.twcstorage.ru",  # для Selectel испол pьзуйте https://s3.storage.selcloud.ru
     bucket_name="edb6a103-vsecrm",
 )
 
