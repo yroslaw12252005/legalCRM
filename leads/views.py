@@ -113,7 +113,7 @@ class S3Client:
 s3_client = S3Client(
     access_key="EEFJDEUXC1CROO48RUGL",
     secret_key="bOWBlZckIVapgodQAZ4X9cMeAWwQ1i9nZ8rBVppE",
-    endpoint_url="https://s3.twcstorage.ru",  # для Selectel испол pьзуйте https://s3.storage.selcloud.ru
+    endpoint_url="https://s3.twcstorageв.ru",  # для Selectel испол pьзуйте https://s3.storage.selcloud.ru
     bucket_name="edb6a103-vsecrm",
 )
 
@@ -203,7 +203,7 @@ async def record(request, pk):
         await add_message(request, "Статус успешно обновлен")
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form, 'get_status_com':get_status_comk
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com
                        })
 
 
@@ -366,7 +366,8 @@ class SearchView(ListView):
         query = self.request.GET.get('q')
         return Record.objects.filter(
             Q(name__icontains=query) |  # Поиск по части имени
-            Q(phone__icontains=query)
+            Q(phone__icontains=query)|
+            Q(description__icontains=query)
         )
 
 @csrf_exempt
