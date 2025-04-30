@@ -284,7 +284,7 @@ async def delete_doc(request, pk):
     save_record = sync_to_async(lambda instance: instance.save())
     try:
         del_doc = await get_record(id=pk)
-        # Если нужно удалить файл, используйте delete_file вместо upload_file
+        # Если нужно удалить файл, используйте delete_file вместо uploa d_file
         await s3_client.delete_file(object_name=del_doc.doc.replace('https://s3.twcstorage.ru/edb6a103-vsecrm/', ''))  # Проверьте атрибут имени файла
         del_doc.doc = None
         await save_record(del_doc)
