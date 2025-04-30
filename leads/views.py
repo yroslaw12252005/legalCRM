@@ -246,6 +246,7 @@ async def record(request, pk):
         filename = await save_file(uploaded_file.name, uploaded_file)
 
         full_path = os.path.join(settings.MEDIA_ROOT, 'uploads', filename)
+        print(full_path)
         # Асинхронная загрузка в S3
         await s3_client.upload_file(full_path, file_name=filename)
 
