@@ -12,6 +12,7 @@
                     <th>Имя</th>
                     <th>Email</th>
                     <th>Статус</th>
+                    <th>Действия</th>
                 </tr>
             </thead>
             <tbody>
@@ -20,6 +21,7 @@
           <td class="table-default"><a href="{% url 'user_inform' employee.id %}">{{ employee.username }}</a></td>
           <td class="table-default"><p>{{ user.email }}</p></td>
           <td class="table-default"><p><span class="status-badge manager">{{ employee.status }}</span></p></td>
+          <td class="table-default"><a href="{% url 'delete_employee' employee.id %}">Удалить сотрудника</a></td>
         </tr>
         {% endfor %}
 

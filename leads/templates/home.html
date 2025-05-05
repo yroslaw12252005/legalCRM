@@ -79,10 +79,17 @@ background-color: #212529;
 
         {% if user.status == "Директор КЦ" and record.in_work == 0 or user.status == "Директор КЦ" and record.in_work == 1 or user.status == "Директор ЮПП" and record.in_work == 1 or user.status == "Юрист пирвичник" and record.employees_UPP == user.username or user.status == "Оператор" and record.employees_KC == user.username or user.status == "Менеджер"  and record.in_work == 1 or user.status == "Администратор"%}
             <tr>
-              <td class="table-default"><p><a href="{% url 'record' record.id %}" style="    text-decoration: none; color:#595959;">{{ record.name }}</a></p></td>
-              <td class="table-default"><p>{{ record.phone }}</p></td>
-              <td class="table-default"><p>{{ record.description|slice:"100" }}</p></td>
-              <td class="table-default"><p>{{ record.where }}</p></td>
+              <td class="table-default"><p><a href="{% url 'record' record.id %}" style="    text-decoration: none; color:#595959;">
+                  {% if record.name != None %}
+                  {{ record.name }}
+              {%endif%}</a></p></td>
+              <td class="table-default"><p>
+                  {% if record.name != None %}
+                  {{ record.phone }}
+              {%endif%} </p></td>
+              <td class="table-default"><p>
+                  {% if record.name != None %}{{ record.description|slice:"100" }}{%endif%}</p></td>
+              <td class="table-default"><p>{% if record.name != None %}{{ record.where }}{%endif%}</p></td>
                 {% if record.status == "Новая" %}
                 <td class="table-default" style="color:#fff; background-color: #077EC2;"><p style="color:#fff;">{{ record.status }}</p></td>
                 {% elif record.status == "Брак" %}

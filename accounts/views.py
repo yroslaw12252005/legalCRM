@@ -11,6 +11,16 @@ def employees(request):
     get_employees = User.objects.filter(companys=request.user.companys, felial=request.user.felial)
     return render(request, "employees.html", {"employees": get_employees})
 
+def delete_employee(request, pk):
+    if request.user.is_authenticated:
+        del_employee = User.objects.get(id=pk)
+        del_employee.delete()
+        messages.success(request, "Вы спешно удалил запись")
+        return redirect("home")
+    else:
+        return redirect("home")
+
+
 def register_employees(request):
     form = AddEmployeesForm()
     if request.method == "POST":
