@@ -17,6 +17,6 @@ urlpatterns = [
     path('get_time/', views.get_time, name='get_time'),
     path("records_filt/<filter_upp>/", views.filter_upp, name='filter_upp'),
 ]
-#path("delete_record/<int:pk>/", views.delete_record, name='delete_record'),
+# path("delete_record/<int:pk>/", views.delete_record, name='delete_record'),
 #path("update_record/<int:pk>/", views.update_record, name='update_record'),
 #path("add_record/", views.add_record, name='add_record'),
