@@ -22,7 +22,7 @@ from django.db.models import Sum
 from cost.models import Surcharge
 from accounts.models import User
 from smart_calendar.models import Booking
-from smart_calendar.models import Booking
+from company.models import Companys
 from cost.models import Surcharge
 
 from .forms import AddRecordForm, StatusForm, Employees_KCForm, Employees_UPPForm, CostForm,FileUploadForm
@@ -356,7 +356,8 @@ def get_tilda_lead(request):
 
             elif key == "id_company":
                 id_company = int(value)
-        led = Record(phone=phone, name=name,  description=textarea, where="Tilda", companys=id_company)
+            get_company = Companys.objects.get(id=id_company)
+        led = Record(phone=phone, name=name,  description=textarea, where="Tilda", companys=get_company)
         led.save()
         print(200)
         return HttpResponse(200)
