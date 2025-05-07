@@ -337,7 +337,7 @@ def in_work(request, pk):
 
 @csrf_exempt
 @require_POST
-def get_tilda_lead(request, pk):
+def get_tilda_lead(request):
     if request.POST.get('test', False):
         print(200)
         return HttpResponse("test")
@@ -354,7 +354,9 @@ def get_tilda_lead(request, pk):
             elif key == "Textarea":
                 textarea = value
 
-        led = Record(phone=phone, name=name,  description=textarea, where="Tilda", companys=pk)
+            elif key == "id_company":
+                id_company = value
+        led = Record(phone=phone, name=name,  description=textarea, where="Tilda", companys=id_company)
         led.save()
         print(200)
         return HttpResponse(200)
