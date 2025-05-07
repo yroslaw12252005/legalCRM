@@ -2,7 +2,7 @@ from django.urls import path, include
 from leads import views
 urlpatterns = [
     path("", views.home, name='home'),
-    path("tilda_lead/", views.get_tilda_lead),
+    path("tilda_lead/<int:pk>/", views.get_tilda_lead),
     path("logout/", views.logout_user, name='logout'),
     path("record/<int:pk>/", views.record, name='record'),
     path("record/<status>/", views.filter, name='filter'),
@@ -14,7 +14,6 @@ urlpatterns = [
     path("register/", include('accounts.urls'), name='register'),
     path("brak/", views.brak, name='brak'),
     path('results/', views.SearchView.as_view(), name='search'),
-    path('get_time/', views.get_time, name='get_time'),
     path('get_time/', views.get_time, name='get_time'),
     path("records_filt/<filter_upp>/", views.filter_upp, name='filter_upp'),
 ]

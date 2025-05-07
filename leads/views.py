@@ -13,6 +13,7 @@ from django.views.decorators.http import require_POST
 from django import template
 
 from accounts.views import employees
+from company.views import companys
 from felial.views import felials
 
 from .models import Record
@@ -336,7 +337,7 @@ def in_work(request, pk):
 
 @csrf_exempt
 @require_POST
-def get_tilda_lead(request):
+def get_tilda_lead(request, pk):
     if request.POST.get('test', False):
         print(200)
         return HttpResponse("test")
@@ -345,7 +346,6 @@ def get_tilda_lead(request):
         phone = None
         name = None
         textarea = None
-        print(data.items())
         for key, value in data.items():
             if key == "Phone":
                 phone = value
@@ -354,7 +354,7 @@ def get_tilda_lead(request):
             elif key == "Textarea":
                 textarea = value
 
-        led = Record(phone=phone, name=name,  description=textarea, where="Tilda")
+        led = Record(phone=phone, name=name,  description=textarea, where="Tilda", companys=pk)
         led.save()
         print(200)
         return HttpResponse(200)

@@ -1,6 +1,7 @@
 from django.db import models
 from company.models import Companys
 from felial.models import Felial
+
 class Record(models.Model):
     name = models.CharField(max_length=50,default=None, null=True)
     phone = models.CharField(max_length=50, default=None, null=True)
@@ -13,18 +14,18 @@ class Record(models.Model):
     cost = models.DecimalField(max_digits=10, decimal_places=0, null=True)
     companys = models.ForeignKey(
         Companys,
-        on_delete=models.CASCADE,
-         default=1
+        on_delete=models.CASCADE
     )
     felial = models.ForeignKey(
         Felial,
         on_delete=models.SET_NULL,
-        null = True,
-        default=5
+        null = True
     )
     in_work = models.BooleanField(default=False)
     doc = models.URLField(max_length=200, null=True)
     def __str__(self):
+
+
         return f"{self.name}"
 
     class Meta:
