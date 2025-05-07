@@ -355,7 +355,8 @@ def get_tilda_lead(request):
                 textarea = value
 
             elif key == "id_company":
-                get_company = Companys.objects.get(id=int(value))
+                id_company = int(value)
+                get_company = Companys.objects.get(id=id_company)
         led = Record(phone=phone, name=name,  description=textarea, where="Tilda", companys=get_company)
         led.save()
         print(200)
