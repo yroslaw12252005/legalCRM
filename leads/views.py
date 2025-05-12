@@ -138,7 +138,10 @@ def home(request):
     day = current_time.day
     now = f"{year}-{month}-{day}"
     todolist = ToDoList.objects.all()
-    get_records = Record.objects.filter(companys=request.user.companys, felial=request.user.felial)
+    if request.user.status == "Директор КЦ" or request.user.status == "Оператор":
+        get_records = Record.objects.filter(companys=request.user.companys)
+    else:
+        get_records = Record.objects.filter(companys=request.user.companys, felial=request.user.felial)
     user  =  User.objects.all()
     return render(request, "home.html", {"records": get_records, 'users':user, 'todolist':todolist, "now":now})
 
