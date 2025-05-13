@@ -46,7 +46,8 @@ INSTALLED_APPS = [
     'felial',
     'smart_calendar',
     'landing',
-    "client"
+    "client",
+    "rest_framework"
 ]
 
 MIDDLEWARE = [
