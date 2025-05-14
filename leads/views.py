@@ -459,8 +459,7 @@ def get_time(request):
         })
     return HttpResponse("Метод не разрешён", status=405)
 
-
-#######################################
+#######################################################
 
 from .serializer import UserSerializer
 
