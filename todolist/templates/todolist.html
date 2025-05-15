@@ -33,14 +33,15 @@
 								{% elif todo.priority == "Средний" %}
 								<td class="table-warning">{{todo.priority}}</td>
 						      	{% elif todo.priority == "Низкий" %}
-                                <td>{{todo.category}}</td>
+
 
 								{% endif %}
-
+<td>{{todo.category}}</td>
 						    </tr>
 						    <tr>
 						    	<td colspan="6" id="collapseOne"  style="border-bottom-width:3px" class="collapse show acc" data-parent="#accordion">
 						    		<p>{{todo.description}}</p>
+									<a href="{% url 'delete_task' todo.id %}" style="color: red; text-decoration: none;">Удалить задачу</a>
 						    	</td>
 						    </tr>
 

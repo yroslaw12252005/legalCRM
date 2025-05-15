@@ -21,3 +21,12 @@ def add_task(request):
             messages.success(request, f"Задача {get_form_task.title} успешно создана")
             return redirect("todolist")
     return render(request, "add_task.html", {"form": get_form_task, 'pk':request.user.id})
+
+def delete_task(request, pk):
+    if request.user.is_authenticated:
+        del_task = ToDoList.objects.get(id=pk)
+        del_task.delete()
+        messages.success(request, "Вы спешно удалил задачу")
+        return redirect("home")
+    else:
+        return redirect("home")
