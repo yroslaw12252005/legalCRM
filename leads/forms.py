@@ -7,11 +7,15 @@ from felial.models import Felial
 from django.forms import ModelChoiceField
 
 class AddRecordForm(forms.ModelForm):
-    status = forms.ChoiceField(label="Статус заявки", choices=(
+    status = forms.ChoiceField(widget=forms.Select(attrs={
+            'class': 'form-select' # Опционально: inline-стили
+        }), label="Статус заявки", choices=(
     ("Новая", "Новая"), ("Брак", "Брак"), ("Недозвон", "Недозвон"), ("Перезвон", "Перезвон"), ("Запись в офис", "Запись в офис"),
     ("Отказ", "Отказ"), ("Онлайн", "Онлайн"), ("Акт", "Акт"), ("Договор", "Договор")))
 
-    where = forms.ChoiceField(label="Источник", choices=(
+    where = forms.ChoiceField(widget=forms.Select(attrs={
+            'class': 'form-select' # Опционально: inline-стили
+        }), label="Источник", choices=(
         ("VK", "VK"), ("Tilda", "Tilda"), ("РЕ", "РЕ"), ("Звонок", "Звонок")))
 
     def __init__(self, *args, **kwargs):
@@ -20,8 +24,11 @@ class AddRecordForm(forms.ModelForm):
         super().__init__(*args, **kwargs)
         self.fields['felial'].queryset = Felial.objects.filter(companys=self.user.companys.id)
 
-    felial = forms.ModelChoiceField(queryset=Felial.objects.none(),
+    felial = forms.ModelChoiceField(widget=forms.Select(attrs={
+            'class': 'form-select', 'style':'width: 181px;' # Опционально: inline-стили
+        }), queryset=Felial.objects.none(),
         initial = 0, label='Фелиал')
+
 
     class Meta:
         model = Record
@@ -30,6 +37,7 @@ class AddRecordForm(forms.ModelForm):
             "name": forms.TextInput(attrs={"class": "form-control", "label": "Your name"}),
             "description": forms.TextInput(attrs={"class": "form-control"}),
             "phone": forms.TextInput(attrs={"class": "form-control"}),
+
         }
         labels = {'name': 'Имя', "description":"Описание", "phone":"Телефон", "status":"Статус", "employees_KC":"Оператор", "employees_UPP":"Юрист",  'where':'Источник', 'felial':'Филиал'}
 

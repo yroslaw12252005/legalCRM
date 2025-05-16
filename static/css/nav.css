@@ -14,10 +14,8 @@
     src: url('../fonts/druktextwidecyr-medium.woff') format('woff');
 }
 
-nav{ 
+nav{
   display: flex;
-  color: #fff;   
-  font-size: 14px;
   width: 150px;
   float: left;
   display: inline;
@@ -25,69 +23,102 @@ nav{
   margin-right: 10px;
   width: 300px;
   height: 100vh;
-  background-color: #1D529C;
   position: fixed;
-}
-.blok-nav{
-  padding: 10px 20px;
-}
-.nav-line {
-  width:100%;
-  border-bottom: 1px solid #fff;
-}
-.avatar{
-  width: 46px;
-  height: 47px;
-  border-radius: 100px;
-  margin-right: 10px;
-}
-.user{
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
+    background: #2c3e50;
+    color: #ecf0f1;
+    padding: 20px 15px;
+    font-family: 'Segoe UI', sans-serif;
 }
 
-.user p{
-  font-size: 20px;
-  font-family: tilda-sans_bold;
-}
 
-.mail{
-    font-family:tilda-sans_regular;
-}
-.icon_nav{
-  display: flex;
-  justify-content: space-between;
-  padding-top: 50px;
-}
-
-.nav_right a {
-  text-decoration: none;
-  color: #fff;
-  font-size: 20px;
-  padding-top: 0px;
-  font-family: tilda-sans_regular;
-}
-
-.nav_right ul {
-  padding-left: 0px;
-}
-
-.wigets{
-  height: 60vh;
-}
-
-ul > li{
- margin-bottom:20px;
-}
-@media (max-width:1500px) {
-    .wigets{
-      height: 40vh;
-    }
-}
-.sidebar {
+nav {
             overflow-y: auto; /* Включаем прокрутку по вертикали */
             scrollbar-width: thin;
             scrollbar-color: darkgrey transparent;
-        }
+}
+
+
+.user-header {
+    border-bottom: 1px solid #34495e;
+    padding-bottom: 15px;
+    margin-bottom: 15px;
+}
+
+.username {
+    margin: 0;
+    font-size: 1.4em;
+    color: #fff;
+}
+
+.company-id {
+    font-size: 0.9em;
+    color: #7f8c8d;
+}
+
+.user-email {
+    margin-bottom: 25px;
+}
+
+.email-link {
+    color: #3498db;
+    text-decoration: none;
+    font-size: 0.9em;
+}
+
+.email-link:hover {
+    text-decoration: underline;
+}
+
+.month-navigation {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 30px;
+}
+
+.nav-button {
+    background: none;
+    border: 1px solid #34495e;
+    color: #bdc3c7;
+    border-radius: 5px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.nav-button:hover {
+    background: #34495e;
+    color: #fff;
+}
+
+.sidebar-menu ul {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.sidebar-menu li {
+    padding: 12px 15px;
+    margin: 5px 0;
+    border-radius: 5px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    transition: all 0.2s ease;
+}
+
+.sidebar-menu li:hover {
+    background: #34495e;
+}
+
+.sidebar-menu li.active {
+    color: white;
+}
+
+.sidebar-menu i {
+    width: 25px;
+    margin-right: 15px;
+    font-size: 1.1em;
+}
+
+/* Иконки Font Awesome */
+@import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
 /***************************/
