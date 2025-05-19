@@ -71,9 +71,8 @@
     justify-content: space-evenly;">
     <h3>Записи в офис</h3>
 </div>
-
+<!--
     <div class="schedule-container row">
-        <!-- Временная шкала -->
         <div class="time-column col-1" style="margin-top:28px; font-size: 16px;">
             {% for hour in 9|get_range:20 %}
                 <div class="time-slot" style="height: 400px;">
@@ -84,7 +83,6 @@
         </div>
 
         <div class="col row">
-                    <!-- Карточки записей -->
         <div class="bookings-container col-12">
             <div class="row">
                 {% for user in users %}
@@ -117,5 +115,145 @@
         </div>
 </div>
 
+-->
+
+    <style>
+        :root {
+            --primary-color: #2C7BE5;
+            --border-color: #E3EBF6;
+            --hover-bg: #F9FAFB;
+        }
+
+
+        .calendar-header {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+            padding: 12px;
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: 80px repeat(5, 1fr);
+            gap: 1px;
+            background: var(--border-color);
+            border-radius: 8px;
+            overflow: hidden;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .time-slot {
+            padding: 10px;
+            background: white;
+            font-size: 0.9em;
+            color: #6E84A3;
+            text-align: right;
+            border-bottom: 1px solid var(--border-color);
+        }
+
+        .resource-header {
+            background: white;
+            padding: 15px;
+            font-weight: 600;
+            color: var(--primary-color);
+            text-align: center;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .event {
+            background: #F0F5FF;
+            border: 1px solid var(--primary-color);
+            border-radius: 4px;
+            padding: 8px;
+            margin: 2px;
+            font-size: 0.85em;
+            position: relative;
+            cursor: pointer;
+            transition: 0.2s;
+        }
+
+        .event:hover {
+            background: #E6F0FF;
+            transform: translateY(-1px);
+        }
+
+        .event::before {
+            content: '';
+            position: absolute;
+            left: 3px;
+            top: 5px;
+            bottom: 5px;
+            width: 3px;
+            background: var(--primary-color);
+            border-radius: 2px;
+        }
+
+        .event-content {
+            padding-left: 10px;
+        }
+
+        .event-time {
+            color: var(--primary-color);
+            font-weight: 500;
+            margin-bottom: 3px;
+        }
+
+        .current-time {
+            background: #FFF8DD;
+            border-color: #FFD700;
+        }
+    </style>
+
+
+    <div class="calendar-grid">
+        <!-- Time column -->
+
+        <div class="resource-header"></div>
+
+        <div class="empl">
+            {% for user in users %}{% if user.status == "Юрист пирвичник" %}
+                    <div class="resource-header">{{ user.username}}</div>
+
+
+                        {% endif %}
+                    {% endfor %}
+        </div>
+        {% for user in users %}{% if user.status == "Юрист пирвичник" %}
+        <div class="clae">
+            {% for booking in bookings %}
+                            {% if booking.employees.id == user.id %}
+
+
+                            {% with start=booking.time %}
+                            {% with top=start|math:400%}
+                            {% with height=100 %}
+                                <div>
+                                    <div class="" style="background: #E6FFE6; border-color: #00C851;top: {{ top }}px;
+                                                                height: {{ height }}px;">
+                                        <div class="event-content">
+                                            <div class="event-time">10:00-11:00</div>
+                                            {{ booking.client }}
+                                        </div>
+                                    </div>
+                                </div>
+                    {% endwith %}{% endwith %}{% endwith %}{% endif %}
+
+
+
+                    {% endfor %}
+        </div>
+                          {% endif %}
+                    {% endfor %}
+
+
+
+
+
+
+    </div>
 
 {% endblock content %}

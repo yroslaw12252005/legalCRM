@@ -22,13 +22,12 @@
       </div>
       <div class="">
           {% if user.status == "Директор ЮПП" or user.status == "Администратор"%}
-          <a class="dropdown-item" href="{% url 'filter_upp' 'Ваня20200' %}">Ваня20200</a>
-          <a class="dropdown-item" href="{% url 'filter_upp' 'Катя20212' %}">Катя20212</a>
-          <a class="dropdown-item" href="{% url 'filter_upp' 'Дима20214' %}">Дима20214</a>
-          <a class="dropdown-item" href="{% url 'filter_upp' 'Тарон20196' %}">Тарон20196</a>
-          <a class="dropdown-item" href="{% url 'filter_upp' 'Алексей 20215' %}">Алексей 20215</a>
-          <a class="dropdown-item" href="{% url 'filter_upp' 'Алексей 20216' %}">Алексей 20216</a>
-      {% endif %}
+            <a class="dropdown-item" href="{% url 'filter_upp' 'Ваня20200' %}">Ваня20200</a>
+            <a class="dropdown-item" href="{% url 'filter_upp' 'Катя20212' %}">Катя20212</a>
+            <a class="dropdown-item" href="{% url 'filter_upp' 'Тарон20196' %}">Тарон20196</a>
+            <a class="dropdown-item" href="{% url 'filter_upp' 'Алексей 20215' %}">Алексей 20215</a>
+            <a class="dropdown-item" href="{% url 'filter_upp' 'Алексей 20216' %}">Алексей 20216</a>
+          {% endif %}
       </div>
       </div>
 

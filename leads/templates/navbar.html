@@ -155,17 +155,58 @@ $(document).ready(function() {
         <ul>
         {% if user.is_authenticated %}
             {% if user.status == "Директор КЦ" %}
-
-
-
-
+                <li class="active">
+                    <span><a style=" color: #fff; text-decoration: none;" href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
+                </li>
+                <li>
+                    <span><a style=" color: #fff; text-decoration: none;" href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
+                </li>
             {% endif %}
-            <li class="active">
 
+            {% if user.status == "Оператор" %}
+                 <li class="active">
+                    <span><a style=" color: #fff; text-decoration: none;" href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
+                 </li>
+                    <li>
+                        <span><a style=" color: #fff; text-decoration: none;" href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
+                    </li>
+            {% endif %}
+
+
+            {% if user.status == "Директор ЮПП" %}
+                 <li class="active">
+                <span><a style=" color: #fff; text-decoration: none;" href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
+                </li>
+                <li>
+                    <span><a style=" color: #fff; text-decoration: none;" href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
+                </li>
+                <li>
+
+                    <span><a style=" color: #fff; text-decoration: none;" href="{% url 'brak'%}"><img src="{% static 'img/brak.png' %}"  width="28px" alt=""> Бракованные сделки</a></span>
+                </li>
+            {% endif %}
+
+             {% if user.status == "Юрист пирвичник" %}
+             <li class="active">
                 <span><a style=" color: #fff; text-decoration: none;" href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
             </li>
             <li>
-
+                <span><a style=" color: #fff; text-decoration: none;" href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
+            </li>
+            {% endif %}
+            {% if user.status == "Менеджер" %}
+                 <li class="active">
+                <span><a style=" color: #fff; text-decoration: none;" href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
+            </li>
+            <li>
+                <span><a style=" color: #fff; text-decoration: none;" href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
+            </li>
+            {% endif %}
+            {% if user.status == "Администратор" %}
+                        <li class="active">
+                <span><a style=" color: #fff; text-decoration: none;" href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
+            </li>
+            <li>
                 <span><a style=" color: #fff; text-decoration: none;" href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
             </li>
             <li>
@@ -188,10 +229,14 @@ $(document).ready(function() {
 
                 <span><a style=" color: #fff; text-decoration: none;" href="{% url 'felials'%}"><img src="{% static 'img/branch.png' %}" alt=""> Ваши филиалы</a></span>
             </li>
-            <li>
+            {% endif %}
+            {% if user.username == "Yrik" or user.username == "Сергей" %}
+                        <li>
 
                 <span><a style=" color: #fff; text-decoration: none;" href="{% url 'companys'%}"><img width="24px" src="{% static 'img/statistics.png' %}" alt=""> Статистика компаний</a></span>
             </li>
+            {% endif %}
+
         {% endif %}
         </ul>
     </div>

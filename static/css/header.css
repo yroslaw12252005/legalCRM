@@ -12,19 +12,18 @@ header{
   padding: 20px 60px;
 }
 
-
 .search{
   padding: 15px 150px;
   border-radius: 30px;
   border: none;
   background-color: #EFF0F1;
 }
- .search_btn{
-    width: 200px;
-    background-color: #85cbf2;
-    border: none;
-}
 
+.search_btn{
+    width: 200px;
+    border: none;
+    border-radius: 15px;
+}
 
 .dropdown {
   position: relative;
