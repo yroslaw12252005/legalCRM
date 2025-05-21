@@ -18,6 +18,7 @@ class AddEventForm(forms.ModelForm):
                                                                 status="Юрист пирвичник")
         self.fields['time'].choices = [(t, t) for t in available_times if t != 'none']
 
+
     client = forms.ModelChoiceField(
         queryset=Record.objects.filter(status="Запись в офис"),
         label="Клиент"

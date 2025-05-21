@@ -15,8 +15,6 @@
             font-family: 'Roboto', Arial, sans-serif;
         }
 
-
-
         .form-container {
             background: white;
             padding: 2.5rem;
@@ -97,8 +95,10 @@
      <div class="form-container">
         <h1>📅 Запись на приём</h1>
         <form method="post">
-    {% csrf_token %}
-    {{ form.as_p }}
+
+            {% csrf_token %}
+
+            {{ form.as_p }}
     <button type="submit" class="btn btn-success">Сохранить</button>
 </form>
     </div>

@@ -124,7 +124,6 @@
             --hover-bg: #F9FAFB;
         }
 
-
         .calendar-header {
             display: flex;
             align-items: center;
@@ -211,43 +210,44 @@
 
     <div class="calendar-grid">
         <!-- Time column -->
-
         <div class="resource-header"></div>
 
         <div class="empl">
             {% for user in users %}{% if user.status == "Юрист пирвичник" %}
-                    <div class="resource-header">{{ user.username}}</div>
+                    <div class="resource-header row">{{ user.username}}
 
-
-                        {% endif %}
-                    {% endfor %}
-        </div>
-        {% for user in users %}{% if user.status == "Юрист пирвичник" %}
-        <div class="clae">
-            {% for booking in bookings %}
+                           {% if user.status == "Юрист пирвичник" %}
+                            {% for booking in bookings %}
                             {% if booking.employees.id == user.id %}
 
 
                             {% with start=booking.time %}
                             {% with top=start|math:400%}
+
+
                             {% with height=100 %}
-                                <div>
-                                    <div class="" style="background: #E6FFE6; border-color: #00C851;top: {{ top }}px;
+
+                                    <div class="" style="position: relative;     width: 150px background: #E6FFE6; border-color: #00C851;top: {{ top }}px;
                                                                 height: {{ height }}px;">
                                         <div class="event-content">
                                             <div class="event-time">10:00-11:00</div>
                                             {{ booking.client }}
                                         </div>
                                     </div>
-                                </div>
-                    {% endwith %}{% endwith %}{% endwith %}{% endif %}
+
+                        {% endwith %} {% endwith %}{% endwith %}{% endif %}
 
 
 
                     {% endfor %}
-        </div>
-                          {% endif %}
+
+        {% endif %}
+
+
+                    </div>
+                        {% endif %}
                     {% endfor %}
+                    </div>
 
 
 
