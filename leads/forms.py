@@ -35,7 +35,7 @@ class AddRecordForm(forms.ModelForm):
         fields = ['name', 'description', 'phone', 'status', 'where', 'felial']
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control", "label": "Your name"}),
-            "description": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "cols":"40", "rows":"5"}),
             "phone": forms.TextInput(attrs={"class": "form-control"}),
 
         }

@@ -53,24 +53,11 @@
             text-align: center;
         }
     </style>
-<a href="{% url 'add_event' selected_date%}" class="btn btn-success" style="margin-top:50px">Добавить запись</a>
+
 
 {% load custom_tags %}
 {% load static %}
-    <div class="navigation">
 
-        <h3 style="margin: 0 20px;"><a href="?date={{ previous_date|date:'Y-m-d' }}" style="color: black;
-    font-size: 35px;
-    text-decoration: none;">←</a>  {{ selected_date|date:"d.m.Y" }}  <a href="?date={{ next_date|date:'Y-m-d' }}" style="color: black;
-    font-size: 35px;
-    text-decoration: none;">→</a></h3>
-
-    </div>
-<div class="" style="    display: flex
-;
-    justify-content: space-evenly;">
-    <h3>Записи в офис</h3>
-</div>
 <!--
     <div class="schedule-container row">
         <div class="time-column col-1" style="margin-top:28px; font-size: 16px;">
@@ -133,12 +120,10 @@
             background: white;
             border-radius: 8px;
             box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+                justify-content: space-between;
         }
 
         .calendar-grid {
-            display: grid;
-            grid-template-columns: 80px repeat(5, 1fr);
-            gap: 1px;
             background: var(--border-color);
             border-radius: 8px;
             overflow: hidden;
@@ -207,14 +192,20 @@
         }
     </style>
 
+    <div class="calendar-header">
+        <h3 style="margin: 0 20px;"><a href="?date={{ previous_date|date:'Y-m-d' }}" style="color: black;
+    font-size: 35px;
+    text-decoration: none;">←</a>  {{ selected_date|date:"d.m.Y" }}  <a href="?date={{ next_date|date:'Y-m-d' }}" style="color: black;
+    font-size: 35px;
+    text-decoration: none;">→</a></h3>
 
-    <div class="calendar-grid">
-        <!-- Time column -->
-        <div class="resource-header"></div>
+        <a href="{% url 'add_event' selected_date%}" class="btn btn-success" style="margin-top:50px">Добавить запись</a>
+    </div>
 
-        <div class="empl">
+    <div class="calendar-grid ">
+        <div class="empl row">
             {% for user in users %}{% if user.status == "Юрист пирвичник" %}
-                    <div class="resource-header row">{{ user.username}}
+                    <div class="col"> <h6 class="resource-header">{{ user.username}}</h6>
 
                            {% if user.status == "Юрист пирвичник" %}
                             {% for booking in bookings %}
@@ -226,17 +217,18 @@
 
 
                             {% with height=100 %}
-
-                                    <div class="" style="position: relative;     width: 150px background: #E6FFE6; border-color: #00C851;top: {{ top }}px;
-                                                                height: {{ height }}px;">
+<a href="{% url 'record' booking.client.id %}" style="text-decoration: none;">
+                                    <div class="event" style="position: relative;     width: 150px background: #E6FFE6; border-color: #00C851;;
+                                                             ">
                                         <div class="event-content">
-                                            <div class="event-time">10:00-11:00</div>
+                                            <div class="event-time">{{ booking.time }}</div>
                                             {{ booking.client }}
                                         </div>
                                     </div>
+</a>
+                        {% endwith %}{% endwith %}{% endwith %}{% endif %}
 
-                        {% endwith %} {% endwith %}{% endwith %}{% endif %}
-
+                        
 
 
                     {% endfor %}
