@@ -3,81 +3,6 @@
 <link rel="stylesheet" href="{% static 'css/nav.css' %}" />
 <link rel="stylesheet" href="{% static 'css/style.css' %}" />
 <nav role="main container col">
-<!--
-  <div class="blok-nav user">
-    <p class="employees_name">{{ user.username }}<br><span class="mail">{{ user.email }}</span><br><span class="mail">ID компании:{{ user.companys.id }}</span></p>
-      <a class="nav-link"  href="{% url 'logout'%}"><img src="{% static 'img/logout.png' %}" alt=""></a>
-  </div>
-    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
-
-    <div class="" style="display: flex;justify-content: space-around;">
-        <p  style="font-size: 14px;">← Предыдущий месяц</p>
-<p style="font-size: 14px;">Следующий месяц →</p>
-    </div>
-
-  <div class="nav-line"></div>
-  <div class="nav_right blok-nav">
-      <h4>Панель навигации</h4>
-
-    <ul>
-      {% if user.is_authenticated %}
-
-      {% if user.status == "Директор КЦ" %}
-            <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></li>
-            <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> список задач</a></li>
-      {% endif %}
-
-      {% if user.status == "Оператор" %}
-        <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></li>
-        <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> список задач</a></li>
-      {% endif %}
-
-      {% if user.status == "Директор ЮПП" %}
-        <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></li>
-        <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> список задач</a></li>
-      {% endif %}
-
-      {% if user.status == "Юрист пирвичник" %}
-              <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></li>
-              <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> список задач</a></li>
-      {% endif %}
-
-      {% if user.status == "Менеджер" %}
-              <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></li>
-              <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> список задач</a></li>
-
-      {% endif %}
-
-      {% if user.status == "Администратор" %}
-                   <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></li>
-                    <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> список задач</a></li>
-                    <li><a href="{% url 'brak'%}"><img src="{% static 'img/brak.png' %}" alt=""> бракованные сделки</a></li>
-                    <li class="nav-item"><a class="nav-link"  href="{% url 'reg'%}"><img src="{% static 'img/add_user.png' %}" alt=""> добавить польователя</a></li>
-                    <li class="nav-item"><a class="nav-link"  href="{% url 'employees'%}"><img src="{% static 'img/employee.png' %}" alt=""> пользователи</a></li>
-
-                    <li><a href="{% url 'add_felial'%}"><img src="{% static 'img/add_felial.png' %}" alt=""> Создать Филиал</a></li>
-                    <li><a href="{% url 'felials'%}">Ваши Филиал</a></li>
-        {% endif %}
-
-        {% if user.username == "Yrik" or user.username == "Сергей" %}
-            <li><a href="{% url 'companys'%}"><img width="24px" src="{% static 'img/statistics.png' %}" alt=""> статистика компаний</a></li>
-        {% endif %}
-
-      <li><a href=""><img src="{% static 'img/leads.png' %}" alt=""> лиды</a></li>
-      <li class="nav-item"><a class="nav-link"  href="{% url 'todolist'%}">список задач</a></li>
-      <li><a href=""><img src="{% static 'img/brak.png' %}" alt=""> бракованные сделки</a></li>
-      <li class="nav-item"><a class="nav-link"  href="{% url 'reg'%}">добавить польователя</a></li>
-      <li class="nav-item"><img src="{% static 'img/employee.png' %}" alt=""><a class="nav-link"  href="{% url 'employees'%}">пользователи</a></li>
-      <li><a href="{% url 'home'%}"><img src="{% static 'img/leads.png' %}" alt="">Стоимость договора</a></li>
-
-      {% endif %}
-    </ul>
-  </div>
-  <div class="nav-line"></div> ЧЧ=
-  <div class="wigets blok-nav">
-  </div>
--->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
         <script>
@@ -133,7 +58,13 @@ $(document).ready(function() {
     <div class="user-info">
         <div class="user-header">
             <span class="company-id">ID компании: {{ user.companys.id }}</span>
-            <h2 class="username">{{ user.username }}</h2>
+            <div style="display: flex
+;
+    justify-content: space-between;">
+                 <h2 class="username">{{ user.username }}</h2>
+            <a class="nav-link" href="{% url 'logout'%}"><img src="/static/img/logout.png" alt=""></a>
+            </div>
+
         </div>
         <div class="user-email">
             <a href="mailto:{{ user.email }}" class="email-link">{{ user.email }}</a>
@@ -149,6 +80,7 @@ $(document).ready(function() {
             Следующий месяц
         </button>
     </div>
+
 <div id="content-container"></div>
     <!-- Меню -->
     <div class="sidebar-menu">
@@ -230,6 +162,8 @@ $(document).ready(function() {
                 <span><a style=" color: #fff; text-decoration: none;" href="{% url 'felials'%}"><img src="{% static 'img/branch.png' %}" alt=""> Ваши филиалы</a></span>
             </li>
             {% endif %}
+
+
             {% if user.username == "Yrik" or user.username == "Сергей" %}
                         <li>
 
@@ -241,283 +175,5 @@ $(document).ready(function() {
         </ul>
     </div>
 
-
-
 </nav>
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 {% endif %}
