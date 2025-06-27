@@ -23,7 +23,10 @@
 }">{{ employee.username }}</a></td>
           <td class="table-default"><p>{{ user.email }}</p></td>
           <td class="table-default"><p><span class="status-badge manager">{{ employee.status }}</span></p></td>
-          <td class="table-default"><a href="{% url 'delete_employee' employee.id %}" style="color: red; text-decoration: none;">Удалить сотрудника</a></td>
+          <td class="table-default">
+            <a href="{% url 'update_employee' employee.id %}" style="color: rgb(0, 255, 157); text-decoration: none;">Редактирование</a><br>
+            <a href="{% url 'delete_employee' employee.id %}" style="color: red; text-decoration: none;">Удалить сотрудника</a></td>
+        
         </tr>
         {% endfor %}
 

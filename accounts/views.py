@@ -44,3 +44,15 @@ def register_employees(request):
 
     return render(request, "register_employees.html", {"form": form})
 
+def update_employees(request, pk):
+    if request.user.is_authenticated:
+        employe = User.objects.get(id=pk)
+        form = AddEmployeesForm(request.POST or None, instance=employe)
+        if form.is_valid():
+            updated_employees = form.save()
+            messages.success(request, f"Сотрудник '{updated_employees.username}' обнавлен")
+            return redirect("home")
+        return render(request, "register_employees.html", {"form": form})
+    else:
+        messages.error(request, "You have to login")
+        return redirect("home")

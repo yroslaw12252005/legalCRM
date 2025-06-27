@@ -347,6 +347,18 @@
                 <div class="stat-label">Дата поступления</div>
                 <div class="stat-value">{{ record.created_at }}</div>
             </div>
+            {% if user.status == "Менеджер" or user.status == "Администратор"%}
+             <div class="stat-item">
+                <div class="stat-label">КЦ</div>
+                <div >{{ record.employees_KC }}</div>
+            </div>
+
+            <div class="stat-item">
+                <div class="stat-label">ЮПП</div>
+                <div >{{ record.employees_UPP}}</div>
+            </div>
+            {% endif %}
+           
 
             <div class="stat-item">
                 <div class="stat-label">Статус заявки</div>

@@ -328,7 +328,7 @@ def update_record(request, pk):
         if form.is_valid():
             updated_record = form.save()
             messages.success(request, f"Запись '{updated_record.name}' обнавлена")
-            return redirect("home")
+            return redirect("record", pk=pk)
         return render(request, "update_record.html", {"form": form})
     else:
         messages.error(request, "You have to login")
@@ -338,7 +338,7 @@ def in_work(request, pk):
     record = Record.objects.get(id=pk)
     record.in_work = 1
     record.save()
-    return redirect("home")
+    return redirect("record", pk=pk)
 
 @csrf_exempt
 @require_POST
