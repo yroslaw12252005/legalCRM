@@ -155,6 +155,10 @@ def filter_upp(request, filter_upp):
     records = Record.objects.filter(employees_UPP=filter_upp, companys=request.user.companys, felial=request.user.felial)
     return render(request, "home.html", {"records": records})
 
+def filter_type(request, type):
+    records = Record.objects.filter(type=type, companys=request.user.companys, felial=request.user.felial)
+    return render(request, "home.html", {"records": records})
+
 def brak(request):
     records = Record.objects.filter(status="Брак")
     return render(request, "home.html", {"records": records})
@@ -189,6 +193,8 @@ async def record(request, pk):
     init_upload_form = sync_to_async(lambda: FileUploadForm(request.POST or None, request.FILES or None, use_required_attribute=False), thread_sensitive=True)
     upload_file_form = await init_upload_form()
 
+    # Удаляю инициализацию TopicForm
+
     # Проверка статуса бронирования
     check_booking = sync_to_async(Booking.objects.filter(client_id=pk).exists, thread_sensitive=True)
     booking_exists = await check_booking()
@@ -200,6 +206,7 @@ async def record(request, pk):
     form_employees_UPP_valid = await sync_to_async(form_employees_UPP.is_valid, thread_sensitive=True)()
     cost_valid = await sync_to_async(cost_form.is_valid, thread_sensitive=True)()
     upload_valid = await sync_to_async(upload_file_form.is_valid, thread_sensitive=True)()
+    # Удаляю topic_form_valid
     # Обработка форм
     form_status_valid = await sync_to_async(form_status.is_valid, thread_sensitive=True)()
     if form_status_valid:
@@ -269,6 +276,7 @@ async def record(request, pk):
                        'upload_file_form': upload_file_form, 'get_status_com':get_status_com
                        })
 
+    # Удаляю topic_form из контекста рендера
     # Рендер страницы, если нет валидных форм
     return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                    "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,

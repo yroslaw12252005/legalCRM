@@ -365,6 +365,17 @@
                 <div class="status-badge">{{ record.status }}</div>
             </div>
 
+            <div class="stat-item">
+                <div class="stat-label">Тематика заявки</div>
+                <div class="status">
+                    {% if record.type == none %}
+                        Нет тематики
+                    {% elif record.type != none %}
+                        {{ record.type }}
+                    {% endif %}
+                </div>
+            </div>
+
              {% if record.doc %}
             <div class="stat-item">
                 <div class="stat-label">Выгрузить докоменты</div>

@@ -6,12 +6,19 @@ from accounts.models import User
 from felial.models import Felial
 from django.forms import ModelChoiceField
 
+
 class AddRecordForm(forms.ModelForm):
     status = forms.ChoiceField(widget=forms.Select(attrs={
             'class': 'form-select' # Опционально: inline-стили
         }), label="Статус заявки", choices=(
     ("Новая", "Новая"), ("Брак", "Брак"), ("Недозвон", "Недозвон"), ("Перезвон", "Перезвон"), ("Запись в офис", "Запись в офис"),
     ("Отказ", "Отказ"), ("Онлайн", "Онлайн"), ("Акт", "Акт"), ("Договор", "Договор")))
+    
+    type = forms.ChoiceField(widget=forms.Select(attrs={
+                'class': 'form-select' # Опционально: inline-стили
+            }), label="Тематика", choices=(
+        ("Военка", "Военка"), ("Семейная", "Семейная"), ("Военная", "Военная"), ("Арбитраж", "Арбитраж")))
+
 
     where = forms.ChoiceField(widget=forms.Select(attrs={
             'class': 'form-select' # Опционально: inline-стили
@@ -32,14 +39,14 @@ class AddRecordForm(forms.ModelForm):
 
     class Meta:
         model = Record
-        fields = ['name', 'description', 'phone', 'status', 'where', 'felial']
+        fields = ['name', 'description', 'phone', 'status', 'type', 'where', 'felial']
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control", "label": "Your name"}),
             "description": forms.Textarea(attrs={"class": "form-control", "cols":"40", "rows":"5"}),
             "phone": forms.TextInput(attrs={"class": "form-control"}),
 
         }
-        labels = {'name': 'Имя', "description":"Описание", "phone":"Телефон", "status":"Статус", "employees_KC":"Оператор", "employees_UPP":"Юрист",  'where':'Источник', 'felial':'Филиал'}
+        labels = {'name': 'Имя', "description":"Описание", "phone":"Телефон", "status":"Статус", 'topic':'Тип заявки' ,"employees_KC":"Оператор", "employees_UPP":"Юрист",  'where':'Источник', 'felial':'Филиал'}
 
 class StatusForm(forms.ModelForm):
     status = forms.ChoiceField(label="Статус заявки", choices=(
@@ -50,6 +57,19 @@ class StatusForm(forms.ModelForm):
         model = Record
         fields = ['status']
         labels = {'status': 'Статус заявки'}
+
+        
+class TopicForm(forms.ModelForm):
+    topic = forms.ChoiceField(widget=forms.Select(attrs={
+                'class': 'form-select' # Опционально: inline-стили
+            }), label="Тематика", choices=(
+        ("Военка", "Военка"), ("Семейная", "Семейная"), ("Военная", "Военная"), ("Арбитраж", "Арбитраж")))
+
+    class Meta:
+        model = Record
+        fields = ['topic']
+        labels = {'topic': 'Тип заявки'}
+
 
 class Employees_KCForm(forms.ModelForm):
     employees_KC = forms.ModelChoiceField(queryset=User.objects.filter(status="Оператор"), widget=forms.Select(attrs={

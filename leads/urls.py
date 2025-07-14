@@ -16,6 +16,7 @@ urlpatterns = [
     path('results/', views.SearchView.as_view(), name='search'),
     path('get_time/', views.get_time, name='get_time'),
     path("records_filt/<filter_upp>/", views.filter_upp, name='filter_upp'),
+    path("type_filter/<type>/", views.filter_type, name='filter_type'),
 
     path("api/v1/felters/", views.FiltersAPI.as_view()),
 ]
