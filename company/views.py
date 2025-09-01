@@ -11,7 +11,12 @@ from felial.models import Felial
 
 from .forms import RegCompany
 from accounts.forms import AddEmployeesForm,  AddSuperEmployeesForm
-from django.contrib.auth.models import User
+
+import io
+import base64
+import matplotlib.pyplot as plt
+from django.http import HttpResponse
+
 
 def companys(request):
     companys = Companys.objects.all()
@@ -123,6 +128,57 @@ class CompanyView(TemplateView):
                 "re_qs_fl": records.filter(where="РЕ").count(),
             }
         return branch_stats
+
+    def _generate_plot(self, company):
+        records = Record.objects.filter(companys=company)
+        statuses = ['Акт', 'В работе', 'Новая', 'Брак', 'Недозвон', 'Перезвон', 'Запись в офис', 'Отказ', 'Онлайн', 'Договор']
+        status_counts = [records.filter(status=s).count() for s in statuses]
+        plt.figure(figsize=(8, 4))
+        plt.bar(statuses, status_counts, color='skyblue')
+        plt.title('Распределение сделок по статусам')
+        plt.ylabel('Количество')
+        plt.xticks(rotation=30, ha='right')
+        buf = io.BytesIO()
+        plt.tight_layout()
+        plt.savefig(buf, format='png')
+        plt.close()
+        buf.seek(0)
+        image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+        return f'<img src="data:image/png;base64,{image_base64}"/>'
+
+    def _generate_plot_operator(self, company):
+        # Пример: распределение сделок по источникам для операторов
+        records = Record.objects.filter(companys=company)
+        sources = ['VK', 'Tilda', 'Звонок', 'РЕ']
+        source_counts = [records.filter(where=s).count() for s in sources]
+        plt.figure(figsize=(6, 4))
+        plt.pie(source_counts, labels=sources, autopct='%1.1f%%', startangle=140)
+        plt.title('Распределение сделок по источникам')
+        buf = io.BytesIO()
+        plt.tight_layout()
+        plt.savefig(buf, format='png')
+        plt.close()
+        buf.seek(0)
+        image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+        return f'<img src="data:image/png;base64,{image_base64}"/>'
+
+    def _generate_plot_urist(self, company):
+        # Пример: количество сотрудников по статусу
+        users = User.objects.filter(companys=company)
+        statuses = users.values_list('status', flat=True).distinct()
+        counts = [users.filter(status=s).count() for s in statuses]
+        plt.figure(figsize=(6, 4))
+        plt.bar(statuses, counts, color='orange')
+        plt.title('Сотрудники по статусу')
+        plt.ylabel('Количество')
+        plt.xticks(rotation=30, ha='right')
+        buf = io.BytesIO()
+        plt.tight_layout()
+        plt.savefig(buf, format='png')
+        plt.close()
+        buf.seek(0)
+        image_base64 = base64.b64encode(buf.read()).decode('utf-8')
+        return f'<img src="data:image/png;base64,{image_base64}"/>'
 
 
 def reg_company(request):
