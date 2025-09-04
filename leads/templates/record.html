@@ -336,7 +336,7 @@
 
         <div class="stats-grid">
             <div class="stat-item">
-                <div class="stat-label">id</div>
+                <div class="stat-label">Номер заявки(уникальный)</div>
                 <div class="stat-value">{{ record.id }}</div>
             </div>
             <div class="stat-item">
@@ -348,6 +348,11 @@
                 <div class="stat-value">{{ record.created_at }}</div>
             </div>
             {% if user.status == "Менеджер" or user.status == "Администратор"%}
+            <div class="stat-item">
+                <div class="stat-label">Источник</div>
+                <div >{{ record.where }}</div>
+            </div>
+
              <div class="stat-item">
                 <div class="stat-label">КЦ</div>
                 <div >{{ record.employees_KC }}</div>

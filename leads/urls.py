@@ -17,8 +17,6 @@ urlpatterns = [
     path('get_time/', views.get_time, name='get_time'),
     path("records_filt/<filter_upp>/", views.filter_upp, name='filter_upp'),
     path("type_filter/<type>/", views.filter_type, name='filter_type'),
-
-    path("api/v1/felters/", views.FiltersAPI.as_view()),
 ]
 # path("delete_record/<int:pk>/", views.delete_record, name='delete_record'),
 #path("update_record/<int:pk>/", views.update_record, name='update_record'),

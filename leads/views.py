@@ -16,7 +16,7 @@ from accounts.views import employees
 from company.views import companys
 from felial.views import felials
 
-from rest_framework import generics
+# from rest_framework import generics
 
 from .models import Record
 from todolist.models import ToDoList
@@ -165,7 +165,7 @@ def brak(request):
 
 def logout_user(request):
     logout(request)
-    return redirect("home")
+    return redirect("desktop")
 
 
 
@@ -467,10 +467,3 @@ def get_time(request):
         })
     return HttpResponse("Метод не разрешён", status=405)
 
-#######################################################
-
-from .serializer import UserSerializer
-
-class FiltersAPI(generics.ListAPIView):
-    queryset = User.objects.all()
-    serializer_class = UserSerializer

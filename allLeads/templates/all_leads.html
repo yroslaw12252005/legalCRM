@@ -1,0 +1,257 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+
+<style>
+    /* --- COMPACT CRM TABLE STYLES --- */
+    body {
+      font-family: 'Segoe UI', Arial, sans-serif;
+      background: #f7f8fa;
+      margin: 0;
+      padding: 0;
+    }
+    .crm-container {
+      background: #fff;
+      margin: 20px auto;
+      border-radius: 10px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      max-width: 1200px;
+      padding: 20px 0 30px 0;
+    }
+    .crm-table-wrapper {
+      margin: 0 24px;
+      /* Убираем скролл и поворот */
+    }
+    table.crm-table {
+      width: 100%;
+      border-collapse: separate;
+      border-spacing: 0;
+      background: #fff;
+      border-radius: 8px;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.02);
+      table-layout: fixed; /* Фиксированная ширина колонок */
+    }
+    table.crm-table th, table.crm-table td {
+      padding: 8px 6px; /* Уменьшаем отступы */
+      text-align: left;
+      font-size: 13px; /* Уменьшаем размер шрифта */
+      border-bottom: 1px solid #f0f1f3;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+    }
+    table.crm-table th {
+      background: #f7f8fa;
+      color: #6b7280;
+      font-weight: 500;
+      position: sticky;
+      top: 0;
+      z-index: 1;
+    }
+    table.crm-table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    /* Фиксированные ширины колонок */
+    table.crm-table th:nth-child(1), table.crm-table td:nth-child(1) { width: 18%; } /* Имя */
+    table.crm-table th:nth-child(2), table.crm-table td:nth-child(2) { width: 12%; } /* Телефон */
+    table.crm-table th:nth-child(3), table.crm-table td:nth-child(3) { width: 25%; } /* Описание */
+    table.crm-table th:nth-child(4), table.crm-table td:nth-child(4) { width: 10%; } /* Источник */
+    table.crm-table th:nth-child(5), table.crm-table td:nth-child(5) { width: 12%; } /* Статус */
+    table.crm-table th:nth-child(6), table.crm-table td:nth-child(6) { width: 8%; }  /* В работе */
+    table.crm-table th:nth-child(7), table.crm-table td:nth-child(7) { width: 8%; }  /* Оператор */
+    table.crm-table th:nth-child(8), table.crm-table td:nth-child(8) { width: 7%; }  /* Юрист */
+    
+    .crm-status {
+      color: #2563eb;
+      font-weight: 600;
+    }
+    .crm-btn {
+      background: #f3f4f6;
+      border: 1px solid #e5e7eb;
+      border-radius: 6px;
+      padding: 6px 16px;
+      font-size: 14px;
+      cursor: pointer;
+      color: #111827;
+      transition: background 0.2s, border 0.2s;
+    }
+    .crm-btn:hover {
+      background: #e5e7eb;
+    }
+    .crm-trash {
+      color: #d14343;
+      cursor: pointer;
+      font-size: 18px;
+      border: none;
+      background: none;
+      padding: 0 8px;
+      transition: color 0.2s;
+    }
+    .crm-trash:hover {
+      color: #b91c1c;
+    }
+    .crm-pagination {
+      display: flex;
+      align-items: center;
+      margin: 20px 24px 0 24px;
+    }
+    .crm-pagination-btn {
+      border: 1px solid #d1d5db;
+      background: #fff;
+      color: #2563eb;
+      border-radius: 6px;
+      padding: 2px 10px;
+      margin: 0 2px;
+      font-size: 15px;
+      cursor: pointer;
+      min-width: 32px;
+      transition: background 0.2s, border 0.2s;
+    }
+    .crm-pagination-btn.active {
+      background: #2563eb;
+      color: #fff;
+      border-color: #2563eb;
+    }
+    .crm-pagination-btn:disabled {
+      color: #9ca3af;
+      border-color: #e5e7eb;
+      background: #f3f4f6;
+      cursor: not-allowed;
+    }
+    
+    /* Компактные статусы */
+    .status-badge {
+      display: inline-block;
+      padding: 2px 6px;
+      border-radius: 3px;
+      font-size: 11px;
+      font-weight: 600;
+      white-space: nowrap;
+    }
+    
+    @media (max-width: 900px) {
+      .crm-table-wrapper {
+        margin: 0 4px;
+      }
+      .crm-tabs, .crm-pagination {
+        margin: 0 4px;
+      }
+      table.crm-table th, table.crm-table td {
+        padding: 6px 4px;
+        font-size: 12px;
+      }
+    }
+</style>
+
+{% if user.is_authenticated %}
+<div class="crm-container">
+  <div class="crm-table-wrapper">
+    <table class="crm-table">
+      <thead>
+        <tr>
+          <th>Имя</th>
+          <th>Телефон</th>
+          <th>Описание</th>
+          <th>Источник</th>
+          <th>Статус</th>
+          {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
+            <th>В работе</th>
+          {% endif %}
+          {% if user.status == "Директор КЦ" or user.status == "Администратор" or user.status == "Менеджер"%}
+            <th>Оператор</th>
+          {% endif %}
+          {% if user.status == "Директор ЮПП" or user.status == "Администратор" or user.status == "Менеджер"%}
+            <th>Юрист</th>
+          {% endif %}
+        </tr>
+      </thead>
+      <tbody>
+        {% if records %}
+          {% for record in records %}
+            {% if user.status == "Директор КЦ" and record.in_work == 0 or user.status == "Директор КЦ" and record.in_work == 1 or user.status == "Директор ЮПП" and record.in_work == 1 or user.status == "Юрист пирвичник" and record.employees_UPP == user.username or user.status == "Оператор" and record.employees_KC == user.username or user.status == "Менеджер" and record.in_work == 1 or user.status == "Администратор"%}
+              <tr>
+                <td title="{{ record.name }}">
+                  {% if record.name != None %}
+                    <a href="{% url 'record' record.id %}" style="text-decoration: none; color:#595959;">
+                      {{ record.name|truncatechars:20 }}
+                    </a>
+                  {% endif %}
+                </td>
+                <td>
+                  {% if record.name != None %}
+                    {{ record.phone }}
+                  {% endif %}
+                </td>
+                <td title="{{ record.description }}">
+                  {% if record.name != None %}
+                    {{ record.description|truncatechars:40 }}
+                  {% endif %}
+                </td>
+                <td title="{{ record.where }}">
+                  {% if record.name != None %}
+                    {{ record.where|truncatechars:15 }}
+                  {% endif %}
+                </td>
+                <td class="crm-status">
+                  {% if record.status == "Новая" %}
+                    <span class="status-badge" style="color:#fff; background-color: #077EC2;">Новая</span>
+                  {% elif record.status == "Брак" %}
+                    <span class="status-badge" style="color:#fff; background-color: #C51010;">Брак</span>
+                  {% elif record.status == "Недозвон" %}
+                    <span class="status-badge" style="color:#fff; background-color: #595959;">Недозвон</span>
+                  {% elif record.status == "Перезвон" %}
+                    <span class="status-badge" style="color:#fff; background-color: #595959;">Перезвон</span>
+                  {% elif record.status == "Запись в офис" %}
+                    <span class="status-badge" style="color:#fff; background-color: #22C061;">Запись</span>
+                  {% elif record.status == "Отказ" %}
+                    <span class="status-badge" style="color:#fff; background-color: #C51010;">Отказ</span>
+                  {% elif record.status == "Онлайн" %}
+                    <span class="status-badge" style="color:#fff; background-color: #E1C645;">Онлайн</span>
+                  {% elif record.status == "Акт" %}
+                    <span class="status-badge" style="color:#fff; background-color: #22C061;">Акт</span>
+                  {% elif record.status == "Договор" %}
+                    <span class="status-badge" style="color:#fff; background-color: #CCCCFF;">Договор</span>
+                  {% endif %}
+                </td>
+                {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
+                  <td>
+                    {% if record.in_work == 1 %}
+                      <span class="status-badge" style="color:#fff; background-color: #22C061;">Да</span>
+                    {% else %}
+                      <span class="status-badge" style="color:#fff; background-color: #C51010;">Нет</span>
+                    {% endif %}
+                  </td>
+                {% endif %}
+                {% if user.status == "Директор КЦ" or user.status == "Администратор" or user.status == "Менеджер"%}
+                  <td title="{{ record.employees_KC }}">{{ record.employees_KC|truncatechars:8 }}</td>
+                {% endif %}
+                {% if user.status == "Директор ЮПП" or user.status == "Администратор" or user.status == "Менеджер"%}
+                  <td title="{{ record.employees_UPP }}">{{ record.employees_UPP|truncatechars:8 }}</td>
+                {% endif %}
+              </tr>
+            {% endif %}
+          {% endfor %}
+        {% endif %}
+      </tbody>
+    </table>
+  </div>
+</div>
+
+{% else %}
+    <div class="col-md-6 offset-md-3 pole">
+        <h3>Добро пожаловать в yblochkoCRM</h3>
+        <form action="{% url 'leads:home' %}" class="authenticated" method="post">
+            {% csrf_token %}
+            <div class="mb-3">
+                <input type="text" class="form-control" name="username" placeholder="Имя" required>
+            </div>
+            <div class="mb-3">
+                <input type="password" class="form-control" name="password" placeholder="Пароль" required>
+            </div>
+            <button type="submit" class="btn btn-success">Зайти</button>
+        </form>
+    </div>
+{% endif %}
+{% endblock content %}

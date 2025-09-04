@@ -39,6 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'leads',
+    'allLeads',
     'accounts',
     'todolist',
     'cost',
@@ -47,7 +48,7 @@ INSTALLED_APPS = [
     'smart_calendar',
     'landing',
     "client",
-    "rest_framework"
+    "desktop"
 ]
 
 MIDDLEWARE = [
