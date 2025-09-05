@@ -1,0 +1,5 @@
+﻿Django==5.1.4
+python-dotenv==1.0.0
+mysqlclient==2.2.0
+aiobotocore==2.7.0
+boto3==1.34.0
