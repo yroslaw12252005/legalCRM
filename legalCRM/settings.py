@@ -30,7 +30,7 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-%8itp5v^vn=edeh()b80@xroxy
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
 
-ALLOWED_HOSTS = ['yblochko.rosscrm.ru', '127.0.0.1', "78.40.217.164"]
+ALLOWED_HOSTS = ['45.129.128.180', '127.0.0.1', "78.40.217.164"]
 
 
 # Application definition
@@ -134,7 +134,7 @@ USE_TZ = True  # Использовать часовой пояс
 TIME_ZONE = 'Europe/Moscow'
 
 
-CSRF_TRUSTED_ORIGINS = ["https://yblochko.rosscrm.ru",'https://127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ["https://yblochko.rosscrm.ru","https://45.129.128.180",'https://127.0.0.1']
 
 
 # Static files (CSS, JavaScript, Images)
