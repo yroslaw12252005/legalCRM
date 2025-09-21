@@ -229,7 +229,7 @@
 {% else %}
     <div class="col-md-6 offset-md-3 pole">
         <h3>Добро пожаловать в yblochkoCRM</h3>
-        <form action="{% url 'leads:home' %}" class="authenticated" method="post">
+        <form action="{% url 'desktop' %}" class="authenticated" method="post">
             {% csrf_token %}
             <div class="mb-3">
                 <input type="text" class="form-control" name="username" placeholder="Имя" required>

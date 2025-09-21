@@ -47,7 +47,7 @@
 
         <form action="{% url 'search' %}" method="get">
             {% csrf_token %}
-            <input class="search" type="" name="q" placeholder="Номер или Имя">
+            <input class="search" type="" name="q" placeholder="Номер или Имя или номер заявки">
             <button type="submit" class="btn btn-success search_btn">Искать</button>
         </form>
     </div>

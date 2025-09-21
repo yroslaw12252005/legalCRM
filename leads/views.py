@@ -385,6 +385,7 @@ class SearchView(ListView):
         return Record.objects.filter(
             Q(name__icontains=query) |  # Поиск по части имени
             Q(phone__icontains=query)|
+            Q(id__icontains=query)|
             Q(description__icontains=query)
         )
 

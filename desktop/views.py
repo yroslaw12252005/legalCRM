@@ -1,12 +1,13 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
 from leads.models import Record
 from accounts.models import User
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth import authenticate, login
 
 from datetime import date
 today = date.today()
 
-@login_required
+
 def get_current_applications(request):
     if not request.user.is_authenticated:
         if request.method == "POST":
