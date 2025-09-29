@@ -28,7 +28,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 SECRET_KEY = os.getenv('SECRET_KEY', 'django-insecure-%8itp5v^vn=edeh()b80@xroxy_uk=f&_mw@-41b')
 
 # SECURITY WARNING: don't run with debug turned on in production!
-DEBUG = os.getenv('DEBUG', 'True').lower() == 'true'
+DEBUG = os.getenv('DEBUG', 'False').lower() == 'true'
 
 ALLOWED_HOSTS = ["yblochko.rosscrm.ru",'127.0.0.1', '46.229.213.252', "78.40.217.164"]
 
@@ -132,7 +132,6 @@ TIME_ZONE = 'Europe/Moscow'  # Часовой пояс
 USE_I18N = True  # Включить интернационализацию
 USE_L10N = True  # Локализация форматов дат/чисел
 USE_TZ = True  # Использовать часовой пояс
-TIME_ZONE = 'Europe/Moscow'
 
 
 CSRF_TRUSTED_ORIGINS = ["https://yblochko.rosscrm.ru","https://45.129.128.180",'https://127.0.0.1']
@@ -142,6 +141,7 @@ CSRF_TRUSTED_ORIGINS = ["https://yblochko.rosscrm.ru","https://45.129.128.180",'
 # https://docs.djangoproject.com/en/5.1/howto/static-files/
 
 STATIC_URL = 'static/'
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 
 STATICFILES_DIRS = [
    os.path.join(BASE_DIR, "static"),
@@ -154,10 +154,11 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 AUTH_USER_MODEL = "accounts.User"
 
 DATETIME_FORMAT="%d.%m.%Y %H:%M"
-L10N=False
-USE_TZ=False
+USE_L10N = False
+USE_TZ = False
 
-CSRF_COOKIE_SECURE = True
+# CSRF settings - только для HTTPS
+CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'False').lower() == 'true'
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
