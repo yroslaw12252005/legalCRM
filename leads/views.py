@@ -10,7 +10,7 @@ from django.conf import settings
 from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
-from django.views.decorators.http import require_POST
+from django.views.decorators.http import require_POST, require_http_methods
 from django import template
 
 from accounts.views import employees
@@ -485,8 +485,15 @@ class SearchView(ListView):
         )
 
 @csrf_exempt
-@require_POST
+@require_http_methods(["POST", "OPTIONS"])  # Изменить это
 def get_time(request):
+    if request.method == "OPTIONS":
+        response = HttpResponse()
+        response['Access-Control-Allow-Origin'] = '*'
+        response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
+        response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
+        return response
+    
     if request.method == "POST":
         employee_id = request.user.id
         employee_status = request.user.status
@@ -556,11 +563,14 @@ def get_time(request):
                 })
             formatted_weeks.append(formatted_week)
 
-        return render(request, "mini_calendar.html", {
+        response = render(request, "mini_calendar.html", {
             'month_name': f"{calendar.month_name[month]} {year}",
             'header': ['П', 'В', 'С', 'Ч', 'П', 'С', 'В'],
             'weeks': formatted_weeks,
             'today': today.day
         })
+        response['Access-Control-Allow-Origin'] = '*'
+        return response
+    
     return HttpResponse("Метод не разрешён", status=405)
 
