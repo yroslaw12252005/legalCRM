@@ -52,7 +52,8 @@ INSTALLED_APPS = [
     'smart_calendar',
     'landing',
     "client",
-    "desktop"
+    "desktop",
+    "call_recording"
 ]
 
 MIDDLEWARE = [

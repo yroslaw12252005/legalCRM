@@ -31,4 +31,5 @@ urlpatterns = [
     path('felial/', include('felial.urls')),
     path('calendar/', include('smart_calendar.urls')),
     path('client/', include('client.urls')),
+    path('call-recording/', include('call_recording.urls')),
 ]
