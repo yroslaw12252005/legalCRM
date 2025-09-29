@@ -42,7 +42,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'corsheaders',  # Добавить это
     'leads',
     'allLeads',
     'accounts',
@@ -58,7 +57,6 @@ INSTALLED_APPS = [
 ]
 
 MIDDLEWARE = [
-    'legalCRM.cors_middleware.CorsMiddleware',  # Добавить это
     'django.middleware.security.SecurityMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
     'django.middleware.common.CommonMiddleware',
@@ -166,15 +164,3 @@ MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
 #Access key b26d84b299ec4ba9a1596fc165d4bfc2
-
-# CORS settings
-CORS_ALLOWED_ORIGINS = [
-    "https://yblochko.rosscrm.ru",
-    "https://45.129.128.180",
-    "http://127.0.0.1:8000",
-    "http://localhost:8000",
-]
-
-CORS_ALLOW_CREDENTIALS = True
-
-CORS_ALLOW_ALL_ORIGINS = True  # Только для разработки! Удалите в продакшене
