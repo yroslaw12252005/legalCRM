@@ -33,7 +33,7 @@ class AddRecordForm(forms.ModelForm):
     felial = forms.ModelChoiceField(widget=forms.Select(attrs={
             'class': 'form-select', 'style':'width: 181px;' # Опционально: inline-стили
         }), queryset=Felial.objects.none(),
-        initial = 0, label='Фелиал')
+        initial = 0, label='Филиал')
 
 
     class Meta:

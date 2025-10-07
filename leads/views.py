@@ -117,7 +117,7 @@ class S3Client:
 s3_client = S3Client(
     access_key="EEFJDEUXC1CROO48RUGL",
     secret_key="bOWBlZckIVapgodQAZ4X9cMeAWwQ1i9nZ8rBVppE",
-    endpoint_url="https://s3.twcstorage.ru",  # для Selectel испол pьзуйте https://s3.storage.selcloud.ru
+    endpoint_url="https://s3.twcstorage.ru",  # для Selectel используйте https://s3.storage.selcloud.ru
     bucket_name="edb6a103-vsecrm",
 )
 
@@ -131,7 +131,7 @@ def home(request):
                 login(request, user)
                 return redirect("home")
             else:
-                messages.warning(request, "Не правельный логин или пароль")
+                messages.warning(request, "Не правильный логин или пароль")
                 return redirect("home")
         else:
             return render(request, "home.html")

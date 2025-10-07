@@ -18,7 +18,7 @@ def get_current_applications(request):
                 login(request, user)
                 return redirect("desktop")
             else:
-                messages.warning(request, "Не правельный логин или пароль")
+                messages.warning(request, "Не правильный логин или пароль")
                 return redirect("desktop")
         else:
             return render(request, "desktop.html")
