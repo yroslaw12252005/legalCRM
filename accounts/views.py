@@ -2,7 +2,7 @@ from django.shortcuts import redirect, render
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 
-from .forms import AddEmployeesForm
+from .forms import *
 
 from .models import User
 
@@ -10,6 +10,8 @@ from .models import User
 def employees(request):
     get_employees = User.objects.filter(companys=request.user.companys, felial=request.user.felial)
     return render(request, "employees.html", {"employees": get_employees})
+
+
 
 def delete_employee(request, pk):
     if request.user.is_authenticated:
@@ -21,8 +23,9 @@ def delete_employee(request, pk):
         return redirect("home")
 
 
+
 def register_employees(request):
-    form = AddEmployeesForm()
+    form = AddEmployeesForm(request.POST or None, user=request.user)
     if request.method == "POST":
         form = AddEmployeesForm(request.POST)
 
@@ -44,15 +47,33 @@ def register_employees(request):
 
     return render(request, "register_employees.html", {"form": form})
 
+
 def update_employees(request, pk):
-    if request.user.is_authenticated:
-        employe = User.objects.get(id=pk)
-        form = AddEmployeesForm(request.POST or None, instance=employe)
-        if form.is_valid():
-            updated_employees = form.save()
-            messages.success(request, f"Сотрудник '{updated_employees.username}' обнавлен")
-            return redirect("home")
-        return render(request, "register_employees.html", {"form": form})
-    else:
+    if not request.user.is_authenticated:
         messages.error(request, "You have to login")
         return redirect("home")
+
+    employee = User.objects.get(id=pk)
+
+    if request.method == "POST":
+        form = EmployeeUpdateForm(request.POST, instance=employee)
+        if form.is_valid():
+            updated = form.save()
+            messages.success(request, f"Сотрудник '{updated.username}' обновлен")
+            return redirect("home")
+    else:
+        form = EmployeeUpdateForm(instance=employee)
+
+    return render(request, "register_employees.html", {"form": form})
+#def update_employees(request, pk):
+#    if request.user.is_authenticated:
+#        employe = User.objects.get(id=pk)
+#        form = AddEmployeesForm(request.POST or None, instance=employe)
+#        if form.is_valid():
+#            updated_employees = form.save()
+#            messages.success(request, f"Сотрудник '{updated_employees.username}' обнавлен")
+#            return redirect("home")
+#        return render(request, "register_employees.html", {"form": form})
+#    else:
+#        messages.error(request, "You have to login")
+#        return redirect("home")

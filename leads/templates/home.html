@@ -227,9 +227,10 @@
 </div>
 
 {% else %}
-    <div class="col-md-6 offset-md-3 pole">
+
+    <div class="col-md-6 offset-md-3 pole" style="margin-top: 20%;">
         <h3>Добро пожаловать в yblochkoCRM</h3>
-        <form action="{% url 'home' %}" class="authenticated" method="post">
+        <form action="{% url 'home' %}" style="display: flex; flex-direction: column;" class="authenticated" method="post">
             {% csrf_token %}
             <div class="mb-3">
                 <input type="text" class="form-control" name="username" placeholder="Имя" required>
@@ -237,7 +238,7 @@
             <div class="mb-3">
                 <input type="password" class="form-control" name="password" placeholder="Пароль" required>
             </div>
-            <button type="submit" class="btn btn-success">Зайти</button>
+            <button type="submit" class="btn btn-success">Войти</button>
         </form>
     </div>
 {% endif %}

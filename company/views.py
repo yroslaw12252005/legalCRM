@@ -214,5 +214,5 @@ def reg_admin_user(request, id_company):
             return redirect("home")
         else:
             messages.error(request, "An error occured during registration")
-
+            
     return render(request, "reg_admin_user.html", {"form": form, "id_company":id_company})

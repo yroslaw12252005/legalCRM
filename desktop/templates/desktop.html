@@ -12,11 +12,53 @@
     }
     .crm-container {
       background: #fff;
-      margin: 20px auto;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      margin: 14px auto 24px auto;
+      border-radius: 12px;
+      box-shadow: 0 1px 4px rgba(17, 24, 39, 0.08);
       max-width: 1200px;
-      padding: 20px 0 30px 0;
+      padding: 14px 0 24px 0;
+    }
+    .desktop-toolbar-wrap {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 12px;
+      box-sizing: border-box;
+    }
+    .desktop-toolbar {
+      margin: 0 0 12px 0;
+      padding: 12px;
+      border: 1px solid #e5e7eb;
+      border-radius: 12px;
+      background: #ffffff;
+    }
+    .desktop-toolbar-form {
+      display: grid;
+      grid-template-columns: auto minmax(220px, 1.8fr) minmax(170px, 1fr) minmax(170px, 1fr) auto auto;
+      gap: 10px;
+      align-items: center;
+    }
+    .desktop-toolbar-input,
+    .desktop-toolbar-select {
+      width: 100%;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      background: #fff;
+      color: #111827;
+      font-size: 14px;
+      padding: 10px 12px;
+      outline: none;
+      min-height: 40px;
+      box-sizing: border-box;
+    }
+    .desktop-toolbar-input:focus,
+    .desktop-toolbar-select:focus {
+      border-color: #2563eb;
+      box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
+    }
+    .desktop-toolbar-note {
+      margin: 8px 2px 0 2px;
+      font-size: 12px;
+      color: #4b5563;
     }
     .crm-table-wrapper {
       margin: 0 24px;
@@ -73,14 +115,56 @@
       background: #f3f4f6;
       border: 1px solid #e5e7eb;
       border-radius: 6px;
-      padding: 6px 16px;
+      padding: 9px 14px;
       font-size: 14px;
       cursor: pointer;
       color: #111827;
       transition: background 0.2s, border 0.2s;
+      min-height: 40px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      box-sizing: border-box;
     }
     .crm-btn:hover {
       background: #e5e7eb;
+    }
+    .crm-btn-primary {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #fff;
+    }
+    .crm-btn-primary:hover {
+      background: #1d4ed8;
+      border-color: #1d4ed8;
+    }
+    .crm-checkbox-cell {
+      width: 44px;
+      text-align: center;
+    }
+    .bulk-action-bar {
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: #111827;
+      color: #fff;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      padding: 10px 14px;
+      border-radius: 10px;
+      box-shadow: 0 10px 24px rgba(0,0,0,0.25);
+      z-index: 999;
+      flex-wrap: wrap;
+    }
+    .bulk-select {
+      min-width: 160px;
+      border-radius: 6px;
+      border: 1px solid #374151;
+      background: #1f2937;
+      color: #fff;
+      padding: 6px 8px;
     }
     .crm-trash {
       color: #d14343;
@@ -123,113 +207,221 @@
       cursor: not-allowed;
     }
     @media (max-width: 900px) {
+      .desktop-toolbar-wrap {
+        padding: 0 6px;
+      }
+      .desktop-toolbar {
+        margin: 0 0 10px 0;
+      }
+      .desktop-toolbar-form {
+        grid-template-columns: 1fr;
+      }
       .crm-table-wrapper {
         margin: 0 4px;
       }
       .crm-tabs, .crm-pagination {
         margin: 0 4px;
       }
+      .bulk-action-bar {
+        width: calc(100% - 16px);
+        left: 8px;
+        right: 8px;
+        bottom: 8px;
+        transform: none;
+      }
     }
 </style>
 
 {% if user.is_authenticated %}
 <div class="crm-container">
-  <div class="crm-table-wrapper">
-    <table class="crm-table">
-      <thead>
-        <tr>
-          <th>Имя</th>
-          <th>Телефон</th>
-          <th>Описание</th>
-          <th>Источник</th>
-          <th>Статус заявки</th>
-          {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
-            <th>В работе</th>
-          {% endif %}
-          {% if user.status == "Директор КЦ" or user.status == "Администратор" or user.status == "Менеджер"%}
-            <th>Прикрепленный оператор</th>
-          {% endif %}
-          {% if user.status == "Директор ЮПП" or user.status == "Администратор" or user.status == "Менеджер"%}
-            <th>Прикрепленный юрист</th>
-          {% endif %}
-        </tr>
-      </thead>
-      <tbody>
-        {% if records %}
-          {% for record in records %}
-            {% if user.status == "Директор КЦ" and record.in_work == 0 or user.status == "Директор КЦ" and record.in_work == 1 or user.status == "Директор ЮПП" and record.in_work == 1 or user.status == "Юрист пирвичник" and record.employees_UPP == user.username or user.status == "Оператор" and record.employees_KC == user.username or user.status == "Менеджер" and record.in_work == 1 or user.status == "Администратор"%}
-              <tr>
-                <td>
-                  {% if record.name != None %}
-                    <a href="{% url 'record' record.id %}" style="text-decoration: none; color:#595959;">
-                      {{ record.name }}
-                    </a>
+  <form method="post" action="{% url 'desktop_bulk_in_work' %}" id="bulkInWorkForm">
+    {% csrf_token %}
+    <div class="crm-table-wrapper">
+      <table class="crm-table">
+        <thead>
+          <tr>
+            {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp %}
+              <th class="crm-checkbox-cell"><input type="checkbox" id="selectAllRecords"></th>
+            {% endif %}
+            <th>Имя</th>
+            <th>Телефон</th>
+            <th>Описание</th>
+            <th>Источник</th>
+            <th>Статус заявки</th>
+            {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
+              <th>В работе</th>
+            {% endif %}
+            {% if user.status == "Директор КЦ" or user.status == "Администратор" or user.status == "Менеджер"%}
+              <th>Прикрепленный оператор</th>
+            {% endif %}
+            {% if user.status == "Директор ЮПП" or user.status == "Администратор" or user.status == "Менеджер"%}
+              <th>Прикрепленный юрист</th>
+            {% endif %}
+          </tr>
+        </thead>
+        <tbody>
+          {% if records %}
+            {% for record in records %}
+              {% if user.status == "Директор КЦ" and record.in_work == 0 or user.status == "Директор КЦ" and record.in_work == 1 or user.status == "Директор ЮПП" and record.in_work == 1 or user.status == "Юрист пирвичник" and record.employees_UPP == user.username or user.status == "Оператор" and record.employees_KC == user.username or user.status == "Менеджер" and record.in_work == 1 or user.status == "Администратор"%}
+                <tr>
+                  {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp %}
+                    <td class="crm-checkbox-cell">
+                      <input type="checkbox" class="record-checkbox" name="selected_records" value="{{ record.id }}">
+                    </td>
                   {% endif %}
-                </td>
-                <td>
-                  {% if record.name != None %}
-                    {{ record.phone }}
-                  {% endif %}
-                </td>
-                <td>
-                  {% if record.name != None %}
-                    {{ record.description|slice:"100" }}
-                  {% endif %}
-                </td>
-                <td>
-                  {% if record.name != None %}
-                    {{ record.where }}
-                  {% endif %}
-                </td>
-                <td class="crm-status">
-                  {% if record.status == "Новая" %}
-                    <span style="color:#fff; background-color: #077EC2; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
-                  {% elif record.status == "Брак" %}
-                    <span style="color:#fff; background-color: #C51010; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
-                  {% elif record.status == "Недозвон" %}
-                    <span style="color:#fff; background-color: #595959; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
-                  {% elif record.status == "Перезвон" %}
-                    <span style="color:#fff; background-color: #595959; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
-                  {% elif record.status == "Запись в офис" %}
-                    <p style="color:#fff; background-color: #22C061; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</p>
-                  {% elif record.status == "Отказ" %}
-                    <span style="color:#fff; background-color: #C51010; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
-                  {% elif record.status == "Онлайн" %}
-                    <span style="color:#fff; background-color: #E1C645; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
-                  {% elif record.status == "Акт" %}
-                    <span style="color:#fff; background-color: #22C061; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
-                  {% elif record.status == "Договор" %}
-                    <span style="color:#fff; background-color: #CCCCFF; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
-                  {% endif %}
-                </td>
-                {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
                   <td>
-                    {% if record.in_work == 1 %}
-                      <span style="color:#fff; background-color: #22C061; padding: 4px 8px; border-radius: 4px;">Да</span>
-                    {% else %}
-                      <span style="color:#fff; background-color: #C51010; padding: 4px 8px; border-radius: 4px;">Нет</span>
+                    {% if record.name != None %}
+                      <a href="{% url 'record' record.id %}" style="text-decoration: none; color:#595959;">
+                        {{ record.name }}
+                      </a>
                     {% endif %}
                   </td>
-                {% endif %}
-                {% if user.status == "Директор КЦ" or user.status == "Администратор" or user.status == "Менеджер"%}
-                  <td>{{ record.employees_KC }}</td>
-                {% endif %}
-                {% if user.status == "Директор ЮПП" or user.status == "Администратор" or user.status == "Менеджер"%}
-                  <td>{{ record.employees_UPP }}</td>
-                {% endif %}
-              </tr>
-            {% endif %}
-          {% endfor %}
+                  <td>
+                    {% if record.name != None %}
+                      {{ record.phone }}
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if record.name != None %}
+                      {{ record.description|slice:"100" }}
+                    {% endif %}
+                  </td>
+                  <td>
+                    {% if record.name != None %}
+                      {{ record.where }}
+                    {% endif %}
+                  </td>
+                  <td class="crm-status">
+                    {% if record.status == "Новая" %}
+                      <span style="color:#fff; background-color: #077EC2; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
+                    {% elif record.status == "Брак" %}
+                      <span style="color:#fff; background-color: #C51010; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
+                    {% elif record.status == "Недозвон" %}
+                      <span style="color:#fff; background-color: #595959; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
+                    {% elif record.status == "Перезвон" %}
+                      <span style="color:#fff; background-color: #595959; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
+                    {% elif record.status == "Запись в офис" %}
+                      <p style="color:#fff; background-color: #22C061; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</p>
+                    {% elif record.status == "Отказ" %}
+                      <span style="color:#fff; background-color: #C51010; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
+                    {% elif record.status == "Онлайн" %}
+                      <span style="color:#fff; background-color: #E1C645; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
+                    {% elif record.status == "Акт" %}
+                      <span style="color:#fff; background-color: #22C061; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
+                    {% elif record.status == "Договор" %}
+                      <span style="color:#fff; background-color: #CCCCFF; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
+                    {% endif %}
+                  </td>
+                  {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
+                    <td>
+                      {% if record.in_work == 1 %}
+                        <span style="color:#fff; background-color: #22C061; padding: 4px 8px; border-radius: 4px;">Да</span>
+                      {% else %}
+                        <span style="color:#fff; background-color: #C51010; padding: 4px 8px; border-radius: 4px;">Нет</span>
+                      {% endif %}
+                    </td>
+                  {% endif %}
+                  {% if user.status == "Директор КЦ" or user.status == "Администратор" or user.status == "Менеджер"%}
+                    <td>{{ record.employees_KC }}</td>
+                  {% endif %}
+                  {% if user.status == "Директор ЮПП" or user.status == "Администратор" or user.status == "Менеджер"%}
+                    <td>{{ record.employees_UPP }}</td>
+                  {% endif %}
+                </tr>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
+        </tbody>
+      </table>
+    </div>
+
+    {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp %}
+      <div class="bulk-action-bar" id="bulkActionBar" style="display: none;">
+        <span id="selectedCounter">Selected: 0</span>
+
+        {% if can_bulk_send_to_work %}
+          <button type="submit" name="action" value="in_work" class="crm-btn crm-btn-primary">В работу</button>
         {% endif %}
-      </tbody>
-    </table>
-  </div>
+
+        {% if can_assign_kc %}
+          <select name="operator_id" class="bulk-select">
+            <option value="">Операторы</option>
+            {% for operator in operators %}
+              <option value="{{ operator.id }}">{{ operator.username }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" name="action" value="assign_operator" class="crm-btn">Прикрепить оператора</button>
+        {% endif %}
+
+        {% if can_assign_upp %}
+          <select name="lawyer_id" class="bulk-select">
+            <option value="">Юристы</option>
+            {% for lawyer in lawyers %}
+              <option value="{{ lawyer.id }}">{{ lawyer.username }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" name="action" value="assign_lawyer" class="crm-btn">Прикрепить юриста</button>
+        {% endif %}
+      </div>
+    {% endif %}
+  </form>
 </div>
 
+{% if can_bulk_send_to_work or can_assign_kc or can_assign_upp %}
+<script>
+  (function () {
+    const checkboxes = Array.from(document.querySelectorAll('.record-checkbox'));
+    const selectAll = document.getElementById('selectAllRecords');
+    const actionBar = document.getElementById('bulkActionBar');
+    const counter = document.getElementById('selectedCounter');
+    const form = document.getElementById('bulkInWorkForm');
+
+    if (!checkboxes.length || !actionBar || !counter || !form) {
+      return;
+    }
+
+    function updateSelectionState() {
+      const selected = checkboxes.filter((item) => item.checked).length;
+      counter.textContent = 'Selected: ' + selected;
+      actionBar.style.display = selected > 0 ? 'flex' : 'none';
+      if (selectAll) {
+        selectAll.checked = selected > 0 && selected === checkboxes.length;
+      }
+    }
+
+    if (selectAll) {
+      selectAll.addEventListener('change', function () {
+        checkboxes.forEach((item) => {
+          item.checked = this.checked;
+        });
+        updateSelectionState();
+      });
+    }
+
+    checkboxes.forEach((item) => {
+      item.addEventListener('change', updateSelectionState);
+    });
+
+    form.addEventListener('submit', function (event) {
+      const selected = checkboxes.some((item) => item.checked);
+      if (!selected) {
+        event.preventDefault();
+      }
+    });
+  })();
+</script>
+{% endif %}
+
 {% else %}
-    <div class="col-md-6 offset-md-3 pole">
-        <h3>Добро пожаловать в yblochkoCRM</h3>
-        <form action="{% url 'desktop' %}" class="authenticated" method="post">
+<main style="margin-top: 20%"">
+      <div class="col-md-3 offset-md-3 pole">
+        <h3 style="
+        text-align: center;
+    ">Добро пожаловать в yblochkoCRM</h3>
+        <form action="{% url 'desktop' %}" style="
+        display: flex;
+        flex-direction: column;
+    "class="authenticated" method="post">
             {% csrf_token %}
             <div class="mb-3">
                 <input type="text" class="form-control" name="username" placeholder="Имя" required>
@@ -240,5 +432,7 @@
             <button type="submit" class="btn btn-success">Зайти</button>
         </form>
     </div>
+</main>
+
 {% endif %}
-{% endblock content %} 
+{% endblock content %}

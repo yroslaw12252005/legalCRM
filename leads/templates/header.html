@@ -1,56 +1,159 @@
-{% load static %}
+﻿{% load static %}
 {% block content %}
 {% if user.is_authenticated %}
 <link rel="stylesheet" href="{% static 'css/header.css' %}" />
-<header style="padding-left:350px;">
-    <div style="display: flex;">
-      <a href="{% url 'add_record'%}"><img src="{% static 'img/add_lead.png' %}"></a>
-<div class="dropdown">
-  <img src="{% static 'img/felters.png' %}" style="cursor:pointer; width:50px; height:50px;">
-  <div class="dropdown-content" style="padding: 20px; border-radius: 12px; min-width: 260px;">
-    <div style="display: flex; gap: 24px;">
-      <!-- Статус -->
-      <div>
-        <div style="font-weight:bold; color:#fff; margin-bottom:8px;">Статус</div>
-        <a class="dropdown-item" href="{% url 'filter' 'Новая' %}">Новая</a>
-        <a class="dropdown-item" href="{% url 'filter' 'Брак' %}">Брак</a>
-        <a class="dropdown-item" href="{% url 'filter' 'Недозвон' %}">Недозвон</a>
-        <a class="dropdown-item" href="{% url 'filter' 'Перезвон' %}">Перезвон</a>
-        <a class="dropdown-item" href="{% url 'filter' 'Онлайн' %}">Онлайн</a>
-        <a class="dropdown-item" href="{% url 'filter' 'Договор' %}">Договор</a>
-        <a class="dropdown-item" href="{% url 'filter' 'Акт' %}">Акт</a>
-        <a class="dropdown-item" href="{% url 'filter' 'Запись в офис' %}">Запись в офис</a>
-        <a class="dropdown-item" href="{% url 'filter' 'Отказ' %}">Отказ</a>
-      </div>
-      <!-- Сотрудник (UPP) -->
-      {% if user.status == "Директор ЮПП" or user.status == "Администратор"%}
-      <div>
-        <div style="font-weight:bold; color:#fff; margin-bottom:8px;">Сотрудник</div>
-        <a class="dropdown-item" href="{% url 'filter_upp' 'Ваня20200' %}">Ваня20200</a>
-        <a class="dropdown-item" href="{% url 'filter_upp' 'Катя20212' %}">Катя20212</a>
-        <a class="dropdown-item" href="{% url 'filter_upp' 'Тарон20196' %}">Тарон20196</a>
-        <a class="dropdown-item" href="{% url 'filter_upp' 'Алексей 20215' %}">Алексей 20215</a>
-        <a class="dropdown-item" href="{% url 'filter_upp' 'Алексей 20216' %}">Алексей 20216</a>
-      </div>
-      {% endif %}
-      <!-- Тип -->
-      <div>
-        <div style="font-weight:bold; color:#fff; margin-bottom:8px;">Тип</div>
-        <a class="dropdown-item" href="{% url 'filter_type' 'Военка' %}">Военка</a>
-        <a class="dropdown-item" href="{% url 'filter_type' 'Семейная' %}">Семейная</a>
-        <a class="dropdown-item" href="{% url 'filter_type' 'Арбитраж' %}">Арбитраж</a>
-        <a class="dropdown-item" href="{% url 'filter_type' 'Военная' %}">Военная</a>
-      </div>
+
+
+<style>
+  .desktop-toolbar-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    padding: 0 12px;
+    box-sizing: border-box;
+  }
+  .desktop-toolbar {
+    margin: 0 0 12px 0;
+    padding: 12px;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    background: #ffffff;
+  }
+  .desktop-toolbar-form {
+    display: grid;
+    grid-template-columns: auto minmax(220px, 1.8fr) minmax(170px, 1fr) minmax(170px, 1fr) auto auto;
+    gap: 10px;
+    align-items: center;
+  }
+  .desktop-toolbar-input,
+  .desktop-toolbar-select {
+    width: 100%;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    background: #fff;
+    color: #111827;
+    font-size: 14px;
+    padding: 10px 12px;
+    outline: none;
+    min-height: 40px;
+    box-sizing: border-box;
+  }
+  .desktop-toolbar-note {
+    margin: 8px 2px 0 2px;
+    font-size: 12px;
+    color: #4b5563;
+  }
+  .crm-btn {
+    background: #f3f4f6;
+    border: 1px solid #e5e7eb;
+    border-radius: 6px;
+    padding: 9px 14px;
+    font-size: 14px;
+    cursor: pointer;
+    color: #111827;
+    min-height: 40px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    box-sizing: border-box;
+  }
+  .crm-btn-primary {
+    background: #2563eb;
+    border-color: #2563eb;
+    color: #fff;
+  }
+  @media (max-width: 900px) {
+    .desktop-toolbar-wrap { padding: 0 6px; }
+    .desktop-toolbar-form { grid-template-columns: 1fr; }
+  }
+</style>
+<header style="padding-left:300px; padding-top: 10px;">
+  <div class="desktop-toolbar-wrap">
+    <div class="desktop-toolbar">
+      <form method="get" action="{% if request.resolver_match.url_name == 'desktop' %}{% url 'desktop' %}{% else %}{% url 'all_leads' %}{% endif %}" class="desktop-toolbar-form">
+        <a href="{% url 'add_record' %}" class="crm-btn crm-btn-primary" style="text-decoration: none;">
+          Создать заявку
+        </a>
+        <input
+          class="desktop-toolbar-input"
+          type="text"
+          name="q"
+          value="{{ search_query }}"
+          placeholder="Поиск по имени, телефону, описанию"
+        >
+        {% if user.status == "Директор ЮПП" or user.status == "Администратор" %}
+        <select class="desktop-toolbar-select" name="employee">
+          <option value="">Все сотрудники</option>
+          {% for employee in filter_employees %}
+            <option value="{{ employee.username }}" {% if selected_employee == employee.username %}selected{% endif %}>
+              {{ employee.username }}{% if employee.status %} ({{ employee.status }}){% endif %}
+            </option>
+          {% endfor %}
+        </select>
+        {% endif %}
+        <select class="desktop-toolbar-select" name="topic">
+          <option value="">Все тематики</option>
+          {% for topic in topics %}
+            <option value="{{ topic }}" {% if selected_topic == topic %}selected{% endif %}>{{ topic }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" class="crm-btn crm-btn-primary">Применить</button>
+        <a href="{% if request.resolver_match.url_name == 'desktop' %}{% url 'desktop' %}{% else %}{% url 'all_leads' %}{% endif %}" class="crm-btn" style="text-decoration: none;">Сбросить</a>
+      </form>
+      <p class="desktop-toolbar-note">Фильтры работают вместе: поиск + сотрудник + тематика.</p>
     </div>
   </div>
-</div>
+</header>
 
-        <form action="{% url 'search' %}" method="get">
-            {% csrf_token %}
-            <input class="search" type="" name="q" placeholder="Номер или Имя или номер заявки">
-            <button type="submit" class="btn btn-success search_btn">Искать</button>
-        </form>
+
+<!--
+<header style="padding-left:350px;">
+  <div style="display: flex;">
+    <a href="{% url 'add_record'%}"><img src="{% static 'img/add_lead.png' %}"></a>
+    <div class="dropdown">
+      <img src="{% static 'img/felters.png' %}" style="cursor:pointer; width:50px; height:50px;">
+      <div class="dropdown-content" style="padding: 20px; border-radius: 12px; min-width: 260px;">
+        <div style="display: flex; gap: 24px;">
+          <div>
+            <div style="font-weight:bold; color:#fff; margin-bottom:8px;">Статус</div>
+            <a class="dropdown-item" href="{% url 'filter' 'Новая' %}">Новая</a>
+            <a class="dropdown-item" href="{% url 'filter' 'Брак' %}">Брак</a>
+            <a class="dropdown-item" href="{% url 'filter' 'Недозвон' %}">Недозвон</a>
+            <a class="dropdown-item" href="{% url 'filter' 'Перезвон' %}">Перезвон</a>
+            <a class="dropdown-item" href="{% url 'filter' 'Онлайн' %}">Онлайн</a>
+            <a class="dropdown-item" href="{% url 'filter' 'Договор' %}">Договор</a>
+            <a class="dropdown-item" href="{% url 'filter' 'Акт' %}">Акт</a>
+            <a class="dropdown-item" href="{% url 'filter' 'Запись в офис' %}">Запись в офис</a>
+            <a class="dropdown-item" href="{% url 'filter' 'Отказ' %}">Отказ</a>
+          </div>
+
+          {% if user.status == "Директор ЮПП" or user.status == "Администратор" %}
+          <div>
+            <div style="font-weight:bold; color:#fff; margin-bottom:8px;">Сотрудник</div>
+            <a class="dropdown-item" href="{% url 'filter_upp' 'Ваня20200' %}">Ваня20200</a>
+            <a class="dropdown-item" href="{% url 'filter_upp' 'Катя20212' %}">Катя20212</a>
+            <a class="dropdown-item" href="{% url 'filter_upp' 'Тарон20196' %}">Тарон20196</a>
+            <a class="dropdown-item" href="{% url 'filter_upp' 'Алексей 20215' %}">Алексей 20215</a>
+            <a class="dropdown-item" href="{% url 'filter_upp' 'Алексей 20216' %}">Алексей 20216</a>
+          </div>
+          {% endif %}
+
+          <div>
+            <div style="font-weight:bold; color:#fff; margin-bottom:8px;">Тип</div>
+            <a class="dropdown-item" href="{% url 'filter_type' 'Военка' %}">Военка</a>
+            <a class="dropdown-item" href="{% url 'filter_type' 'Семейная' %}">Семейная</a>
+            <a class="dropdown-item" href="{% url 'filter_type' 'Арбитраж' %}">Арбитраж</a>
+            <a class="dropdown-item" href="{% url 'filter_type' 'Военная' %}">Военная</a>
+          </div>
+        </div>
+      </div>
     </div>
-  </header>
+    <form action="{% url 'search' %}" method="get">
+      {% csrf_token %}
+      <input class="search" type="" name="q" placeholder="Номер или Имя или номер заявки">
+      <button type="submit" class="btn btn-success search_btn">Искать</button>
+    </form>
+  </div>
+</header>-->
+
 {% endif %}
 {% endblock content %}
