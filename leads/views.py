@@ -633,14 +633,14 @@ class SearchView(ListView):
 @csrf_exempt
 @require_http_methods(["POST", "OPTIONS"])  # РР·РјРµРЅРёС‚СЊ СЌС‚Рѕ
 def get_time(request):
-    if not request.user.is_authenticated:
-        return HttpResponse("Unauthorized", status=401)
-
     if request.method == "OPTIONS":
         response = HttpResponse()
         response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
         response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         return response
+
+    if not request.user.is_authenticated:
+        return HttpResponse("Unauthorized", status=401)
     
     if request.method == "POST":
         employee_id = request.user.id

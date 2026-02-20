@@ -40,7 +40,7 @@ function updateCalendar(newDate) {
 
     $.ajax({
         type: "POST",
-        url: "https://yblochko.rosscrm.ru/home/get_time/",
+        url: "{% url 'get_time' %}",
         headers: { "X-CSRFToken": "{{ csrf_token }}" },
         data: { date: formattedDate },
         success: function(data) {
