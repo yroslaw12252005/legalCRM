@@ -1,22 +1,22 @@
-from django import forms
+﻿from django import forms
 from django.contrib.auth.forms import UserCreationForm
-from .models import User
+from django.contrib.auth import get_user_model
+
 from felial.models import Felial
+
+User = get_user_model()
+
 
 class AddEmployeesForm(UserCreationForm):
     email = forms.EmailField(
         label="",
-        widget=forms.TextInput(
-            attrs={"class": "form-control", "placeholder": "Email"}
-        ),
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Email"}),
     )
 
     username = forms.CharField(
         label="",
         max_length=100,
-        widget=forms.TextInput(
-            attrs={"class": "form-control", "placeholder": "Имя"}
-        ),
+        widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Имя"}),
     )
 
     status = forms.ChoiceField(
@@ -31,45 +31,34 @@ class AddEmployeesForm(UserCreationForm):
             ("Директор представителей", "Директор представителей"),
             ("Представитель", "Представитель"),
         ),
-        widget=forms.Select(attrs={
-            'class': 'form-control',
-            'style': 'margin-bottom: 12px;'
-        })
+        widget=forms.Select(attrs={"class": "form-control", "style": "margin-bottom: 12px;"}),
     )
 
     type_zp = forms.ChoiceField(
         label="Тип ЗП",
         choices=(
             ("Процент", "Процент"),
-            ("Оклад", "Оклад"),
+            ("Ставка", "Ставка"),
             ("Процент + Ставка", "Процент + Ставка"),
         ),
-        widget=forms.Select(attrs={
-            'class': 'form-control',
-            'style': 'margin-bottom: 12px;'
-        })
+        widget=forms.Select(attrs={"class": "form-control", "style": "margin-bottom: 12px;"}),
     )
 
     felial = forms.ModelChoiceField(
-        label='Филиал',
+        label="Филиал",
         queryset=Felial.objects.all(),
-        widget=forms.Select(attrs={
-            'class': 'form-select',
-            'style': 'width: 181px;'
-        })
+        widget=forms.Select(attrs={"class": "form-select", "style": "width: 181px;"}),
     )
 
     def __init__(self, *args, **kwargs):
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
 
-        self.fields['password1'].help_text = None
-        self.fields['password2'].help_text = None
+        self.fields["password1"].help_text = None
+        self.fields["password2"].help_text = None
 
         if self.user:
-            self.fields['felial'].queryset = Felial.objects.filter(
-                companys=self.user.companys
-            )
+            self.fields["felial"].queryset = Felial.objects.filter(companys=self.user.companys)
 
     class Meta:
         model = User
@@ -85,58 +74,37 @@ class AddEmployeesForm(UserCreationForm):
             "password2",
         )
         labels = {
-            'type_zp': 'Тип ЗП',
-            'percent': '%',
-            'bet': 'Ставка'
+            "type_zp": "Тип ЗП",
+            "percent": "%",
+            "bet": "Ставка",
         }
-
 
 
 class AddSuperEmployeesForm(UserCreationForm):
     email = forms.EmailField(
         label="",
-        widget=forms.TextInput(
-            attrs={"class": "form-company", "placeholder": "Email"}
-        ),
+        widget=forms.TextInput(attrs={"class": "form-company", "placeholder": "Email"}),
     )
     username = forms.CharField(
         label="",
         max_length=100,
-        widget=forms.TextInput(
-            attrs={"class": "form-company", "placeholder": "Имя"}
-        ),
+        widget=forms.TextInput(attrs={"class": "form-company", "placeholder": "Имя"}),
     )
 
     password1 = forms.CharField(
         label="",
-        widget=forms.PasswordInput(
-            attrs={"class": "form-company", "placeholder": "Пароль"}
-        ),
+        widget=forms.PasswordInput(attrs={"class": "form-company", "placeholder": "Пароль"}),
     )
 
     password2 = forms.CharField(
         label="",
-        widget=forms.PasswordInput(
-            attrs={"class": "form-company", "placeholder": "Подтвердите пароль"}
-        ),
+        widget=forms.PasswordInput(attrs={"class": "form-company", "placeholder": "Подтвердите пароль"}),
     )
 
-
-class Meta:
+    class Meta:
         model = User
-        fields = (
-            "username",
-            "email",
-            "password1",
-            "password2",
-        )
+        fields = ("username", "email", "password1", "password2")
 
-
-
-from django import forms
-from django.contrib.auth import get_user_model
-
-User = get_user_model()
 
 class EmployeeUpdateForm(forms.ModelForm):
     password = forms.CharField(
@@ -163,7 +131,7 @@ class EmployeeUpdateForm(forms.ModelForm):
         password = self.cleaned_data.get("password")
 
         if password:
-            user.set_password(password)  # корректное хеширование
+            user.set_password(password)
 
         if commit:
             user.save()

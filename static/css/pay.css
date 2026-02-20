@@ -15,11 +15,12 @@
     align-items: center;
     justify-content: center;
 	width: 425px;
-	height: 458px;
+	min-height: 458px;
 	border: solid 0.5px #fff;
 	border-radius: 20px;
 	margin-top: 5vh;
 	box-shadow: 0px 4px 8px 0px rgba(34, 60, 80, 0.2);
+	padding: 24px 20px;
 }
 
 form{
@@ -28,7 +29,8 @@ form{
 }
 
 form > input, .lead_input{
-	padding: 10px 70px ;
+	width: 100%;
+	padding: 10px 16px;
 	margin-bottom: 30px;
 	border-radius: 25px;
 	border: 0px;
@@ -42,3 +44,4 @@ h3{
 	font-family: druktextwidecyr-medium;
 	letter-spacing: .2rem;
 }
+

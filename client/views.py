@@ -1,8 +1,10 @@
-from django.shortcuts import render
+﻿from django.contrib.auth.decorators import login_required
+from django.shortcuts import get_object_or_404, render
 
 from leads.models import Record
 
-def client_informs(request, pk):
-    get_record_info = Record.objects.get(id=pk)
-    return render(request, "client_inform.html", {"info": get_record_info})
 
+@login_required
+def client_informs(request, pk):
+    get_record_info = get_object_or_404(Record, id=pk, companys=request.user.companys)
+    return render(request, "client_inform.html", {"info": get_record_info})

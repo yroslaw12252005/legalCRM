@@ -13,14 +13,15 @@
   }
   .desktop-toolbar {
     margin: 0 0 12px 0;
-    padding: 12px;
+    padding: 16px;
     border: 1px solid #e5e7eb;
-    border-radius: 12px;
+    border-radius: 16px;
     background: #ffffff;
+    box-shadow: 0 2px 8px rgba(15, 23, 42, 0.06);
   }
   .desktop-toolbar-form {
     display: grid;
-    grid-template-columns: auto minmax(220px, 1.8fr) minmax(170px, 1fr) minmax(170px, 1fr) auto auto;
+    grid-template-columns: minmax(220px, 1.8fr) minmax(170px, 1fr) minmax(170px, 1fr) minmax(170px, 1fr) auto auto;
     gap: 10px;
     align-items: center;
   }
@@ -28,13 +29,13 @@
   .desktop-toolbar-select {
     width: 100%;
     border: 1px solid #d1d5db;
-    border-radius: 8px;
+    border-radius: 12px;
     background: #fff;
     color: #111827;
     font-size: 14px;
     padding: 10px 12px;
     outline: none;
-    min-height: 40px;
+    min-height: 44px;
     box-sizing: border-box;
   }
   .desktop-toolbar-note {
@@ -43,14 +44,14 @@
     color: #4b5563;
   }
   .crm-btn {
-    background: #f3f4f6;
+    background: #f8fafc;
     border: 1px solid #e5e7eb;
-    border-radius: 6px;
-    padding: 9px 14px;
+    border-radius: 12px;
+    padding: 10px 16px;
     font-size: 14px;
     cursor: pointer;
     color: #111827;
-    min-height: 40px;
+    min-height: 44px;
     display: inline-flex;
     align-items: center;
     justify-content: center;
@@ -61,18 +62,19 @@
     border-color: #2563eb;
     color: #fff;
   }
-  @media (max-width: 900px) {
-    .desktop-toolbar-wrap { padding: 0 6px; }
-    .desktop-toolbar-form { grid-template-columns: 1fr; }
+  .crm-btn:hover {
+    background: #eef2ff;
+    transform: translateY(-1px);
+  }
+  .crm-btn-primary:hover {
+    background: #1d4ed8;
+    border-color: #1d4ed8;
   }
 </style>
-<header style="padding-left:300px; padding-top: 10px;">
+<header class="crm-header-offset">
   <div class="desktop-toolbar-wrap">
     <div class="desktop-toolbar">
       <form method="get" action="{% if request.resolver_match.url_name == 'desktop' %}{% url 'desktop' %}{% else %}{% url 'all_leads' %}{% endif %}" class="desktop-toolbar-form">
-        <a href="{% url 'add_record' %}" class="crm-btn crm-btn-primary" style="text-decoration: none;">
-          Создать заявку
-        </a>
         <input
           class="desktop-toolbar-input"
           type="text"
@@ -96,10 +98,22 @@
             <option value="{{ topic }}" {% if selected_topic == topic %}selected{% endif %}>{{ topic }}</option>
           {% endfor %}
         </select>
+        <select class="desktop-toolbar-select" name="status">
+          <option value="">Статус заявки</option>
+          <option value="Новая" {% if selected_status == "Новая" %}selected{% endif %}>Новая</option>
+          <option value="Брак" {% if selected_status == "Брак" %}selected{% endif %}>Брак</option>
+          <option value="Недозвон" {% if selected_status == "Недозвон" %}selected{% endif %}>Недозвон</option>
+          <option value="Перезвон" {% if selected_status == "Перезвон" %}selected{% endif %}>Перезвон</option>
+          <option value="Запись в офис" {% if selected_status == "Запись в офис" %}selected{% endif %}>Запись в офис</option>
+          <option value="Отказ" {% if selected_status == "Отказ" %}selected{% endif %}>Отказ</option>
+          <option value="Онлайн" {% if selected_status == "Онлайн" %}selected{% endif %}>Онлайн</option>
+          <option value="Акт" {% if selected_status == "Акт" %}selected{% endif %}>Акт</option>
+          <option value="Договор" {% if selected_status == "Договор" %}selected{% endif %}>Договор</option>
+        </select>
         <button type="submit" class="crm-btn crm-btn-primary">Применить</button>
         <a href="{% if request.resolver_match.url_name == 'desktop' %}{% url 'desktop' %}{% else %}{% url 'all_leads' %}{% endif %}" class="crm-btn" style="text-decoration: none;">Сбросить</a>
       </form>
-      <p class="desktop-toolbar-note">Фильтры работают вместе: поиск + сотрудник + тематика.</p>
+      <p class="desktop-toolbar-note">Фильтры работают вместе: поиск + сотрудник + тематика + статус.</p>
     </div>
   </div>
 </header>

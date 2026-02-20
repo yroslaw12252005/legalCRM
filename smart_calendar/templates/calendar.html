@@ -190,8 +190,14 @@
             background: #FFF8DD;
             border-color: #FFD700;
         }
+
+        .calendar-page {
+            padding: 0 12px 20px;
+        }
+
     </style>
 
+    <div class="calendar-page">
     <div class="calendar-header">
         <h3 style="margin: 0 20px;"><a href="?date={{ previous_date|date:'Y-m-d' }}" style="color: black;
     font-size: 35px;
@@ -199,7 +205,7 @@
     font-size: 35px;
     text-decoration: none;">→</a></h3>
 
-        <a href="{% url 'add_event' selected_date%}" class="btn btn-success" style="margin-top:50px">Добавить запись</a>
+        <a href="{% url 'add_event' selected_date%}" class="btn btn-success" style="margin-top:0; min-width: 170px;">Добавить запись</a>
     </div>
 
     <div class="calendar-grid ">
@@ -218,8 +224,7 @@
 
                             {% with height=100 %}
 <a href="{% url 'record' booking.client.id %}" style="text-decoration: none;">
-                                    <div class="event" style="position: relative;     width: 150px background: #E6FFE6; border-color: #00C851;;
-                                                             ">
+                                    <div class="event" style="position: relative; width: 100%; background: #E6FFE6; border-color: #00C851;">
                                         <div class="event-content">
                                             <div class="event-time">{{ booking.time }}</div>
                                             {{ booking.client }}
@@ -246,6 +251,7 @@
 
 
 
+    </div>
     </div>
 
 {% endblock content %}

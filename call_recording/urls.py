@@ -3,5 +3,5 @@ from . import views
 
 
 urlpatterns = [
-    #path("", views.get_calls, name='get_calls'),
+    path("", views.get_calls, name='get_calls'),
 ] 

@@ -12,20 +12,15 @@
     }
     .crm-container {
       background: #fff;
-      margin: 20px auto;
-      border-radius: 10px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.04);
+      margin: 0 auto 32px auto;
+      border-radius: 16px;
+      box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);
       max-width: 1200px;
-      padding: 20px 0 30px 0;
+      padding: 16px 0 24px 0;
     }
     .crm-table-wrapper {
       margin: 0 24px;
       overflow-x: auto;
-      /* Новый подход для скроллбара сверху */
-      transform: rotateX(180deg);
-    }
-    .crm-table {
-      transform: rotateX(180deg);
     }
     /* Стили для скроллбара */
     .crm-table-wrapper::-webkit-scrollbar {
@@ -44,12 +39,12 @@
       border-collapse: separate;
       border-spacing: 0;
       background: #fff;
-      border-radius: 8px;
+      border-radius: 14px;
       overflow: hidden;
       box-shadow: 0 1px 2px rgba(0,0,0,0.02);
     }
     table.crm-table th, table.crm-table td {
-      padding: 12px 10px;
+      padding: 13px 12px;
       text-align: left;
       font-size: 15px;
       border-bottom: 1px solid #f0f1f3;
@@ -72,9 +67,10 @@
     .crm-btn {
       background: #f3f4f6;
       border: 1px solid #e5e7eb;
-      border-radius: 6px;
+      border-radius: 8px;
       padding: 6px 16px;
       font-size: 14px;
+      font-weight: 600;
       cursor: pointer;
       color: #111827;
       transition: background 0.2s, border 0.2s;
@@ -93,6 +89,9 @@
     }
     .crm-trash:hover {
       color: #b91c1c;
+    }
+    table.crm-table tbody tr:hover {
+      background: #f8fafc;
     }
     .crm-pagination {
       display: flex;
@@ -121,14 +120,6 @@
       border-color: #e5e7eb;
       background: #f3f4f6;
       cursor: not-allowed;
-    }
-    @media (max-width: 900px) {
-      .crm-table-wrapper {
-        margin: 0 4px;
-      }
-      .crm-tabs, .crm-pagination {
-        margin: 0 4px;
-      }
     }
 </style>
 

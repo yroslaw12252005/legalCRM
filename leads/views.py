@@ -1,4 +1,4 @@
-﻿from django.shortcuts import redirect, render
+﻿from django.shortcuts import redirect, render, get_object_or_404
 import os
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -12,6 +12,7 @@ from django.core.files.storage import FileSystemStorage
 from django.http import HttpResponse
 from django.views.decorators.csrf import csrf_exempt
 from django.views.decorators.http import require_POST, require_http_methods
+from django.contrib.auth.decorators import login_required
 from django import template
 
 from accounts.views import employees
@@ -45,6 +46,7 @@ from collections import defaultdict
 from urllib.parse import quote, urlsplit, urlunsplit
 from urllib.request import urlopen
 from urllib.error import URLError, HTTPError
+import hmac
 
 from asgiref.sync import sync_to_async
 from django.shortcuts import render, redirect
@@ -120,10 +122,10 @@ class S3Client:
 
 
 s3_client = S3Client(
-    access_key="EEFJDEUXC1CROO48RUGL",
-    secret_key="bOWBlZckIVapgodQAZ4X9cMeAWwQ1i9nZ8rBVppE",
-    endpoint_url="https://s3.twcstorage.ru",  # РґР»СЏ Selectel РёСЃРїРѕР»СЊР·СѓР№С‚Рµ https://s3.storage.selcloud.ru
-    bucket_name="e5ce452e-71ce-493b-ad29-ff9ea3f60cb4",
+    access_key=os.getenv("S3_ACCESS_KEY", ""),
+    secret_key=os.getenv("S3_SECRET_KEY", ""),
+    endpoint_url=os.getenv("S3_ENDPOINT_URL", "https://s3.twcstorage.ru"),  # РґР»СЏ Selectel РёСЃРїРѕР»СЊР·СѓР№С‚Рµ https://s3.storage.selcloud.ru
+    bucket_name=os.getenv("S3_BUCKET_NAME", ""),
 )
 
 
@@ -161,6 +163,10 @@ for _status in DOCUMENT_ALLOWED_STATUSES:
 
 def can_manage_documents(user):
     return user.is_authenticated and user.status in DOCUMENT_ALLOWED_STATUS_VARIANTS
+
+
+def _record_for_user_or_404(request, pk):
+    return get_object_or_404(Record, id=pk, companys=request.user.companys)
 
 
 async def can_manage_documents_async(request):
@@ -355,14 +361,12 @@ async def record(request, pk):
                    'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
                    })
 
+@login_required
 def delete_record(request, pk):
-    if request.user.is_authenticated:
-        del_record = Record.objects.get(id=pk)
-        del_record.delete()
-        messages.success(request, "Р’С‹ СЃРїРµС€РЅРѕ СѓРґР°Р»РёР» Р·Р°РїРёСЃСЊ")
-        return redirect("home")
-    else:
-        return redirect("home")
+    del_record = _record_for_user_or_404(request, pk)
+    del_record.delete()
+    messages.success(request, "Р’С‹ СЃРїРµС€РЅРѕ СѓРґР°Р»РёР» Р·Р°РїРёСЃСЊ")
+    return redirect("home")
 
 
 async def delete_doc(request, pk):
@@ -393,47 +397,44 @@ async def delete_doc(request, pk):
         await sync_messages_error(request, "Документ не найден")
         return await sync_to_async(redirect, thread_sensitive=True)("home")
 
+@login_required
 def add_record(request):
     form = AddRecordForm(request.POST or None, user=request.user)
-    if request.user.is_authenticated:
-        if form.is_valid():
-            add_record = form.save(commit=False)
-            add_record.companys = request.user.companys
-            if request.user.status =="РћРїРµСЂР°С‚РѕСЂ":
-                add_record.employees_KC = request.user.username
-             # РџСЂРёРєСЂРµРїР»СЏРµС‚СЃСЏ Рє РєСЂРјРїР°РЅРёРё
-            add_record.save()
-            messages.success(request, f"Р—Р°СЏРІРєР°  СЃ РёРјРµРЅРµРј {add_record.name} СѓСЃРїРµС€РЅРѕ СЃРѕР·РґР°РЅР°")
-            return redirect("home")
-        return render(request, "add_record.html", {"form": form})
-    else:
+    if form.is_valid():
+        add_record = form.save(commit=False)
+        add_record.companys = request.user.companys
+        if request.user.status =="РћРїРµСЂР°С‚РѕСЂ":
+            add_record.employees_KC = request.user.username
+         # РџСЂРёРєСЂРµРїР»СЏРµС‚СЃСЏ Рє РєСЂРјРїР°РЅРёРё
+        add_record.save()
+        messages.success(request, f"Р—Р°СЏРІРєР°  СЃ РёРјРµРЅРµРј {add_record.name} СѓСЃРїРµС€РЅРѕ СЃРѕР·РґР°РЅР°")
         return redirect("home")
+    return render(request, "add_record.html", {"form": form})
 
 
+@login_required
 def update_record(request, pk):
-    if request.user.is_authenticated:
-        record = Record.objects.get(id=pk)
-        form = AddRecordForm(request.POST or None, instance=record,  user=request.user)
-        if form.is_valid():
-            updated_record = form.save()
-            messages.success(request, f"Р—Р°РїРёСЃСЊ '{updated_record.name}' РѕР±РЅР°РІР»РµРЅР°")
-            return redirect("record", pk=pk)
-        return render(request, "update_record.html", {"form": form})
-    else:
-        messages.error(request, "You have to login")
-        return redirect("home")
+    record = _record_for_user_or_404(request, pk)
+    form = AddRecordForm(request.POST or None, instance=record,  user=request.user)
+    if form.is_valid():
+        updated_record = form.save()
+        messages.success(request, f"Р—Р°РїРёСЃСЊ '{updated_record.name}' РѕР±РЅР°РІР»РµРЅР°")
+        return redirect("record", pk=pk)
+    return render(request, "update_record.html", {"form": form})
 
+@login_required
 def in_work(request, pk):
-    record = Record.objects.get(id=pk)
+    record = _record_for_user_or_404(request, pk)
     record.in_work = 1
     record.save()
     return redirect("record", pk=pk)
 
+@login_required
 def to_representative(request, pk):
     if request.user.status not in ["Р”РёСЂРµРєС‚РѕСЂ Р®РџРџ", "Р®СЂРёСЃС‚ РїРёСЂРІРёС‡РЅРёРє", "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ"]:
         messages.warning(request, "РќРµС‚ РїСЂР°РІ РґР»СЏ РїРµСЂРµРґР°С‡Рё РІ РїСЂРµРґСЃС‚Р°РІРёС‚РµР»РµР№")
         return redirect("record", pk=pk)
-    record = Record.objects.get(id=pk)
+    record = _record_for_user_or_404(request, pk)
     record.representative = 1
     record.save()
     messages.success(request, "Р—Р°СЏРІРєР° РїРµСЂРµРґР°РЅР° РїСЂРµРґСЃС‚Р°РІРёС‚РµР»СЏРј")
@@ -511,6 +512,12 @@ def download_document(request, doc_id):
 @csrf_exempt
 @require_POST
 def get_tilda_lead(request):
+    webhook_token = os.getenv("TILDA_WEBHOOK_TOKEN", "")
+    if webhook_token:
+        supplied_token = request.headers.get("X-Tilda-Token", "") or request.POST.get("token", "")
+        if not hmac.compare_digest(supplied_token, webhook_token):
+            return HttpResponse("Forbidden", status=403)
+
     if request.POST.get('test', False):
         print(200)
         return HttpResponse("test")
@@ -519,12 +526,16 @@ def get_tilda_lead(request):
         phone = None
         name = None
         textarea = None
+        get_company = None
         
         # РЈРЅРёРІРµСЂСЃР°Р»СЊРЅР°СЏ РѕР±СЂР°Р±РѕС‚РєР° РїРѕР»РµР№
         for key, value in data.items():
             if key == "id_company":
-                id_company = int(value)
-                get_company = Companys.objects.get(id=id_company)
+                try:
+                    id_company = int(value)
+                except (TypeError, ValueError):
+                    return HttpResponse("Invalid company id", status=400)
+                get_company = Companys.objects.filter(id=id_company).first()
                 continue
             
             # РџСЂРѕРїСѓСЃРєР°РµРј СЃР»СѓР¶РµР±РЅС‹Рµ РїРѕР»СЏ
@@ -546,7 +557,7 @@ def get_tilda_lead(request):
                 textarea = value
         
         # РЎРѕР·РґР°РµРј Р·Р°РїРёСЃСЊ С‚РѕР»СЊРєРѕ РµСЃР»Рё РµСЃС‚СЊ С…РѕС‚СЏ Р±С‹ С‚РµР»РµС„РѕРЅ РёР»Рё РёРјСЏ
-        if phone or name:
+        if (phone or name) and get_company is not None:
             led = Record(
                 phone=phone, 
                 name=name,  
@@ -609,8 +620,10 @@ class SearchView(ListView):
     template_name = 'search_results.html'
 
     def get_queryset(self):
-        query = self.request.GET.get('q')
-        return Record.objects.filter(
+        query = (self.request.GET.get('q') or '').strip()
+        if not query or not self.request.user.is_authenticated:
+            return Record.objects.none()
+        return Record.objects.filter(companys=self.request.user.companys).filter(
             Q(name__icontains=query) |  # РџРѕРёСЃРє РїРѕ С‡Р°СЃС‚Рё РёРјРµРЅРё
             Q(phone__icontains=query)|
             Q(id__icontains=query)|
@@ -620,9 +633,11 @@ class SearchView(ListView):
 @csrf_exempt
 @require_http_methods(["POST", "OPTIONS"])  # РР·РјРµРЅРёС‚СЊ СЌС‚Рѕ
 def get_time(request):
+    if not request.user.is_authenticated:
+        return HttpResponse("Unauthorized", status=401)
+
     if request.method == "OPTIONS":
         response = HttpResponse()
-        response['Access-Control-Allow-Origin'] = '*'
         response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
         response['Access-Control-Allow-Headers'] = 'Content-Type, Authorization'
         return response
@@ -632,7 +647,6 @@ def get_time(request):
         employee_status = request.user.status
         if employee_status == "РћРџ":
             response = HttpResponse("")
-            response['Access-Control-Allow-Origin'] = '*'
             return response
         today = date.today()
         if request.method == "POST":
@@ -706,10 +720,11 @@ def get_time(request):
             'weeks': formatted_weeks,
             'today': today.day
         })
-        response['Access-Control-Allow-Origin'] = '*'
         return response
     
     return HttpResponse("РњРµС‚РѕРґ РЅРµ СЂР°Р·СЂРµС€С‘РЅ", status=405)
+
+
 
 
 

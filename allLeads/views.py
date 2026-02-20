@@ -12,10 +12,12 @@ def _parse_filters(request):
     search_query = request.GET.get("q", "").strip()
     selected_employee = request.GET.get("employee", "").strip()
     selected_topic = request.GET.get("topic", "").strip()
+    selected_status = request.GET.get("status", "").strip()
 
     if (
         not selected_employee
         and not selected_topic
+        and not selected_status
         and ("employee=" in search_query or "topic=" in search_query)
     ):
         if "employee=" in search_query:
@@ -32,7 +34,7 @@ def _parse_filters(request):
             search_query = query_part.strip()
             selected_topic = topic_part.strip()
 
-    return search_query, selected_employee, selected_topic
+    return search_query, selected_employee, selected_topic, selected_status
 
 
 @login_required
@@ -44,7 +46,7 @@ def all_leads(request):
     day = current_time.day
     now = f"{year}-{month}-{day}"
 
-    todolist = ToDoList.objects.all()
+    todolist = ToDoList.objects.filter(user=request.user.id)
 
     # Фильтрация заявок в зависимости от роли пользователя
     if request.user.status == "Директор КЦ" or request.user.status == "Оператор":
@@ -52,7 +54,7 @@ def all_leads(request):
     else:
         base_records = Record.objects.filter(companys=request.user.companys, felial=request.user.felial)
 
-    search_query, selected_employee, selected_topic = _parse_filters(request)
+    search_query, selected_employee, selected_topic, selected_status = _parse_filters(request)
     get_records = base_records
 
     if search_query:
@@ -70,13 +72,23 @@ def all_leads(request):
     if selected_topic:
         get_records = get_records.filter(type=selected_topic)
 
-    user = User.objects.all()
+    if selected_status:
+        get_records = get_records.filter(status=selected_status)
+
+    user = User.objects.filter(companys=request.user.companys)
     filter_employees = User.objects.filter(companys=request.user.companys).order_by("username")
     topics = (
         Record.objects.filter(companys=request.user.companys)
         .exclude(type__isnull=True)
         .exclude(type__exact="")
         .values_list("type", flat=True)
+        .distinct()
+    )
+    statuses = (
+        Record.objects.filter(companys=request.user.companys)
+        .exclude(status__isnull=True)
+        .exclude(status__exact="")
+        .values_list("status", flat=True)
         .distinct()
     )
 
@@ -87,9 +99,11 @@ def all_leads(request):
         "now": now,
         "filter_employees": filter_employees,
         "topics": topics,
+        "statuses": statuses,
         "search_query": search_query,
         "selected_employee": selected_employee,
         "selected_topic": selected_topic,
+        "selected_status": selected_status,
     })
 
 
@@ -132,9 +146,9 @@ class SearchView(ListView):
     template_name = 'search_results.html'
 
     def get_queryset(self):
-        query = self.request.GET.get('q')
+        query = (self.request.GET.get('q') or '').strip()
         if query:
-            return Record.objects.filter(
+            return Record.objects.filter(companys=self.request.user.companys).filter(
                 Q(name__icontains=query)
                 | Q(phone__icontains=query)
                 | Q(description__icontains=query)

@@ -9,8 +9,6 @@ from django.db.models import Q
 
 from datetime import date
 
-today = date.today()
-
 STATUS_DIRECTOR_KC = "Директор КЦ"
 STATUS_OPERATOR = "Оператор"
 STATUS_ADMIN = "Администратор"
@@ -26,6 +24,7 @@ TOPIC_CHOICES = ["Военка", "Семейная", "Арбитраж", "Вое
 
 
 def _get_desktop_records_for_user(user):
+    today = date.today()
     if user.status == STATUS_DIRECTOR_KC or user.status == STATUS_OPERATOR:
         return Record.objects.filter(companys=user.companys, created_at__date=today, status=LEAD_STATUS_NEW)
     elif user.status == STATUS_MANAGER:
@@ -58,12 +57,14 @@ def _parse_desktop_filters(request):
     search_query = request.GET.get("q", "").strip()
     selected_employee = request.GET.get("employee", "").strip()
     selected_topic = request.GET.get("topic", "").strip()
+    selected_status = request.GET.get("status", "").strip()
 
     # Handle malformed query strings like:
     # q=+79912223344employee=topic=
     if (
         not selected_employee
         and not selected_topic
+        and not selected_status
         and ("employee=" in search_query or "topic=" in search_query)
     ):
         if "employee=" in search_query:
@@ -80,7 +81,7 @@ def _parse_desktop_filters(request):
             search_query = query_part.strip()
             selected_topic = topic_part.strip()
 
-    return search_query, selected_employee, selected_topic
+    return search_query, selected_employee, selected_topic, selected_status
 
 
 def get_current_applications(request):
@@ -98,9 +99,9 @@ def get_current_applications(request):
         else:
             return render(request, "desktop.html")
 
-    search_query, selected_employee, selected_topic = _parse_desktop_filters(request)
+    search_query, selected_employee, selected_topic, selected_status = _parse_desktop_filters(request)
     base_records = _get_desktop_records_for_user(request.user)
-    has_filters = bool(search_query or selected_employee or selected_topic)
+    has_filters = bool(search_query or selected_employee or selected_topic or selected_status)
     get_records = Record.objects.filter(companys=request.user.companys) if has_filters else base_records
 
     if search_query:
@@ -117,6 +118,9 @@ def get_current_applications(request):
 
     if selected_topic:
         get_records = get_records.filter(type=selected_topic)
+
+    if selected_status:
+        get_records = get_records.filter(status=selected_status)
 
     operators = User.objects.filter(
         companys=request.user.companys,
@@ -137,18 +141,27 @@ def get_current_applications(request):
         companys=request.user.companys,
         status=STATUS_REPRESENTATIVE,
     ).order_by("username")
+    statuses = (
+        Record.objects.filter(companys=request.user.companys)
+        .exclude(status__isnull=True)
+        .exclude(status__exact="")
+        .values_list("status", flat=True)
+        .distinct()
+    )
 
     context = {
         "records": get_records,
-        "users": User.objects.all(),
+        "users": User.objects.filter(companys=request.user.companys),
         "operators": operators,
         "lawyers": lawyers,
         "representatives": representatives,
         "filter_employees": filter_employees,
         "topics": TOPIC_CHOICES,
+        "statuses": statuses,
         "search_query": search_query,
         "selected_employee": selected_employee,
         "selected_topic": selected_topic,
+        "selected_status": selected_status,
         "can_bulk_send_to_work": _can_send_to_work(request.user),
         "can_assign_kc": _can_assign_kc(request.user),
         "can_assign_upp": _can_assign_upp(request.user),

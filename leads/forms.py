@@ -1,122 +1,144 @@
-from django import forms
-from django.contrib.auth.forms import UserCreationForm
+﻿from django import forms
+from django.core.validators import FileExtensionValidator
+
 from accounts.models import User
-from .models import Record
 from felial.models import Felial
-from django.forms import ModelChoiceField
+
+from .models import Record
 
 
 class AddRecordForm(forms.ModelForm):
-    status = forms.ChoiceField(widget=forms.Select(attrs={
-            'class': 'form-select' # Опционально: inline-стили
-        }), label="Статус заявки", choices=(
-    ("Новая", "Новая"), ("Брак", "Брак"), ("Недозвон", "Недозвон"), ("Перезвон", "Перезвон"), ("Запись в офис", "Запись в офис"),
-    ("Отказ", "Отказ"), ("Онлайн", "Онлайн"), ("Акт", "Акт"), ("Договор", "Договор")))
-    
-    type = forms.ChoiceField(widget=forms.Select(attrs={
-                'class': 'form-select' # Опционально: inline-стили
-            }), label="Тематика", choices=(
-        ("Военка", "Военка"), ("Семейная", "Семейная"), ("Военная", "Военная"), ("Арбитраж", "Арбитраж")))
+    status = forms.ChoiceField(
+        widget=forms.Select(attrs={"class": "form-select"}),
+        label="Статус заявки",
+        choices=(
+            ("Новая", "Новая"),
+            ("Брак", "Брак"),
+            ("Недозвон", "Недозвон"),
+            ("Перезвон", "Перезвон"),
+            ("Запись в офис", "Запись в офис"),
+            ("Отказ", "Отказ"),
+            ("Онлайн", "Онлайн"),
+            ("Акт", "Акт"),
+            ("Договор", "Договор"),
+        ),
+    )
 
+    type = forms.ChoiceField(
+        widget=forms.Select(attrs={"class": "form-select"}),
+        label="Тематика",
+        choices=(("Военка", "Военка"), ("Семейная", "Семейная"), ("Военная", "Военная"), ("Арбитраж", "Арбитраж")),
+    )
 
-    where = forms.ChoiceField(widget=forms.Select(attrs={
-            'class': 'form-select' # Опционально: inline-стили
-        }), label="Источник", choices=(
-        ("VK", "VK"), ("Tilda", "Tilda"), ("РЕ", "РЕ"), ("Звонок", "Звонок")))
+    where = forms.ChoiceField(
+        widget=forms.Select(attrs={"class": "form-select"}),
+        label="Источник",
+        choices=(("VK", "VK"), ("Tilda", "Tilda"), ("РЕ", "РЕ"), ("Звонок", "Звонок")),
+    )
+
+    felial = forms.ModelChoiceField(
+        widget=forms.Select(attrs={"class": "form-select", "style": "width: 181px;"}),
+        queryset=Felial.objects.none(),
+        initial=0,
+        label="Филиал",
+    )
 
     def __init__(self, *args, **kwargs):
-        # Достаем пользователя из аргументов
-        self.user = kwargs.pop('user', None)
+        self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
-        self.fields['felial'].queryset = Felial.objects.filter(companys=self.user.companys.id)
-
-    felial = forms.ModelChoiceField(widget=forms.Select(attrs={
-            'class': 'form-select', 'style':'width: 181px;' # Опционально: inline-стили
-        }), queryset=Felial.objects.none(),
-        initial = 0, label='Филиал')
-
+        if self.user and self.user.companys_id:
+            self.fields["felial"].queryset = Felial.objects.filter(companys=self.user.companys_id)
 
     class Meta:
         model = Record
-        fields = ['name', 'description', 'phone', 'status', 'type', 'where', 'felial']
+        fields = ["name", "description", "phone", "status", "type", "where", "felial"]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control", "label": "Your name"}),
-            "description": forms.Textarea(attrs={"class": "form-control", "cols":"40", "rows":"5"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "cols": "40", "rows": "5"}),
             "phone": forms.TextInput(attrs={"class": "form-control"}),
-
         }
-        labels = {'name': 'Имя', "description":"Описание", "phone":"Телефон", "status":"Статус", 'topic':'Тип заявки' ,"employees_KC":"Оператор", "employees_UPP":"Юрист", "employees_REP":"Представитель", 'where':'Источник', 'felial':'Филиал'}
+        labels = {
+            "name": "Имя",
+            "description": "Описание",
+            "phone": "Телефон",
+            "status": "Статус",
+            "type": "Тип заявки",
+            "employees_KC": "Оператор",
+            "employees_UPP": "Юрист",
+            "employees_REP": "Представитель",
+            "where": "Источник",
+            "felial": "Филиал",
+        }
+
 
 class StatusForm(forms.ModelForm):
-    status = forms.ChoiceField(label="Статус заявки", choices=(
-    ("Новая", "Новая"), ("Брак", "Брак"), ("Недозвон", "Недозвон"), ("Перезвон", "Перезвон"), ("Запись в офис", "Запись в офис"),
-    ("Отказ", "Отказ"), ("Онлайн", "Онлайн"), ("Акт", "Акт"),("Договор", "Договор")))
+    status = forms.ChoiceField(
+        label="Статус заявки",
+        choices=(
+            ("Новая", "Новая"),
+            ("Брак", "Брак"),
+            ("Недозвон", "Недозвон"),
+            ("Перезвон", "Перезвон"),
+            ("Запись в офис", "Запись в офис"),
+            ("Отказ", "Отказ"),
+            ("Онлайн", "Онлайн"),
+            ("Акт", "Акт"),
+            ("Договор", "Договор"),
+        ),
+    )
 
     class Meta:
         model = Record
-        fields = ['status']
-        labels = {'status': 'Статус заявки'}
-
-        
-class TopicForm(forms.ModelForm):
-    topic = forms.ChoiceField(widget=forms.Select(attrs={
-                'class': 'form-select' # Опционально: inline-стили
-            }), label="Тематика", choices=(
-        ("Военка", "Военка"), ("Семейная", "Семейная"), ("Военная", "Военная"), ("Арбитраж", "Арбитраж")))
-
-    class Meta:
-        model = Record
-        fields = ['topic']
-        labels = {'topic': 'Тип заявки'}
+        fields = ["status"]
+        labels = {"status": "Статус заявки"}
 
 
 class Employees_KCForm(forms.ModelForm):
-    employees_KC = forms.ModelChoiceField(queryset=User.objects.filter(status="Оператор"), widget=forms.Select(attrs={
-            'class': 'form-select',  # Добавляем класс для стилизации
-            'style': 'margin-bottom: 12px;'  # Опционально: inline-стили
-        }), label="")
-
-    class Meta:
-        model = User
-        fields = ['employees_KC']
-        labels = {'status': 'Оператор'}
-
-class Employees_UPPForm(forms.ModelForm):
-    employees_UPP = forms.ModelChoiceField(queryset=User.objects.filter(status="Юрист пирвичник"), widget=forms.Select(attrs={
-            'class': 'form-select',  # Добавляем класс для стилизации
-            'style': 'margin-bottom: 12px;'  # Опционально: inline-стили
-        }), label="")
-
-    class Meta:
-        model = User
-        fields = ['employees_UPP']
-        labels = {'status': ''}
-
-class Employees_REPForm(forms.ModelForm):
-    employees_REP = forms.ModelChoiceField(queryset=User.objects.filter(status="Представитель"), widget=forms.Select(attrs={
-            'class': 'form-select',
-            'style': 'margin-bottom: 12px;'
-        }), label="")
-
-    class Meta:
-        model = User
-        fields = ['employees_REP']
-        labels = {'status': ''}
-
-
-class CostForm(forms.ModelForm):
-    cost = forms.DecimalField(label="Стоимость", widget=forms.TextInput(attrs={
-            'class': 'form',  # Добавляем класс для стилизации
-            'style': 'margin-bottom: 12px;'  # Опционально: inline-стили
-        }) )
+    employees_KC = forms.ModelChoiceField(
+        queryset=User.objects.filter(status="Оператор"),
+        widget=forms.Select(attrs={"class": "form-select", "style": "margin-bottom: 12px;"}),
+        label="",
+    )
 
     class Meta:
         model = Record
-        fields = ['cost']
-        labels = {'cost': 'Стоимость'}
+        fields = ["employees_KC"]
 
 
-from django.core.validators import FileExtensionValidator
+class Employees_UPPForm(forms.ModelForm):
+    employees_UPP = forms.ModelChoiceField(
+        queryset=User.objects.filter(status="Юрист пирвичник"),
+        widget=forms.Select(attrs={"class": "form-select", "style": "margin-bottom: 12px;"}),
+        label="",
+    )
+
+    class Meta:
+        model = Record
+        fields = ["employees_UPP"]
+
+
+class Employees_REPForm(forms.ModelForm):
+    employees_REP = forms.ModelChoiceField(
+        queryset=User.objects.filter(status="Представитель"),
+        widget=forms.Select(attrs={"class": "form-select", "style": "margin-bottom: 12px;"}),
+        label="",
+    )
+
+    class Meta:
+        model = Record
+        fields = ["employees_REP"]
+
+
+class CostForm(forms.ModelForm):
+    cost = forms.DecimalField(
+        label="Стоимость",
+        widget=forms.TextInput(attrs={"class": "form", "style": "margin-bottom: 12px;"}),
+    )
+
+    class Meta:
+        model = Record
+        fields = ["cost"]
+        labels = {"cost": "Стоимость"}
 
 
 class MultipleFileInput(forms.FileInput):
@@ -130,7 +152,7 @@ class MultipleFileField(forms.FileField):
 
     def clean(self, data, initial=None):
         single_file_clean = super().clean
-        extension_validator = FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx'])
+        extension_validator = FileExtensionValidator(allowed_extensions=["pdf", "doc", "docx"])
         if isinstance(data, (list, tuple)):
             cleaned_files = [single_file_clean(file, initial) for file in data]
             for file in cleaned_files:
@@ -140,8 +162,6 @@ class MultipleFileField(forms.FileField):
         extension_validator(cleaned_file)
         return [cleaned_file]
 
+
 class FileUploadForm(forms.Form):
-    file = MultipleFileField(
-        label='',
-        widget=MultipleFileInput(attrs={'class': 'file'})
-    )
+    file = MultipleFileField(label="", widget=MultipleFileInput(attrs={"class": "file"}))

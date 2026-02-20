@@ -1,59 +1,54 @@
-from django.shortcuts import redirect, render
-from django.contrib.auth import authenticate, login, logout
+﻿from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth.decorators import login_required
 
-from .forms import *
-
+from .forms import AddEmployeesForm, EmployeeUpdateForm
 from .models import User
 
 
+@login_required
 def employees(request):
     get_employees = User.objects.filter(companys=request.user.companys, felial=request.user.felial)
     return render(request, "employees.html", {"employees": get_employees})
 
 
-
+@login_required
 def delete_employee(request, pk):
-    if request.user.is_authenticated:
-        del_employee = User.objects.get(id=pk)
-        del_employee.delete()
-        messages.success(request, "Вы спешно удалил запись")
-        return redirect("home")
-    else:
+    if request.user.status not in {"Администратор", "Директор КЦ", "Директор ЮПП", "Директор представителей"}:
+        messages.error(request, "Недостаточно прав")
         return redirect("home")
 
+    del_employee = get_object_or_404(User, id=pk, companys=request.user.companys)
+    del_employee.delete()
+    messages.success(request, "Сотрудник удален")
+    return redirect("home")
 
 
+@login_required
 def register_employees(request):
     form = AddEmployeesForm(request.POST or None, user=request.user)
     if request.method == "POST":
-        form = AddEmployeesForm(request.POST)
+        form = AddEmployeesForm(request.POST, user=request.user)
 
         if form.is_valid():
             add_user = form.save(commit=False)
-            add_user.companys = request.user.companys  # The logged-in user
+            add_user.companys = request.user.companys
             add_user.save()
-            username = form.cleaned_data["username"]
-            password = form.cleaned_data["password1"]
-            status = form.cleaned_data["status"]
-            email = form.cleaned_data["email"]
-
-            user = authenticate(username=username, email=email, status=status, password=password)
-            login(request, user)
-            messages.success(request, "Пользователь зарегестрирован")
+            messages.success(request, "Пользователь зарегистрирован")
             return redirect("home")
-        else:
-            messages.error(request, "An error occured during registration")
+
+        messages.error(request, "Ошибка при регистрации")
 
     return render(request, "register_employees.html", {"form": form})
 
 
+@login_required
 def update_employees(request, pk):
-    if not request.user.is_authenticated:
-        messages.error(request, "You have to login")
+    if request.user.status not in {"Администратор", "Директор КЦ", "Директор ЮПП", "Директор представителей"}:
+        messages.error(request, "Недостаточно прав")
         return redirect("home")
 
-    employee = User.objects.get(id=pk)
+    employee = get_object_or_404(User, id=pk, companys=request.user.companys)
 
     if request.method == "POST":
         form = EmployeeUpdateForm(request.POST, instance=employee)
@@ -65,15 +60,3 @@ def update_employees(request, pk):
         form = EmployeeUpdateForm(instance=employee)
 
     return render(request, "register_employees.html", {"form": form})
-#def update_employees(request, pk):
-#    if request.user.is_authenticated:
-#        employe = User.objects.get(id=pk)
-#        form = AddEmployeesForm(request.POST or None, instance=employe)
-#        if form.is_valid():
-#            updated_employees = form.save()
-#            messages.success(request, f"Сотрудник '{updated_employees.username}' обнавлен")
-#            return redirect("home")
-#        return render(request, "register_employees.html", {"form": form})
-#    else:
-#        messages.error(request, "You have to login")
-#        return redirect("home")
