@@ -91,10 +91,10 @@ WSGI_APPLICATION = 'legalCRM.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/5.1/ref/settings/#databases 0
 
-DB_NAME = os.getenv('DB_NAME')
-DB_USER = os.getenv('DB_USER')
-DB_PASSWORD = os.getenv('DB_PASSWORD')
-DB_HOST = os.getenv('DB_HOST')
+DB_NAME = 'default_db'
+DB_USER = 'gen_user'
+DB_PASSWORD = 'T925BO750ru'
+DB_HOST = '192.168.0.4'
 
 if DB_NAME and DB_USER and DB_HOST:
     DATABASES = {
