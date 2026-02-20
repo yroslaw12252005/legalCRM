@@ -94,7 +94,7 @@ WSGI_APPLICATION = 'legalCRM.wsgi.application'
 DB_NAME = 'default_db'
 DB_USER = 'gen_user'
 DB_PASSWORD = 'T925BO750ru'
-DB_HOST = '192.168.0.4'
+DB_HOST = '212.193.24.52'
 
 if DB_NAME and DB_USER and DB_HOST:
     DATABASES = {
