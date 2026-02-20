@@ -1,13 +1,14 @@
-from django.shortcuts import redirect, render
-from leads.models import Record
-from accounts.models import User
-from django.contrib.auth.decorators import login_required
-from django.contrib.auth import authenticate, login
-from django.contrib import messages
-from django.views.decorators.http import require_POST
-from django.db.models import Q
+﻿from datetime import date
 
-from datetime import date
+from django.contrib import messages
+from django.contrib.auth import authenticate, login
+from django.contrib.auth.decorators import login_required
+from django.db.models import Q
+from django.shortcuts import redirect, render
+from django.views.decorators.http import require_POST
+
+from accounts.models import User
+from leads.models import Record
 
 STATUS_DIRECTOR_KC = "Директор КЦ"
 STATUS_OPERATOR = "Оператор"
@@ -24,13 +25,16 @@ TOPIC_CHOICES = ["Военка", "Семейная", "Арбитраж", "Вое
 
 
 def _get_desktop_records_for_user(user):
+    company_id = user.companys_id
+    if not company_id:
+        return Record.objects.none()
+
     today = date.today()
-    if user.status == STATUS_DIRECTOR_KC or user.status == STATUS_OPERATOR:
-        return Record.objects.filter(companys=user.companys, created_at__date=today, status=LEAD_STATUS_NEW)
-    elif user.status == STATUS_MANAGER:
-        return Record.objects.filter(companys=user.companys, created_at__date=today, status=LEAD_STATUS_OFFICE)
-    else:
-        return Record.objects.filter(companys=user.companys, created_at__date=today)
+    if user.status in {STATUS_DIRECTOR_KC, STATUS_OPERATOR}:
+        return Record.objects.filter(companys_id=company_id, created_at__date=today, status=LEAD_STATUS_NEW)
+    if user.status == STATUS_MANAGER:
+        return Record.objects.filter(companys_id=company_id, created_at__date=today, status=LEAD_STATUS_OFFICE)
+    return Record.objects.filter(companys_id=company_id, created_at__date=today)
 
 
 def _can_send_to_work(user):
@@ -59,8 +63,7 @@ def _parse_desktop_filters(request):
     selected_topic = request.GET.get("topic", "").strip()
     selected_status = request.GET.get("status", "").strip()
 
-    # Handle malformed query strings like:
-    # q=+79912223344employee=topic=
+    # Handle malformed query strings like: q=+79912223344employee=topic=
     if (
         not selected_employee
         and not selected_topic
@@ -87,22 +90,48 @@ def _parse_desktop_filters(request):
 def get_current_applications(request):
     if not request.user.is_authenticated:
         if request.method == "POST":
-            username = request.POST["username"]
-            password = request.POST["password"]
+            username = request.POST.get("username", "")
+            password = request.POST.get("password", "")
             user = authenticate(request, username=username, password=password)
             if user is not None:
                 login(request, user)
                 return redirect("desktop")
-            else:
-                messages.warning(request, "Не правильный логин или пароль")
-                return redirect("desktop")
-        else:
-            return render(request, "desktop.html")
+            messages.warning(request, "Неправильный логин или пароль")
+            return redirect("desktop")
+        return render(request, "desktop.html")
 
     search_query, selected_employee, selected_topic, selected_status = _parse_desktop_filters(request)
+    company_id = request.user.companys_id
+
+    if not company_id:
+        messages.warning(request, "Пользователь не привязан к компании")
+        return render(
+            request,
+            "desktop.html",
+            {
+                "records": Record.objects.none(),
+                "users": User.objects.none(),
+                "operators": User.objects.none(),
+                "lawyers": User.objects.none(),
+                "representatives": User.objects.none(),
+                "filter_employees": User.objects.none(),
+                "topics": TOPIC_CHOICES,
+                "statuses": [],
+                "search_query": search_query,
+                "selected_employee": selected_employee,
+                "selected_topic": selected_topic,
+                "selected_status": selected_status,
+                "can_bulk_send_to_work": _can_send_to_work(request.user),
+                "can_assign_kc": _can_assign_kc(request.user),
+                "can_assign_upp": _can_assign_upp(request.user),
+                "can_send_to_representative": _can_send_to_representative(request.user),
+                "can_assign_rep": _can_assign_rep(request.user),
+            },
+        )
+
     base_records = _get_desktop_records_for_user(request.user)
     has_filters = bool(search_query or selected_employee or selected_topic or selected_status)
-    get_records = Record.objects.filter(companys=request.user.companys) if has_filters else base_records
+    get_records = Record.objects.filter(companys_id=company_id) if has_filters else base_records
 
     if search_query:
         get_records = get_records.filter(
@@ -113,7 +142,9 @@ def get_current_applications(request):
 
     if selected_employee:
         get_records = get_records.filter(
-            Q(employees_KC=selected_employee) | Q(employees_UPP=selected_employee) | Q(employees_REP=selected_employee)
+            Q(employees_KC=selected_employee)
+            | Q(employees_UPP=selected_employee)
+            | Q(employees_REP=selected_employee)
         )
 
     if selected_topic:
@@ -122,27 +153,15 @@ def get_current_applications(request):
     if selected_status:
         get_records = get_records.filter(status=selected_status)
 
-    operators = User.objects.filter(
-        companys=request.user.companys,
-        status=STATUS_OPERATOR,
-    ).order_by("username")
-
-    lawyers = User.objects.filter(
-        companys=request.user.companys,
-        status__in=[STATUS_LAWYER_PRIMARY, STATUS_OP],
-    ).order_by("username")
-
+    operators = User.objects.filter(companys_id=company_id, status=STATUS_OPERATOR).order_by("username")
+    lawyers = User.objects.filter(companys_id=company_id, status__in=[STATUS_LAWYER_PRIMARY, STATUS_OP]).order_by("username")
     filter_employees = User.objects.filter(
-        companys=request.user.companys,
+        companys_id=company_id,
         status__in=[STATUS_OPERATOR, STATUS_LAWYER_PRIMARY, STATUS_OP, STATUS_REPRESENTATIVE],
     ).order_by("username")
-
-    representatives = User.objects.filter(
-        companys=request.user.companys,
-        status=STATUS_REPRESENTATIVE,
-    ).order_by("username")
+    representatives = User.objects.filter(companys_id=company_id, status=STATUS_REPRESENTATIVE).order_by("username")
     statuses = (
-        Record.objects.filter(companys=request.user.companys)
+        Record.objects.filter(companys_id=company_id)
         .exclude(status__isnull=True)
         .exclude(status__exact="")
         .values_list("status", flat=True)
@@ -151,7 +170,7 @@ def get_current_applications(request):
 
     context = {
         "records": get_records,
-        "users": User.objects.filter(companys=request.user.companys),
+        "users": User.objects.filter(companys_id=company_id),
         "operators": operators,
         "lawyers": lawyers,
         "representatives": representatives,
@@ -180,6 +199,11 @@ def bulk_in_work(request):
         messages.warning(request, "No applications selected")
         return redirect("desktop")
 
+    company_id = request.user.companys_id
+    if not company_id:
+        messages.warning(request, "Company not configured")
+        return redirect("desktop")
+
     action = request.POST.get("action", "in_work")
     records_for_user = _get_desktop_records_for_user(request.user).filter(id__in=selected_ids)
 
@@ -203,7 +227,7 @@ def bulk_in_work(request):
         operator_id = request.POST.get("operator_id")
         operator = User.objects.filter(
             id=operator_id,
-            companys=request.user.companys,
+            companys_id=company_id,
             status=STATUS_OPERATOR,
         ).first()
 
@@ -223,7 +247,7 @@ def bulk_in_work(request):
         lawyer_id = request.POST.get("lawyer_id")
         lawyer = User.objects.filter(
             id=lawyer_id,
-            companys=request.user.companys,
+            companys_id=company_id,
             status__in=[STATUS_LAWYER_PRIMARY, STATUS_OP],
         ).first()
 
@@ -255,7 +279,7 @@ def bulk_in_work(request):
         representative_id = request.POST.get("representative_id")
         representative = User.objects.filter(
             id=representative_id,
-            companys=request.user.companys,
+            companys_id=company_id,
             status=STATUS_REPRESENTATIVE,
         ).first()
 
