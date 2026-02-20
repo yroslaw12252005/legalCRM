@@ -16,12 +16,7 @@
               {% if day_data.day != 0 %}
                 <a class="day-link" href="{% url 'calendar' %}?date={{ day_data.year }}-{{ day_data.month }}-{{ day_data.day }}">
                   <div class="day-counts">
-                    {% if day_data.surcharges_count > 0 %}
-                      <span class="count count-surcharge" title="Доплаты">{{ day_data.surcharges_count }}</span>
-                    {% endif %}
-                    {% if day_data.count > 0 %}
-                      <span class="count count-bookings" title="Записано">{{ day_data.count }}</span>
-                    {% endif %}
+                    <span class="count count-bookings" title="Записано">{{ day_data.count|default:0 }}</span>
                   </div>
                   <div class="day-number">{{ day_data.day }}</div>
                 </a>
@@ -69,6 +64,7 @@
 .mini-calendar td {
   height: 44px;
   padding: 2px;
+  background: transparent;
 }
 
 .mini-calendar td.is-empty {
@@ -116,10 +112,6 @@
 
 .count-bookings {
   background: #2563eb;
-}
-
-.count-surcharge {
-  background: #10b981;
 }
 
 .day-number {
