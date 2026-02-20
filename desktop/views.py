@@ -17,6 +17,9 @@ STATUS_ADMIN = "Администратор"
 STATUS_MANAGER = "Менеджер"
 STATUS_DIRECTOR_UPP = "Директор ЮПП"
 STATUS_LAWYER_PRIMARY = "Юрист пирвичник"
+STATUS_OP = "ОП"
+STATUS_DIRECTOR_REP = "Директор представителей"
+STATUS_REPRESENTATIVE = "Представитель"
 LEAD_STATUS_NEW = "Новая"
 LEAD_STATUS_OFFICE = "Запись в офис"
 TOPIC_CHOICES = ["Военка", "Семейная", "Арбитраж", "Военная"]
@@ -41,6 +44,14 @@ def _can_assign_kc(user):
 
 def _can_assign_upp(user):
     return user.status in {STATUS_DIRECTOR_UPP, STATUS_ADMIN}
+
+
+def _can_send_to_representative(user):
+    return user.status in {STATUS_DIRECTOR_UPP, STATUS_LAWYER_PRIMARY, STATUS_OP, STATUS_ADMIN}
+
+
+def _can_assign_rep(user):
+    return user.status in {STATUS_DIRECTOR_REP, STATUS_ADMIN}
 
 
 def _parse_desktop_filters(request):
@@ -101,7 +112,7 @@ def get_current_applications(request):
 
     if selected_employee:
         get_records = get_records.filter(
-            Q(employees_KC=selected_employee) | Q(employees_UPP=selected_employee)
+            Q(employees_KC=selected_employee) | Q(employees_UPP=selected_employee) | Q(employees_REP=selected_employee)
         )
 
     if selected_topic:
@@ -114,12 +125,17 @@ def get_current_applications(request):
 
     lawyers = User.objects.filter(
         companys=request.user.companys,
-        status=STATUS_LAWYER_PRIMARY,
+        status__in=[STATUS_LAWYER_PRIMARY, STATUS_OP],
     ).order_by("username")
 
     filter_employees = User.objects.filter(
         companys=request.user.companys,
-        status__in=[STATUS_OPERATOR, STATUS_LAWYER_PRIMARY],
+        status__in=[STATUS_OPERATOR, STATUS_LAWYER_PRIMARY, STATUS_OP, STATUS_REPRESENTATIVE],
+    ).order_by("username")
+
+    representatives = User.objects.filter(
+        companys=request.user.companys,
+        status=STATUS_REPRESENTATIVE,
     ).order_by("username")
 
     context = {
@@ -127,6 +143,7 @@ def get_current_applications(request):
         "users": User.objects.all(),
         "operators": operators,
         "lawyers": lawyers,
+        "representatives": representatives,
         "filter_employees": filter_employees,
         "topics": TOPIC_CHOICES,
         "search_query": search_query,
@@ -135,6 +152,8 @@ def get_current_applications(request):
         "can_bulk_send_to_work": _can_send_to_work(request.user),
         "can_assign_kc": _can_assign_kc(request.user),
         "can_assign_upp": _can_assign_upp(request.user),
+        "can_send_to_representative": _can_send_to_representative(request.user),
+        "can_assign_rep": _can_assign_rep(request.user),
     }
 
     return render(request, "desktop.html", context)
@@ -192,7 +211,7 @@ def bulk_in_work(request):
         lawyer = User.objects.filter(
             id=lawyer_id,
             companys=request.user.companys,
-            status=STATUS_LAWYER_PRIMARY,
+            status__in=[STATUS_LAWYER_PRIMARY, STATUS_OP],
         ).first()
 
         if not lawyer:
@@ -201,6 +220,38 @@ def bulk_in_work(request):
 
         updated_count = records_for_user.update(employees_UPP=lawyer.username)
         messages.success(request, f"Lawyer assigned: {updated_count}")
+        return redirect("desktop")
+
+    if action == "to_representative":
+        if not _can_send_to_representative(request.user):
+            messages.warning(request, "Access denied")
+            return redirect("desktop")
+
+        updated_count = records_for_user.update(representative=1)
+        if updated_count:
+            messages.success(request, f"Moved to representatives: {updated_count}")
+        else:
+            messages.warning(request, "No applications were moved")
+        return redirect("desktop")
+
+    if action == "assign_representative":
+        if not _can_assign_rep(request.user):
+            messages.warning(request, "Access denied")
+            return redirect("desktop")
+
+        representative_id = request.POST.get("representative_id")
+        representative = User.objects.filter(
+            id=representative_id,
+            companys=request.user.companys,
+            status=STATUS_REPRESENTATIVE,
+        ).first()
+
+        if not representative:
+            messages.warning(request, "Representative not selected")
+            return redirect("desktop")
+
+        updated_count = records_for_user.update(employees_REP=representative.username)
+        messages.success(request, f"Representative assigned: {updated_count}")
         return redirect("desktop")
 
     messages.warning(request, "Unknown action")

@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load static %}
 {% block content %}
 
@@ -240,7 +240,7 @@
       <table class="crm-table">
         <thead>
           <tr>
-            {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp %}
+            {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep %}
               <th class="crm-checkbox-cell"><input type="checkbox" id="selectAllRecords"></th>
             {% endif %}
             <th>Имя</th>
@@ -257,14 +257,17 @@
             {% if user.status == "Директор ЮПП" or user.status == "Администратор" or user.status == "Менеджер"%}
               <th>Прикрепленный юрист</th>
             {% endif %}
+            {% if user.status == "Директор представителей" or user.status == "Администратор" or user.status == "Менеджер" or user.status == "Директор ЮПП"%}
+              <th>Представитель</th>
+            {% endif %}
           </tr>
         </thead>
         <tbody>
           {% if records %}
             {% for record in records %}
-              {% if user.status == "Директор КЦ" and record.in_work == 0 or user.status == "Директор КЦ" and record.in_work == 1 or user.status == "Директор ЮПП" and record.in_work == 1 or user.status == "Юрист пирвичник" and record.employees_UPP == user.username or user.status == "Оператор" and record.employees_KC == user.username or user.status == "Менеджер" and record.in_work == 1 or user.status == "Администратор"%}
+              {% if user.status == "Директор КЦ" and record.in_work == 0 or user.status == "Директор КЦ" and record.in_work == 1 or user.status == "Директор ЮПП" and record.in_work == 1 or user.status == "Юрист пирвичник" and record.employees_UPP == user.username or user.status == "ОП" and record.employees_UPP == user.username or user.status == "Директор представителей" and record.representative == 1 or user.status == "Представитель" and record.employees_REP == user.username and record.representative == 1 or user.status == "Оператор" and record.employees_KC == user.username or user.status == "Менеджер" and record.in_work == 1 or user.status == "Администратор"%}
                 <tr>
-                  {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp %}
+                  {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep %}
                     <td class="crm-checkbox-cell">
                       <input type="checkbox" class="record-checkbox" name="selected_records" value="{{ record.id }}">
                     </td>
@@ -327,6 +330,9 @@
                   {% if user.status == "Директор ЮПП" or user.status == "Администратор" or user.status == "Менеджер"%}
                     <td>{{ record.employees_UPP }}</td>
                   {% endif %}
+                  {% if user.status == "Директор представителей" or user.status == "Администратор" or user.status == "Менеджер" or user.status == "Директор ЮПП"%}
+                    <td>{{ record.employees_REP }}</td>
+                  {% endif %}
                 </tr>
               {% endif %}
             {% endfor %}
@@ -335,7 +341,7 @@
       </table>
     </div>
 
-    {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp %}
+    {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep %}
       <div class="bulk-action-bar" id="bulkActionBar" style="display: none;">
         <span id="selectedCounter">Selected: 0</span>
 
@@ -362,12 +368,26 @@
           </select>
           <button type="submit" name="action" value="assign_lawyer" class="crm-btn">Прикрепить юриста</button>
         {% endif %}
+
+        {% if can_send_to_representative %}
+          <button type="submit" name="action" value="to_representative" class="crm-btn">Передать представителям</button>
+        {% endif %}
+
+        {% if can_assign_rep %}
+          <select name="representative_id" class="bulk-select">
+            <option value="">Представители</option>
+            {% for representative in representatives %}
+              <option value="{{ representative.id }}">{{ representative.username }}</option>
+            {% endfor %}
+          </select>
+          <button type="submit" name="action" value="assign_representative" class="crm-btn">Прикрепить представителя</button>
+        {% endif %}
       </div>
     {% endif %}
   </form>
 </div>
 
-{% if can_bulk_send_to_work or can_assign_kc or can_assign_upp %}
+{% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep %}
 <script>
   (function () {
     const checkboxes = Array.from(document.querySelectorAll('.record-checkbox'));
@@ -436,3 +456,4 @@
 
 {% endif %}
 {% endblock content %}
+

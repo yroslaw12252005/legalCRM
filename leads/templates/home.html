@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load static %}
 {% block content %}
 
@@ -152,12 +152,15 @@
           {% if user.status == "Директор ЮПП" or user.status == "Администратор" or user.status == "Менеджер"%}
             <th>Прикрепленный юрист</th>
           {% endif %}
+          {% if user.status == "Директор представителей" or user.status == "Администратор" or user.status == "Менеджер" or user.status == "Директор ЮПП"%}
+            <th>Представитель</th>
+          {% endif %}
         </tr>
       </thead>
       <tbody>
         {% if records %}
           {% for record in records %}
-            {% if user.status == "Директор КЦ" and record.in_work == 0 or user.status == "Директор КЦ" and record.in_work == 1 or user.status == "Директор ЮПП" and record.in_work == 1 or user.status == "Юрист пирвичник" and record.employees_UPP == user.username or user.status == "Оператор" and record.employees_KC == user.username or user.status == "Менеджер" and record.in_work == 1 or user.status == "Администратор"%}
+            {% if user.status == "Директор КЦ" and record.in_work == 0 or user.status == "Директор КЦ" and record.in_work == 1 or user.status == "Директор ЮПП" and record.in_work == 1 or user.status == "Юрист пирвичник" and record.employees_UPP == user.username or user.status == "ОП" and record.employees_UPP == user.username or user.status == "Директор представителей" and record.representative == 1 or user.status == "Представитель" and record.employees_REP == user.username and record.representative == 1 or user.status == "Оператор" and record.employees_KC == user.username or user.status == "Менеджер" and record.in_work == 1 or user.status == "Администратор"%}
               <tr>
                 <td>
                   {% if record.name != None %}
@@ -217,6 +220,9 @@
                 {% if user.status == "Директор ЮПП" or user.status == "Администратор" or user.status == "Менеджер"%}
                   <td>{{ record.employees_UPP }}</td>
                 {% endif %}
+                {% if user.status == "Директор представителей" or user.status == "Администратор" or user.status == "Менеджер" or user.status == "Директор ЮПП"%}
+                  <td>{{ record.employees_REP }}</td>
+                {% endif %}
               </tr>
             {% endif %}
           {% endfor %}
@@ -243,3 +249,4 @@
     </div>
 {% endif %}
 {% endblock content %}
+

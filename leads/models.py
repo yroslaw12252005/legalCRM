@@ -11,6 +11,7 @@ class Record(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     employees_KC = models.CharField(max_length=50,null=True, default="Не прикреплённ")
     employees_UPP = models.CharField(max_length=50,null=True,default="Не прикреплённ")
+    employees_REP = models.CharField(max_length=50, null=True, default="Не прикреплённ")
     where = models.CharField(max_length=50, null=True)
     cost = models.DecimalField(max_digits=10, decimal_places=0, null=True)
     companys = models.ForeignKey(
@@ -23,6 +24,7 @@ class Record(models.Model):
         null = True
     )
     in_work = models.BooleanField(default=False)
+    representative = models.BooleanField(default=False)
     doc = models.URLField(max_length=200, null=True)
     def __str__(self):
 
@@ -31,3 +33,17 @@ class Record(models.Model):
 
     class Meta:
         ordering = ['-created_at']
+
+
+class RecordDocument(models.Model):
+    record = models.ForeignKey(Record, on_delete=models.CASCADE, related_name="documents")
+    file_name = models.CharField(max_length=255)
+    file_url = models.URLField(max_length=500)
+    s3_key = models.CharField(max_length=500, null=True, blank=True)
+    created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        ordering = ['-created_at']
+
+    def __str__(self):
+        return self.file_name

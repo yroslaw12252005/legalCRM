@@ -64,7 +64,7 @@ def all_leads(request):
 
     if selected_employee:
         get_records = get_records.filter(
-            Q(employees_KC=selected_employee) | Q(employees_UPP=selected_employee)
+            Q(employees_KC=selected_employee) | Q(employees_UPP=selected_employee) | Q(employees_REP=selected_employee)
         )
 
     if selected_topic:

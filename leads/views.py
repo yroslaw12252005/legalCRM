@@ -1,8 +1,9 @@
-from django.shortcuts import redirect, render
+﻿from django.shortcuts import redirect, render
 import os
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import HttpResponse
+from django.http import Http404
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic import TemplateView, ListView
 from django.db.models import Q
@@ -19,7 +20,7 @@ from felial.views import felials
 
 # from rest_framework import generics
 
-from .models import Record
+from .models import Record, RecordDocument
 from todolist.models import ToDoList
 from django.db.models import Sum
 from cost.models import Surcharge
@@ -28,7 +29,7 @@ from smart_calendar.models import Booking
 from company.models import Companys
 from cost.models import Surcharge
 
-from .forms import AddRecordForm, StatusForm, Employees_KCForm, Employees_UPPForm, CostForm,FileUploadForm
+from .forms import AddRecordForm, StatusForm, Employees_KCForm, Employees_UPPForm, Employees_REPForm, CostForm,FileUploadForm
 
 import asyncio
 from contextlib import asynccontextmanager
@@ -38,8 +39,12 @@ import os
 import json
 import datetime
 import calendar
+import uuid
 from datetime import date, datetime, timedelta
 from collections import defaultdict
+from urllib.parse import quote, urlsplit, urlunsplit
+from urllib.request import urlopen
+from urllib.error import URLError, HTTPError
 
 from asgiref.sync import sync_to_async
 from django.shortcuts import render, redirect
@@ -117,9 +122,52 @@ class S3Client:
 s3_client = S3Client(
     access_key="EEFJDEUXC1CROO48RUGL",
     secret_key="bOWBlZckIVapgodQAZ4X9cMeAWwQ1i9nZ8rBVppE",
-    endpoint_url="https://s3.twcstorage.ru",  # для Selectel используйте https://s3.storage.selcloud.ru
-    bucket_name="edb6a103-vsecrm",
+    endpoint_url="https://s3.twcstorage.ru",  # РґР»СЏ Selectel РёСЃРїРѕР»СЊР·СѓР№С‚Рµ https://s3.storage.selcloud.ru
+    bucket_name="e5ce452e-71ce-493b-ad29-ff9ea3f60cb4",
 )
+
+
+def _s3_public_base_url():
+    return f"{s3_client.config['endpoint_url'].rstrip('/')}/{s3_client.bucket_name}"
+
+
+DOCUMENT_ALLOWED_STATUSES = {
+    "РњРµРЅРµРґР¶РµСЂ",
+    "Р”РёСЂРµРєС‚РѕСЂ Р®РџРџ",
+    "Р”РёСЂРµРєС‚РѕСЂ РїСЂРµРґСЃС‚Р°РІРёС‚РµР»РµР№",
+    "РџСЂРµРґСЃС‚Р°РІРёС‚РµР»СЊ",
+    "Р®СЂРёСЃС‚ РїРёСЂРІРёС‡РЅРёРє",
+    "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ",
+}
+
+
+def _status_variants(value):
+    variants = {value}
+    try:
+        variants.add(value.encode("utf-8").decode("cp1251"))
+    except Exception:
+        pass
+    try:
+        variants.add(value.encode("cp1251").decode("utf-8"))
+    except Exception:
+        pass
+    return variants
+
+
+DOCUMENT_ALLOWED_STATUS_VARIANTS = set()
+for _status in DOCUMENT_ALLOWED_STATUSES:
+    DOCUMENT_ALLOWED_STATUS_VARIANTS.update(_status_variants(_status))
+
+
+def can_manage_documents(user):
+    return user.is_authenticated and user.status in DOCUMENT_ALLOWED_STATUS_VARIANTS
+
+
+async def can_manage_documents_async(request):
+    return await sync_to_async(
+        lambda: request.user.is_authenticated and request.user.status in DOCUMENT_ALLOWED_STATUS_VARIANTS,
+        thread_sensitive=True,
+    )()
 
 def home(request):
     if not request.user.is_authenticated:
@@ -131,7 +179,7 @@ def home(request):
                 login(request, user)
                 return redirect("home")
             else:
-                messages.warning(request, "Не правильный логин или пароль")
+                messages.warning(request, "РќРµ РїСЂР°РІРёР»СЊРЅС‹Р№ Р»РѕРіРёРЅ РёР»Рё РїР°СЂРѕР»СЊ")
                 return redirect("home")
         else:
             return render(request, "home.html")
@@ -141,7 +189,7 @@ def home(request):
     day = current_time.day
     now = f"{year}-{month}-{day}"
     todolist = ToDoList.objects.all()
-    if request.user.status == "Директор КЦ" or request.user.status == "Оператор":
+    if request.user.status == "Р”РёСЂРµРєС‚РѕСЂ РљР¦" or request.user.status == "РћРїРµСЂР°С‚РѕСЂ":
         get_records = Record.objects.filter(companys=request.user.companys)
     else:
         get_records = Record.objects.filter(companys=request.user.companys, felial=request.user.felial)
@@ -161,7 +209,7 @@ def filter_type(request, type):
     return render(request, "home.html", {"records": records})
 
 def brak(request):
-    records = Record.objects.filter(status="Брак")
+    records = Record.objects.filter(status="Р‘СЂР°Рє")
     return render(request, "home.html", {"records": records})
 
 def logout_user(request):
@@ -171,14 +219,17 @@ def logout_user(request):
 
 
 async def record(request, pk):
-    # Асинхронное получение объектов из БД
+    # РђСЃРёРЅС…СЂРѕРЅРЅРѕРµ РїРѕР»СѓС‡РµРЅРёРµ РѕР±СЉРµРєС‚РѕРІ РёР· Р‘Р”
     get_record = sync_to_async(Record.objects.get, thread_sensitive=True)
     record = await get_record(id=pk)
+    request.can_manage_documents = await can_manage_documents_async(request)
 
     filter_surcharge = sync_to_async(Surcharge.objects.filter, thread_sensitive=True)
     surcharge = await filter_surcharge(record_id=pk)
+    get_documents = sync_to_async(lambda: list(RecordDocument.objects.filter(record_id=pk)), thread_sensitive=True)
+    documents = await get_documents()
 
-    # Асинхронная инициализация форм
+    # РђСЃРёРЅС…СЂРѕРЅРЅР°СЏ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С„РѕСЂРј
     init_form = sync_to_async(lambda: StatusForm(request.POST or None, instance=record), thread_sensitive=True)
     form_status = await init_form()
 
@@ -188,15 +239,18 @@ async def record(request, pk):
     init_employees_UPP = sync_to_async(lambda: Employees_UPPForm(request.POST or None, instance=record), thread_sensitive=True)
     form_employees_UPP = await init_employees_UPP()
 
+    init_employees_REP = sync_to_async(lambda: Employees_REPForm(request.POST or None, instance=record), thread_sensitive=True)
+    form_employees_REP = await init_employees_REP()
+
     init_cost_form = sync_to_async(lambda: CostForm(request.POST or None, instance=record), thread_sensitive=True)
     cost_form = await init_cost_form()
 
     init_upload_form = sync_to_async(lambda: FileUploadForm(request.POST or None, request.FILES or None, use_required_attribute=False), thread_sensitive=True)
     upload_file_form = await init_upload_form()
 
-    # Удаляю инициализацию TopicForm
+    # РЈРґР°Р»СЏСЋ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЋ TopicForm
 
-    # Проверка статуса бронирования
+    # РџСЂРѕРІРµСЂРєР° СЃС‚Р°С‚СѓСЃР° Р±СЂРѕРЅРёСЂРѕРІР°РЅРёСЏ
     check_booking = sync_to_async(Booking.objects.filter(client_id=pk).exists, thread_sensitive=True)
     booking_exists = await check_booking()
     get_status_com = 0
@@ -205,113 +259,139 @@ async def record(request, pk):
         get_status_com = await get_booking(client_id=pk)
     form_employees_KC_valid = await sync_to_async(form_employees_KC.is_valid, thread_sensitive=True)()
     form_employees_UPP_valid = await sync_to_async(form_employees_UPP.is_valid, thread_sensitive=True)()
+    form_employees_REP_valid = await sync_to_async(form_employees_REP.is_valid, thread_sensitive=True)()
     cost_valid = await sync_to_async(cost_form.is_valid, thread_sensitive=True)()
-    upload_valid = await sync_to_async(upload_file_form.is_valid, thread_sensitive=True)()
-    # Удаляю topic_form_valid
-    # Обработка форм
+    upload_valid = request.can_manage_documents and await sync_to_async(upload_file_form.is_valid, thread_sensitive=True)()
+    # РЈРґР°Р»СЏСЋ topic_form_valid
+    # РћР±СЂР°Р±РѕС‚РєР° С„РѕСЂРј
     form_status_valid = await sync_to_async(form_status.is_valid, thread_sensitive=True)()
     if form_status_valid:
         save_form = sync_to_async(form_status.save, thread_sensitive=True)
         await save_form()
         add_message = sync_to_async(messages.success, thread_sensitive=True)
-        await add_message(request, "Статус успешно обновлен")
+        await add_message(request, "РЎС‚Р°С‚СѓСЃ СѓСЃРїРµС€РЅРѕ РѕР±РЅРѕРІР»РµРЅ")
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
-                       "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com
+                       "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
                        })
 
 
     elif form_employees_KC_valid:
         save_form = sync_to_async(form_employees_KC.save, thread_sensitive=True)
         await save_form()
-        await sync_to_async(messages.success)(request, "Оператор прикреплен")
+        await sync_to_async(messages.success)(request, "РћРїРµСЂР°С‚РѕСЂ РїСЂРёРєСЂРµРїР»РµРЅ")
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
-                       "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com
+                       "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
                        })
 
 
     elif form_employees_UPP_valid:
         save_form = sync_to_async(form_employees_UPP.save, thread_sensitive=True)
         await save_form()
-        await sync_to_async(messages.success)(request, "Юрист прикреплен")
+        await sync_to_async(messages.success)(request, "Р®СЂРёСЃС‚ РїСЂРёРєСЂРµРїР»РµРЅ")
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
-                       "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com
+                       "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
+                       })
+
+    elif form_employees_REP_valid:
+        save_form = sync_to_async(form_employees_REP.save, thread_sensitive=True)
+        await save_form()
+        await sync_to_async(messages.success)(request, "РџСЂРµРґСЃС‚Р°РІРёС‚РµР»СЊ РїСЂРёРєСЂРµРїР»РµРЅ")
+        return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+                       "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
                        })
 
 
     elif cost_valid:
         save_form = sync_to_async(cost_form.save, thread_sensitive=True)
         await save_form()
-        await sync_to_async(messages.success)(request, "Цена указана")
+        await sync_to_async(messages.success)(request, "Р¦РµРЅР° СѓРєР°Р·Р°РЅР°")
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
-                       "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com
+                       "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
                        })
 
 
     elif upload_valid:
-        uploaded_file = request.FILES['file']
+        uploaded_files = request.FILES.getlist('file')
+        created_docs = 0
         fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'uploads'))
-
-        # Асинхронное сохранение файла
         save_file = sync_to_async(fs.save, thread_sensitive=True)
-        filename = await save_file(uploaded_file.name, uploaded_file)
-
-        full_path = os.path.join(settings.MEDIA_ROOT, 'uploads', filename)
-        print(full_path)
-        # Асинхронная загрузка в S3
-        await s3_client.upload_file(full_path, file_name=filename)
-
-        # Обновление записи
-        record.doc = f'https://s3.twcstorage.ru/edb6a103-vsecrm/{uploaded_file.name}'
-        save_record = sync_to_async(record.save, thread_sensitive=True)
-        await save_record()
-
         delete_file = sync_to_async(fs.delete, thread_sensitive=True)
-        await delete_file(filename)
+        create_doc = sync_to_async(RecordDocument.objects.create, thread_sensitive=True)
+
+        for uploaded_file in uploaded_files:
+            filename = await save_file(uploaded_file.name, uploaded_file)
+            full_path = os.path.join(settings.MEDIA_ROOT, 'uploads', filename)
+            object_key = f"records/{record.id}/{uuid.uuid4().hex}_{uploaded_file.name}"
+
+            await s3_client.upload_file(full_path, file_name=object_key)
+            safe_object_key = quote(object_key, safe="/")
+            await create_doc(
+                record=record,
+                file_name=uploaded_file.name,
+                file_url=f'{_s3_public_base_url()}/{safe_object_key}',
+                s3_key=object_key,
+            )
+            await delete_file(filename)
+            created_docs += 1
+
+        if created_docs:
+            await sync_to_async(messages.success)(request, f"Р¤Р°Р№Р»РѕРІ Р·Р°РіСЂСѓР¶РµРЅРѕ: {created_docs}")
+        documents = await get_documents()
 
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
-                       "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com
+                       "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
                        })
 
-    # Удаляю topic_form из контекста рендера
-    # Рендер страницы, если нет валидных форм
+    # РЈРґР°Р»СЏСЋ topic_form РёР· РєРѕРЅС‚РµРєСЃС‚Р° СЂРµРЅРґРµСЂР°
+    # Р РµРЅРґРµСЂ СЃС‚СЂР°РЅРёС†С‹, РµСЃР»Рё РЅРµС‚ РІР°Р»РёРґРЅС‹С… С„РѕСЂРј
     return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
-                   "form_employees_UPP": form_employees_UPP, "cost": cost_form, "surcharge": surcharge,
-                   'upload_file_form': upload_file_form, 'get_status_com':get_status_com
+                   "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
+                   'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
                    })
 
 def delete_record(request, pk):
     if request.user.is_authenticated:
         del_record = Record.objects.get(id=pk)
         del_record.delete()
-        messages.success(request, "Вы спешно удалил запись")
+        messages.success(request, "Р’С‹ СЃРїРµС€РЅРѕ СѓРґР°Р»РёР» Р·Р°РїРёСЃСЊ")
         return redirect("home")
     else:
         return redirect("home")
 
 
 async def delete_doc(request, pk):
-    get_record = sync_to_async(Record.objects.get)
-    save_record = sync_to_async(lambda instance: instance.save())
+    can_manage_docs = await can_manage_documents_async(request)
+    if not can_manage_docs:
+        await sync_to_async(messages.warning, thread_sensitive=True)(request, "Нет прав для удаления документа")
+        return await sync_to_async(redirect, thread_sensitive=True)("home")
+
+    get_document = sync_to_async(RecordDocument.objects.select_related("record").get)
+    delete_document = sync_to_async(lambda instance: instance.delete())
+    get_user_company_id = sync_to_async(lambda: request.user.companys_id, thread_sensitive=True)
     try:
-        del_doc = await get_record(id=pk)
-        # Если нужно удалить файл, используйте delete_file вместо uploa d_file
-        await s3_client.delete_file(object_name=del_doc.doc.replace('https://s3.twcstorage.ru/edb6a103-vsecrm/', ''))  # Проверьте атрибут имени файла
-        del_doc.doc = None
-        await save_record(del_doc)
-        # Асинхронная отправка сообщения
+        del_doc = await get_document(id=pk)
+        user_company_id = await get_user_company_id()
+        if user_company_id != del_doc.record.companys_id:
+            await sync_to_async(messages.warning, thread_sensitive=True)(request, "Нет доступа к документу")
+            return await sync_to_async(redirect, thread_sensitive=True)("home")
+
+        if del_doc.s3_key:
+            await s3_client.delete_file(object_name=del_doc.s3_key)
+        await delete_document(del_doc)
+
         sync_messages = sync_to_async(messages.success, thread_sensitive=True)
         await sync_messages(request, "Файл успешно удалён")
-    except Record.DoesNotExist:
+        return await sync_to_async(redirect, thread_sensitive=True)("record", pk=del_doc.record_id)
+    except RecordDocument.DoesNotExist:
         sync_messages_error = sync_to_async(messages.error, thread_sensitive=True)
         await sync_messages_error(request, "Документ не найден")
-    #  Асинхронный редирект
-    sync_redirect = sync_to_async(redirect, thread_sensitive=True)
-    return await sync_redirect("home")
+        return await sync_to_async(redirect, thread_sensitive=True)("home")
 
 def add_record(request):
     form = AddRecordForm(request.POST or None, user=request.user)
@@ -319,11 +399,11 @@ def add_record(request):
         if form.is_valid():
             add_record = form.save(commit=False)
             add_record.companys = request.user.companys
-            if request.user.status =="Оператор":
+            if request.user.status =="РћРїРµСЂР°С‚РѕСЂ":
                 add_record.employees_KC = request.user.username
-             # Прикрепляется к крмпании
+             # РџСЂРёРєСЂРµРїР»СЏРµС‚СЃСЏ Рє РєСЂРјРїР°РЅРёРё
             add_record.save()
-            messages.success(request, f"Заявка  с именем {add_record.name} успешно создана")
+            messages.success(request, f"Р—Р°СЏРІРєР°  СЃ РёРјРµРЅРµРј {add_record.name} СѓСЃРїРµС€РЅРѕ СЃРѕР·РґР°РЅР°")
             return redirect("home")
         return render(request, "add_record.html", {"form": form})
     else:
@@ -336,7 +416,7 @@ def update_record(request, pk):
         form = AddRecordForm(request.POST or None, instance=record,  user=request.user)
         if form.is_valid():
             updated_record = form.save()
-            messages.success(request, f"Запись '{updated_record.name}' обнавлена")
+            messages.success(request, f"Р—Р°РїРёСЃСЊ '{updated_record.name}' РѕР±РЅР°РІР»РµРЅР°")
             return redirect("record", pk=pk)
         return render(request, "update_record.html", {"form": form})
     else:
@@ -348,6 +428,59 @@ def in_work(request, pk):
     record.in_work = 1
     record.save()
     return redirect("record", pk=pk)
+
+def to_representative(request, pk):
+    if request.user.status not in ["Р”РёСЂРµРєС‚РѕСЂ Р®РџРџ", "Р®СЂРёСЃС‚ РїРёСЂРІРёС‡РЅРёРє", "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ"]:
+        messages.warning(request, "РќРµС‚ РїСЂР°РІ РґР»СЏ РїРµСЂРµРґР°С‡Рё РІ РїСЂРµРґСЃС‚Р°РІРёС‚РµР»РµР№")
+        return redirect("record", pk=pk)
+    record = Record.objects.get(id=pk)
+    record.representative = 1
+    record.save()
+    messages.success(request, "Р—Р°СЏРІРєР° РїРµСЂРµРґР°РЅР° РїСЂРµРґСЃС‚Р°РІРёС‚РµР»СЏРј")
+    return redirect("record", pk=pk)
+
+
+def download_document(request, doc_id):
+    if not request.user.is_authenticated:
+        return redirect("home")
+    if not can_manage_documents(request.user):
+        messages.warning(request, "Нет прав для скачивания документа")
+        return redirect("home")
+
+    try:
+        document = RecordDocument.objects.select_related("record").get(id=doc_id)
+    except RecordDocument.DoesNotExist:
+        raise Http404("Р”РѕРєСѓРјРµРЅС‚ РЅРµ РЅР°Р№РґРµРЅ")
+
+    if request.user.companys_id != document.record.companys_id:
+        messages.warning(request, "РќРµС‚ РґРѕСЃС‚СѓРїР° Рє РґРѕРєСѓРјРµРЅС‚Сѓ")
+        return redirect("home")
+
+    if document.s3_key:
+        source_url = f"{_s3_public_base_url()}/{quote(document.s3_key, safe='/')}"
+    else:
+        parsed = urlsplit(document.file_url)
+        source_url = urlunsplit((
+            parsed.scheme,
+            parsed.netloc,
+            quote(parsed.path, safe="/"),
+            parsed.query,
+            parsed.fragment,
+        ))
+
+    filename = document.file_name or "document"
+    
+    with urlopen(source_url) as remote_file:
+        content = remote_file.read()
+   
+        #Wmessages.error(request, "РќРµ СѓРґР°Р»РѕСЃСЊ СЃРєР°С‡Р°С‚СЊ РґРѕРєСѓРјРµРЅС‚")
+        #Wreturn redirect("record", pk=document.record_id)
+
+    encoded_filename = quote(filename)
+    response = HttpResponse(content, content_type="application/octet-stream")
+    response["Content-Disposition"] = f"attachment; filename*=UTF-8''{encoded_filename}"
+    response["X-Content-Type-Options"] = "nosniff"
+    return response
 
 #@csrf_exempt
 #@require_POST
@@ -387,32 +520,32 @@ def get_tilda_lead(request):
         name = None
         textarea = None
         
-        # Универсальная обработка полей
+        # РЈРЅРёРІРµСЂСЃР°Р»СЊРЅР°СЏ РѕР±СЂР°Р±РѕС‚РєР° РїРѕР»РµР№
         for key, value in data.items():
             if key == "id_company":
                 id_company = int(value)
                 get_company = Companys.objects.get(id=id_company)
                 continue
             
-            # Пропускаем служебные поля
+            # РџСЂРѕРїСѓСЃРєР°РµРј СЃР»СѓР¶РµР±РЅС‹Рµ РїРѕР»СЏ
             if key in ['test', 'csrfmiddlewaretoken']:
                 continue
                 
-            # Определяем тип поля по содержимому и ключу
+            # РћРїСЂРµРґРµР»СЏРµРј С‚РёРї РїРѕР»СЏ РїРѕ СЃРѕРґРµСЂР¶РёРјРѕРјСѓ Рё РєР»СЋС‡Сѓ
             if not value or value.strip() == '':
                 continue
                 
-            # Определение телефона
+            # РћРїСЂРµРґРµР»РµРЅРёРµ С‚РµР»РµС„РѕРЅР°
             if is_phone_field(key, value):
                 phone = value
-            # Определение имени
+            # РћРїСЂРµРґРµР»РµРЅРёРµ РёРјРµРЅРё
             elif is_name_field(key, value):
                 name = value
-            # Определение текстового поля (описание)
+            # РћРїСЂРµРґРµР»РµРЅРёРµ С‚РµРєСЃС‚РѕРІРѕРіРѕ РїРѕР»СЏ (РѕРїРёСЃР°РЅРёРµ)
             elif is_text_field(key, value):
                 textarea = value
         
-        # Создаем запись только если есть хотя бы телефон или имя
+        # РЎРѕР·РґР°РµРј Р·Р°РїРёСЃСЊ С‚РѕР»СЊРєРѕ РµСЃР»Рё РµСЃС‚СЊ С…РѕС‚СЏ Р±С‹ С‚РµР»РµС„РѕРЅ РёР»Рё РёРјСЏ
         if phone or name:
             led = Record(
                 phone=phone, 
@@ -429,13 +562,13 @@ def get_tilda_lead(request):
             return HttpResponse("No valid data", status=400)
 
 def is_phone_field(key, value):
-    """Определяет, является ли поле телефоном"""
-    # Проверяем по ключу
-    phone_keywords = ['phone', 'tel', 'телефон', 'номер', 'number']
+    """РћРїСЂРµРґРµР»СЏРµС‚, СЏРІР»СЏРµС‚СЃСЏ Р»Рё РїРѕР»Рµ С‚РµР»РµС„РѕРЅРѕРј"""
+    # РџСЂРѕРІРµСЂСЏРµРј РїРѕ РєР»СЋС‡Сѓ
+    phone_keywords = ['phone', 'tel', 'С‚РµР»РµС„РѕРЅ', 'РЅРѕРјРµСЂ', 'number']
     if any(keyword in key.lower() for keyword in phone_keywords):
         return True
     
-    # Проверяем по содержимому (содержит только цифры, +, -, (, ), пробелы)
+    # РџСЂРѕРІРµСЂСЏРµРј РїРѕ СЃРѕРґРµСЂР¶РёРјРѕРјСѓ (СЃРѕРґРµСЂР¶РёС‚ С‚РѕР»СЊРєРѕ С†РёС„СЂС‹, +, -, (, ), РїСЂРѕР±РµР»С‹)
     import re
     phone_pattern = r'^[\+]?[0-9\s\-\(\)]+$'
     if re.match(phone_pattern, value.strip()) and len(value.strip()) >= 7:
@@ -444,15 +577,15 @@ def is_phone_field(key, value):
     return False
 
 def is_name_field(key, value):
-    """Определяет, является ли поле именем"""
-    # Проверяем по ключу
-    name_keywords = ['name', 'имя', 'fio', 'фио', 'contact', 'контакт']
+    """РћРїСЂРµРґРµР»СЏРµС‚, СЏРІР»СЏРµС‚СЃСЏ Р»Рё РїРѕР»Рµ РёРјРµРЅРµРј"""
+    # РџСЂРѕРІРµСЂСЏРµРј РїРѕ РєР»СЋС‡Сѓ
+    name_keywords = ['name', 'РёРјСЏ', 'fio', 'С„РёРѕ', 'contact', 'РєРѕРЅС‚Р°РєС‚']
     if any(keyword in key.lower() for keyword in name_keywords):
         return True
     
-    # Проверяем по содержимому (содержит буквы, не слишком длинное)
+    # РџСЂРѕРІРµСЂСЏРµРј РїРѕ СЃРѕРґРµСЂР¶РёРјРѕРјСѓ (СЃРѕРґРµСЂР¶РёС‚ Р±СѓРєРІС‹, РЅРµ СЃР»РёС€РєРѕРј РґР»РёРЅРЅРѕРµ)
     import re
-    if re.match(r'^[а-яё\s\-]+$', value.strip(), re.IGNORECASE) or \
+    if re.match(r'^[Р°-СЏС‘\s\-]+$', value.strip(), re.IGNORECASE) or \
        re.match(r'^[a-z\s\-]+$', value.strip(), re.IGNORECASE):
         if 2 <= len(value.strip()) <= 50:
             return True
@@ -460,13 +593,13 @@ def is_name_field(key, value):
     return False
 
 def is_text_field(key, value):
-    """Определяет, является ли поле текстовым описанием"""
-    # Проверяем по ключу
-    text_keywords = ['text', 'message', 'comment', 'textarea', 'описание', 'сообщение', 'комментарий']
+    """РћРїСЂРµРґРµР»СЏРµС‚, СЏРІР»СЏРµС‚СЃСЏ Р»Рё РїРѕР»Рµ С‚РµРєСЃС‚РѕРІС‹Рј РѕРїРёСЃР°РЅРёРµРј"""
+    # РџСЂРѕРІРµСЂСЏРµРј РїРѕ РєР»СЋС‡Сѓ
+    text_keywords = ['text', 'message', 'comment', 'textarea', 'РѕРїРёСЃР°РЅРёРµ', 'СЃРѕРѕР±С‰РµРЅРёРµ', 'РєРѕРјРјРµРЅС‚Р°СЂРёР№']
     if any(keyword in key.lower() for keyword in text_keywords):
         return True
     
-    # Если поле длинное и не подходит под телефон/имя
+    # Р•СЃР»Рё РїРѕР»Рµ РґР»РёРЅРЅРѕРµ Рё РЅРµ РїРѕРґС…РѕРґРёС‚ РїРѕРґ С‚РµР»РµС„РѕРЅ/РёРјСЏ
     if len(value.strip()) > 20:
         return True
     
@@ -478,14 +611,14 @@ class SearchView(ListView):
     def get_queryset(self):
         query = self.request.GET.get('q')
         return Record.objects.filter(
-            Q(name__icontains=query) |  # Поиск по части имени
+            Q(name__icontains=query) |  # РџРѕРёСЃРє РїРѕ С‡Р°СЃС‚Рё РёРјРµРЅРё
             Q(phone__icontains=query)|
             Q(id__icontains=query)|
             Q(description__icontains=query)
         )
 
 @csrf_exempt
-@require_http_methods(["POST", "OPTIONS"])  # Изменить это
+@require_http_methods(["POST", "OPTIONS"])  # РР·РјРµРЅРёС‚СЊ СЌС‚Рѕ
 def get_time(request):
     if request.method == "OPTIONS":
         response = HttpResponse()
@@ -497,6 +630,10 @@ def get_time(request):
     if request.method == "POST":
         employee_id = request.user.id
         employee_status = request.user.status
+        if employee_status == "РћРџ":
+            response = HttpResponse("")
+            response['Access-Control-Allow-Origin'] = '*'
+            return response
         today = date.today()
         if request.method == "POST":
            today = request.POST['date']
@@ -505,20 +642,20 @@ def get_time(request):
         cal = calendar.Calendar(firstweekday=7)
         month_days = cal.monthdayscalendar(year, month)
 
-        # Границы месяца
+        # Р“СЂР°РЅРёС†С‹ РјРµСЃСЏС†Р°
         start_date = date(year, month, 1)
         end_date = (start_date + timedelta(days=31)).replace(day=1)
-        if employee_status == "Менеджер" or employee_status == "Администратор" or employee_status == "Директор ЮПП" or employee_status == "Директор КЦ":
-            # Получение данных
+        if employee_status == "РњРµРЅРµРґР¶РµСЂ" or employee_status == "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ" or employee_status == "Р”РёСЂРµРєС‚РѕСЂ Р®РџРџ" or employee_status == "Р”РёСЂРµРєС‚РѕСЂ РљР¦":
+            # РџРѕР»СѓС‡РµРЅРёРµ РґР°РЅРЅС‹С…
             bookings = Booking.objects.filter(
                 date__lt=end_date,
                 date__gte=start_date
             )
 
-            # Исправленный фильтр для доплат
+            # РСЃРїСЂР°РІР»РµРЅРЅС‹Р№ С„РёР»СЊС‚СЂ РґР»СЏ РґРѕРїР»Р°С‚
             surcharges = Surcharge.objects.filter(dat__range=(start_date, end_date))
         else:
-            if employee_status != "Юрист пирвичник":
+            if employee_status != "Р®СЂРёСЃС‚ РїРёСЂРІРёС‡РЅРёРє":
                 bookings = Booking.objects.filter(
                     date__lt=end_date,
                     date__gte=start_date,
@@ -531,17 +668,17 @@ def get_time(request):
                     employees=employee_id
                 )
 
-            # Исправленный фильтр для доплат
+            # РСЃРїСЂР°РІР»РµРЅРЅС‹Р№ С„РёР»СЊС‚СЂ РґР»СЏ РґРѕРїР»Р°С‚
             surcharges = Surcharge.objects.filter(dat__range=(start_date, end_date), responsible=employee_id)
 
-        # Подсчет доплат
+        # РџРѕРґСЃС‡РµС‚ РґРѕРїР»Р°С‚
         surcharges_per_day = defaultdict(int)
         for surcharge in surcharges:
             current_day = surcharge.dat.date()
             if start_date <= current_day < end_date:
                 surcharges_per_day[current_day.day] += 1
 
-        # Подсчет бронирований
+        # РџРѕРґСЃС‡РµС‚ Р±СЂРѕРЅРёСЂРѕРІР°РЅРёР№
         bookings_per_day = defaultdict(int)
         for booking in bookings:
             current_day = booking.date
@@ -549,7 +686,7 @@ def get_time(request):
                 bookings_per_day[current_day.day] += 1
             current_day += timedelta(days=1)
 
-        # Форматирование данных
+        # Р¤РѕСЂРјР°С‚РёСЂРѕРІР°РЅРёРµ РґР°РЅРЅС‹С…
         formatted_weeks = []
         for week in month_days:
             formatted_week = []
@@ -565,12 +702,14 @@ def get_time(request):
 
         response = render(request, "mini_calendar.html", {
             'month_name': f"{calendar.month_name[month]} {year}",
-            'header': ['П', 'В', 'С', 'Ч', 'П', 'С', 'В'],
+            'header': ['Рџ', 'Р’', 'РЎ', 'Р§', 'Рџ', 'РЎ', 'Р’'],
             'weeks': formatted_weeks,
             'today': today.day
         })
         response['Access-Control-Allow-Origin'] = '*'
         return response
     
-    return HttpResponse("Метод не разрешён", status=405)
+    return HttpResponse("РњРµС‚РѕРґ РЅРµ СЂР°Р·СЂРµС€С‘РЅ", status=405)
+
+
 

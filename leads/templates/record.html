@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load static %}
 {% block content %}
 <style>
@@ -362,12 +362,20 @@
                 <div class="stat-label">ЮПП</div>
                 <div >{{ record.employees_UPP}}</div>
             </div>
+            <div class="stat-item">
+                <div class="stat-label">Представитель</div>
+                <div >{{ record.employees_REP }}</div>
+            </div>
             {% endif %}
            
 
             <div class="stat-item">
                 <div class="stat-label">Статус заявки</div>
                 <div class="status-badge">{{ record.status }}</div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Передано представителям</div>
+                <div class="status-badge">{% if record.representative %}Да{% else %}Нет{% endif %}</div>
             </div>
 
             <div class="stat-item">
@@ -381,11 +389,10 @@
                 </div>
             </div>
 
-             {% if record.doc %}
+             {% if record.doc and can_manage_documents %}
             <div class="stat-item">
-                <div class="stat-label">Выгрузить докоменты</div>
-               <a href="{{record.doc}}"><img style="width:40px;" src="{% static 'img/download.png' %}" alt=""></a>
-                <a href="{% url 'delete_doc' record.id %}" style="color: black; margin-botton:5px">Удалить файл</a>
+                <div class="stat-label">Документ из старого прототипа</div>
+               <a href="{{record.doc}}" download style="text-decoration:none;">{{ record.doc }}</a>
             </div>
             {% endif %}
             {% if user.status == "Менеджер" and record.status == "Запись в офис" or user.status == "Администратор" and record.status == "Запись в офис" %}
@@ -454,23 +461,43 @@
                     </form>
             </div>
              {% endif %}
+            {% if user.status == "Директор представителей" and record.representative == 1 or user.status == "Администратор"%}
+            <div class="stat-item">
+                <div class="stat-label">Прикрепленные представители</div>
+                <div class="stat-value" style="color: #94a3b8;">{{ record.employees_REP }}</div>
+                <form method="post"  style="display: flex;     flex-direction: column;">
+                                  {% csrf_token %}
+                                  {{form_employees_REP.as_p}}
+                                  <input type="submit" class="btn btn-primary" style="margin-top: 0.8rem;" value="Прикрепить представителя">
+                    </form>
+            </div>
+             {% endif %}
         </div>
-{% if record.doc == NULL %}
+    {% if can_manage_documents %}
     <div class="container">
         <div class="drag-area">
             <div class="icon">📁</div>
-            <header>Загрузка файла</header>
+            <header>Загрузка документов</header>
             <form method="POST" enctype="multipart/form-data">
                 {% csrf_token %}
                 {{ upload_file_form.as_p }}
                 <button type="submit">Загрузить</button>
             </form>
-
-
         </div>
-        <div class="file-list" id="file-list"></div>
-    </div>
-{% endif %}
+        <div class="file-list" id="file-list">
+            {% if documents %}
+                {% for document in documents %}
+                    <div class="file-item">
+                        <span><a href="{% url 'download_document' document.id %}" style="text-decoration:none;">{{ document.file_name }}</a></span>
+                        <a href="{% url 'delete_doc' document.id %}" style="margin-left:auto; color:#e74c3c; text-decoration:none; font-size:18px; line-height:1;" title="Удалить документ">&times;</a>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="file-item"><span>Документы ещё не загружены</span></div>
+            {% endif %}
+        </div>
+        </div>
+    {% endif %}
         <div class="action-buttons">
              <a href="{% url 'home' %}" class="btn btn-secondary">Вернуться к списку</a>
     {% if user.status == "Администратор"%}
@@ -480,6 +507,9 @@
       <a href="{% url 'update_record' record.id %}" class="btn btn-success">Редактировать</a>
     {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
       <a href="{% url 'in_work' record.id %}" class="btn btn-primary">В работу</a>
+    {% endif %}
+    {% if user.status == "Директор ЮПП" or user.status == "Юрист пирвичник" or user.status == "Администратор"%}
+      <a href="{% url 'to_representative' record.id %}" class="btn btn-primary">Передать представителям</a>
     {% endif %}
 
 {% if record.status == "Запись в офис" %}
@@ -617,3 +647,7 @@
 -->
 {% endif %}
 {% endblock content %}
+
+
+
+

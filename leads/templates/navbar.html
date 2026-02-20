@@ -3,6 +3,24 @@
 <link rel="stylesheet" href="{% static 'css/nav.css' %}" />
 <link rel="stylesheet" href="{% static 'css/style.css' %}" />
 <nav role="main container col">
+    <!-- Заголовок и информация пользователя -->
+    <div class="user-info">
+        <div class="user-header">
+            <span class="company-id">ID компании: {{ user.companys.id }}</span>
+            <div style="display: flex
+;
+    justify-content: space-between;">
+                 <h2 class="username">{{ user.username }}</h2>
+            <a class="nav-link" href="{% url 'logout'%}"><img src="/static/img/logout.png" alt=""></a>
+            </div>
+
+        </div>
+        <div class="user-email">
+            <a href="mailto:{{ user.email }}" class="email-link">{{ user.email }}</a>
+        </div>
+    </div>
+
+    {% if user.status != "ОП" %}
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/moment.js/2.29.4/moment.min.js"></script>
         <script>
@@ -54,22 +72,6 @@ $(document).ready(function() {
     });
 });
  </script>
-    <!-- Заголовок и информация пользователя -->
-    <div class="user-info">
-        <div class="user-header">
-            <span class="company-id">ID компании: {{ user.companys.id }}</span>
-            <div style="display: flex
-;
-    justify-content: space-between;">
-                 <h2 class="username">{{ user.username }}</h2>
-            <a class="nav-link" href="{% url 'logout'%}"><img src="/static/img/logout.png" alt=""></a>
-            </div>
-
-        </div>
-        <div class="user-email">
-            <a href="mailto:{{ user.email }}" class="email-link">{{ user.email }}</a>
-        </div>
-    </div>
 
     <!-- Навигация по месяцам -->
     <div class="month-navigation">
@@ -82,6 +84,7 @@ $(document).ready(function() {
     </div>
 
 <div id="content-container"></div>
+    {% endif %}
     <!-- Меню -->
     <div class="sidebar-menu">
         <ul>
@@ -129,6 +132,39 @@ $(document).ready(function() {
 
              {% if user.status == "Юрист пирвичник" %}
              <li class="active">
+                <span><a style=" color: #fff; text-decoration: none;" href="{% url 'desktop'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
+            </li>
+            <li class="active">
+                <span><a style=" color: #fff; text-decoration: none;" href="{% url 'all_leads'%}"> Все заявки</a></span>
+            </li>
+            <li>
+                <span><a style=" color: #fff; text-decoration: none;" href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
+            </li>
+            {% endif %}
+            {% if user.status == "ОП" %}
+             <li class="active">
+                <span><a style=" color: #fff; text-decoration: none;" href="{% url 'desktop'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
+            </li>
+            <li class="active">
+                <span><a style=" color: #fff; text-decoration: none;" href="{% url 'all_leads'%}"> Все заявки</a></span>
+            </li>
+            <li>
+                <span><a style=" color: #fff; text-decoration: none;" href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
+            </li>
+            {% endif %}
+            {% if user.status == "Директор представителей" %}
+                 <li class="active">
+                <span><a style=" color: #fff; text-decoration: none;" href="{% url 'desktop'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
+            </li>
+            <li class="active">
+                <span><a style=" color: #fff; text-decoration: none;" href="{% url 'all_leads'%}"> Все заявки</a></span>
+            </li>
+            <li>
+                <span><a style=" color: #fff; text-decoration: none;" href="{% url 'todolist'%}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
+            </li>
+            {% endif %}
+            {% if user.status == "Представитель" %}
+                 <li class="active">
                 <span><a style=" color: #fff; text-decoration: none;" href="{% url 'desktop'%}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
             </li>
             <li class="active">

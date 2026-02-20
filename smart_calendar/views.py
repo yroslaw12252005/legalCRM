@@ -12,6 +12,10 @@ from .forms import AddEventForm
 
 from datetime import datetime, time
 def smart_calendar(request):
+    if request.user.status == "ОП":
+        messages.warning(request, "Доступ к календарю ограничен")
+        return redirect("home")
+
     # Обработка даты
     selected_date = datetime.today().date()
     if 'date' in request.GET:
@@ -134,7 +138,6 @@ def come_False(request, pk):
 #    else:
 #        messages.error(request, "Что-то пошло не так")
 #        return redirect("home")
-
 
 
 

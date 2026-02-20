@@ -45,7 +45,7 @@ class AddRecordForm(forms.ModelForm):
             "phone": forms.TextInput(attrs={"class": "form-control"}),
 
         }
-        labels = {'name': 'Имя', "description":"Описание", "phone":"Телефон", "status":"Статус", 'topic':'Тип заявки' ,"employees_KC":"Оператор", "employees_UPP":"Юрист",  'where':'Источник', 'felial':'Филиал'}
+        labels = {'name': 'Имя', "description":"Описание", "phone":"Телефон", "status":"Статус", 'topic':'Тип заявки' ,"employees_KC":"Оператор", "employees_UPP":"Юрист", "employees_REP":"Представитель", 'where':'Источник', 'felial':'Филиал'}
 
 class StatusForm(forms.ModelForm):
     status = forms.ChoiceField(label="Статус заявки", choices=(
@@ -92,6 +92,17 @@ class Employees_UPPForm(forms.ModelForm):
         fields = ['employees_UPP']
         labels = {'status': ''}
 
+class Employees_REPForm(forms.ModelForm):
+    employees_REP = forms.ModelChoiceField(queryset=User.objects.filter(status="Представитель"), widget=forms.Select(attrs={
+            'class': 'form-select',
+            'style': 'margin-bottom: 12px;'
+        }), label="")
+
+    class Meta:
+        model = User
+        fields = ['employees_REP']
+        labels = {'status': ''}
+
 
 class CostForm(forms.ModelForm):
     cost = forms.DecimalField(label="Стоимость", widget=forms.TextInput(attrs={
@@ -107,11 +118,30 @@ class CostForm(forms.ModelForm):
 
 from django.core.validators import FileExtensionValidator
 
+
+class MultipleFileInput(forms.FileInput):
+    allow_multiple_selected = True
+
+
+class MultipleFileField(forms.FileField):
+    def __init__(self, *args, **kwargs):
+        kwargs.setdefault("widget", MultipleFileInput())
+        super().__init__(*args, **kwargs)
+
+    def clean(self, data, initial=None):
+        single_file_clean = super().clean
+        extension_validator = FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx'])
+        if isinstance(data, (list, tuple)):
+            cleaned_files = [single_file_clean(file, initial) for file in data]
+            for file in cleaned_files:
+                extension_validator(file)
+            return cleaned_files
+        cleaned_file = single_file_clean(data, initial)
+        extension_validator(cleaned_file)
+        return [cleaned_file]
+
 class FileUploadForm(forms.Form):
-    file = forms.FileField(
+    file = MultipleFileField(
         label='',
-        widget=forms.FileInput(attrs={'class': 'file'}),
-        validators=[
-            FileExtensionValidator(allowed_extensions=['pdf', 'doc', 'docx'])
-        ]
+        widget=MultipleFileInput(attrs={'class': 'file'})
     )
