@@ -1,70 +1,130 @@
 ﻿<div class="mini-calendar">
-    <a href=""></a>
-    <div class="calendar-header"><h4>{{ month_name }}</h4></div>
-    <table>
-        <thead>
-            <tr>
-                {% for day in header %}
-                    <th>{{ day }}</th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for week in weeks %}
-                <tr>
-                    {% for day in week %}
-                        <td class="{% if day == 0 %}other-month{% elif month == 2 and day == 19 %}current-day{% endif %}">
-                            <a href="{% url 'calendar'%}?date={{year}}-{{current_month}}-{{day}}" style="    text-decoration: none;">{% if day != 0 %}{{ day }}{% endif %}</a>
-                        </td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+  <div class="mini-calendar-title">{{ month_name }}</div>
+  <table>
+    <thead>
+      <tr>
+        {% for day in header %}
+          <th>{{ day }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for week in weeks %}
+        <tr>
+          {% for day_data in week %}
+            <td class="{% if day_data.day == 0 %}is-empty{% endif %}">
+              {% if day_data.day != 0 %}
+                <a class="day-link" href="{% url 'calendar' %}?date={{ day_data.year }}-{{ day_data.month }}-{{ day_data.day }}">
+                  <div class="day-counts">
+                    {% if day_data.surcharges_count > 0 %}
+                      <span class="count count-surcharge" title="Доплаты">{{ day_data.surcharges_count }}</span>
+                    {% endif %}
+                    {% if day_data.count > 0 %}
+                      <span class="count count-bookings" title="Записано">{{ day_data.count }}</span>
+                    {% endif %}
+                  </div>
+                  <div class="day-number">{{ day_data.day }}</div>
+                </a>
+              {% endif %}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 
 <style>
 .mini-calendar {
-    top: 20px;
-    right: 20px;
-    padding: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    z-index: 1000;
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  border-radius: 14px;
+  background: #243142;
+  padding: 12px;
+  margin-bottom: 14px;
 }
 
-.calendar-header {
-    text-align: center;
-    font-weight: bold;
-    margin-bottom: 8px;
+.mini-calendar-title {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 10px;
 }
 
 .mini-calendar table {
-    border-collapse: collapse;
-    font-size: 0.8em;
-        margin-top: 0px;
-        width: 100%;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
 }
 
-.mini-calendar th,
+.mini-calendar th {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 0 6px;
+}
+
 .mini-calendar td {
-    width: 24px;
-    height: 24px;
-    text-align: center;
-    padding: 2px;
-    font-size:20px;
-}
-.mini-calendar td a {
-font-size:20px;
-color:#fff;
+  height: 44px;
+  padding: 2px;
 }
 
-.mini-calendar td.other-month {
-    color: #ccc;
+.mini-calendar td.is-empty {
+  opacity: 0.2;
 }
 
-.mini-calendar td.current-day {
-    background: #2196F3;
-    color: white;
-    border-radius: 50%;
+.day-link {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: flex-start;
+  height: 100%;
+  border-radius: 8px;
+  padding: 3px 2px;
+  text-decoration: none;
+  color: #e2e8f0;
+  transition: background-color 0.2s ease;
+}
+
+.day-link:hover {
+  background: rgba(148, 163, 184, 0.2);
+}
+
+.day-counts {
+  height: 16px;
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  margin-bottom: 3px;
+}
+
+.count {
+  min-width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  padding: 0 4px;
+  line-height: 1;
+}
+
+.count-bookings {
+  background: #2563eb;
+}
+
+.count-surcharge {
+  background: #10b981;
+}
+
+.day-number {
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
 }
 </style>
