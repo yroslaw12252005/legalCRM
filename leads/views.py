@@ -633,6 +633,20 @@ class SearchView(ListView):
 @csrf_exempt
 @require_http_methods(["POST", "OPTIONS"])  # РР·РјРµРЅРёС‚СЊ СЌС‚Рѕ
 def get_time(request):
+    def _status_matches(value, *targets):
+        if not value:
+            return False
+        variants = {value}
+        try:
+            variants.add(value.encode("utf-8").decode("cp1251"))
+        except Exception:
+            pass
+        try:
+            variants.add(value.encode("cp1251").decode("utf-8"))
+        except Exception:
+            pass
+        return any(target in variants for target in targets)
+
     if request.method == "OPTIONS":
         response = HttpResponse()
         response['Access-Control-Allow-Methods'] = 'POST, OPTIONS'
@@ -645,82 +659,86 @@ def get_time(request):
     if request.method == "POST":
         employee_id = request.user.id
         employee_status = request.user.status
-        if employee_status == "РћРџ":
-            response = HttpResponse("")
-            return response
-        today = date.today()
-        if request.method == "POST":
-           today = request.POST['date']
-           today = datetime.strptime(today, '%Y-%m-%d')
-        year, month = today.year, today.month
-        cal = calendar.Calendar(firstweekday=7)
-        month_days = cal.monthdayscalendar(year, month)
 
-        # Р“СЂР°РЅРёС†С‹ РјРµСЃСЏС†Р°
+        if _status_matches(employee_status, "ОП"):
+            return HttpResponse("")
+
+        selected_date = date.today()
+        posted_date = request.POST.get("date")
+        if posted_date:
+            try:
+                selected_date = datetime.strptime(posted_date, "%Y-%m-%d").date()
+            except ValueError:
+                pass
+
+        year, month = selected_date.year, selected_date.month
+        cal = calendar.Calendar(firstweekday=0)
+        month_days = cal.monthdayscalendar(year, month)
         start_date = date(year, month, 1)
         end_date = (start_date + timedelta(days=31)).replace(day=1)
-        if employee_status == "РњРµРЅРµРґР¶РµСЂ" or employee_status == "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ" or employee_status == "Р”РёСЂРµРєС‚РѕСЂ Р®РџРџ" or employee_status == "Р”РёСЂРµРєС‚РѕСЂ РљР¦":
-            # РџРѕР»СѓС‡РµРЅРёРµ РґР°РЅРЅС‹С…
-            bookings = Booking.objects.filter(
-                date__lt=end_date,
-                date__gte=start_date
-            )
 
-            # РСЃРїСЂР°РІР»РµРЅРЅС‹Р№ С„РёР»СЊС‚СЂ РґР»СЏ РґРѕРїР»Р°С‚
-            surcharges = Surcharge.objects.filter(dat__range=(start_date, end_date))
+        base_bookings = Booking.objects.filter(
+            date__gte=start_date,
+            date__lt=end_date,
+            companys=request.user.companys,
+            felial=request.user.felial,
+            client__status="Запись в офис",
+        )
+
+        is_management = _status_matches(
+            employee_status,
+            "Менеджер",
+            "Администратор",
+            "Директор ЮПП",
+            "Директор КЦ",
+        )
+        is_lawyer = _status_matches(employee_status, "Юрист пирвичник")
+
+        if is_management:
+            bookings = base_bookings
+        elif is_lawyer:
+            bookings = base_bookings.filter(employees=employee_id)
         else:
-            if employee_status != "Р®СЂРёСЃС‚ РїРёСЂРІРёС‡РЅРёРє":
-                bookings = Booking.objects.filter(
-                    date__lt=end_date,
-                    date__gte=start_date,
-                    registrar=employee_id
-                )
-            else:
-                bookings = Booking.objects.filter(
-                    date__lt=end_date,
-                    date__gte=start_date,
-                    employees=employee_id
-                )
+            bookings = base_bookings.filter(registrar=employee_id)
 
-            # РСЃРїСЂР°РІР»РµРЅРЅС‹Р№ С„РёР»СЊС‚СЂ РґР»СЏ РґРѕРїР»Р°С‚
-            surcharges = Surcharge.objects.filter(dat__range=(start_date, end_date), responsible=employee_id)
-
-        # РџРѕРґСЃС‡РµС‚ РґРѕРїР»Р°С‚
-        surcharges_per_day = defaultdict(int)
-        for surcharge in surcharges:
-            current_day = surcharge.dat.date()
-            if start_date <= current_day < end_date:
-                surcharges_per_day[current_day.day] += 1
-
-        # РџРѕРґСЃС‡РµС‚ Р±СЂРѕРЅРёСЂРѕРІР°РЅРёР№
         bookings_per_day = defaultdict(int)
         for booking in bookings:
             current_day = booking.date
-            if start_date <= current_day < end_date:
+            if current_day and start_date <= current_day < end_date:
                 bookings_per_day[current_day.day] += 1
-            current_day += timedelta(days=1)
 
-        # Р¤РѕСЂРјР°С‚РёСЂРѕРІР°РЅРёРµ РґР°РЅРЅС‹С…
+        today_date = date.today()
         formatted_weeks = []
         for week in month_days:
             formatted_week = []
             for day in week:
-                formatted_week.append({
-                    'day': day,
-                    'year': year,
-                    'month': month,
-                    'count': bookings_per_day.get(day, 0),
-                    'surcharges_count': surcharges_per_day.get(day, 0)
-                })
+                is_today = day != 0 and today_date.year == year and today_date.month == month and today_date.day == day
+                formatted_week.append(
+                    {
+                        "day": day,
+                        "year": year,
+                        "month": month,
+                        "count": bookings_per_day.get(day, 0),
+                        "surcharges_count": 0,
+                        "is_today": is_today,
+                    }
+                )
             formatted_weeks.append(formatted_week)
 
-        response = render(request, "mini_calendar.html", {
-            'month_name': f"{calendar.month_name[month]} {year}",
-            'header': ['Рџ', 'Р’', 'РЎ', 'Р§', 'Рџ', 'РЎ', 'Р’'],
-            'weeks': formatted_weeks,
-            'today': today.day
-        })
-        return response
+        ru_months = [
+            "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+            "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
+        ]
+        return render(
+            request,
+            "mini_calendar.html",
+            {
+                "month_name": f"{ru_months[month - 1]} {year}",
+                "header": ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
+                "weeks": formatted_weeks,
+                "today": today_date.day,
+            },
+        )
     
     return HttpResponse("РњРµС‚РѕРґ РЅРµ СЂР°Р·СЂРµС€С‘РЅ", status=405)
 

@@ -14,9 +14,9 @@
           {% for day_data in week %}
             <td class="{% if day_data.day == 0 %}is-empty{% endif %}">
               {% if day_data.day != 0 %}
-                <a class="day-link" href="{% url 'calendar' %}?date={{ day_data.year }}-{{ day_data.month }}-{{ day_data.day }}">
+                <a class="day-link {% if day_data.is_today %}is-today{% endif %}" href="{% url 'calendar' %}?date={{ day_data.year }}-{{ day_data.month }}-{{ day_data.day }}">
                   <div class="day-counts">
-                    <span class="count count-bookings" title="Записано">{{ day_data.count|default:0 }}</span>
+                    <span class="count {% if day_data.count %}count-bookings{% else %}count-zero{% endif %}" title="Записано">{{ day_data.count|default_if_none:0 }}</span>
                   </div>
                   <div class="day-number">{{ day_data.day }}</div>
                 </a>
@@ -59,12 +59,13 @@
   text-transform: uppercase;
   letter-spacing: 0.04em;
   padding: 4px 0 6px;
+  background-color: #1f2937;
 }
 
 .mini-calendar td {
   height: 44px;
   padding: 2px;
-  background: transparent;
+  background-color: #1f2937;
 }
 
 .mini-calendar td.is-empty {
@@ -88,6 +89,11 @@
   background: rgba(148, 163, 184, 0.2);
 }
 
+.day-link.is-today {
+  background: rgba(37, 99, 235, 0.22);
+  box-shadow: inset 0 0 0 1px rgba(59, 130, 246, 0.65);
+}
+
 .day-counts {
   height: 16px;
   display: flex;
@@ -97,21 +103,28 @@
 }
 
 .count {
-  min-width: 14px;
-  height: 14px;
+  min-width: 16px;
+  height: 16px;
   border-radius: 999px;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 9px;
+  font-size: 10px;
   font-weight: 700;
   color: #fff;
-  padding: 0 4px;
+  padding: 0 5px;
   line-height: 1;
+  border: 1px solid rgba(203, 213, 225, 0.5);
 }
 
 .count-bookings {
   background: #2563eb;
+}
+
+.count-zero {
+  background: #475569;
+  color: #e2e8f0;
+  border-color: rgba(226, 232, 240, 0.7);
 }
 
 .day-number {
