@@ -167,6 +167,9 @@ DATETIME_FORMAT="%d.%m.%Y %H:%M"
 USE_L10N = False
 USE_TZ = False
 
+# Не требует таблицу django_session
+SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+
 # CSRF settings - только для HTTPS
 CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'False').lower() == 'true'
 
