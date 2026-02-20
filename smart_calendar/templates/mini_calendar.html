@@ -1,110 +1,127 @@
-
-<div class="mini-calendar">
-
-    <div><h4 style="    text-align: center;">{{ month_name }}</h4></div>
-    <table>
-        <thead>
-            <tr>
-                {% for day in header %}
-                    <th>{{ day }}</th>
-                {% endfor %}
-            </tr>
-        </thead>
-        <tbody>
-            {% for week in weeks %}
-                <tr>
-                    {% for day_data in week %}
-                        <td>
-
-                            {% if day_data.day != 0 %}
-                            <div class="caunt">
-                                {% if day_data.surcharges_count > 0 %}
-                                    <div class="surcharge-count">{{ day_data.surcharges_count }}</div>
-
-                                {% endif %}
-                                 {% if day_data.count > 0 %}
-                                    <div class="booking-count current-day">{{ day_data.count }}</div>
-                                {% endif %}
-                            </div>
-
-                            <div class="day-number"><a href="{% url 'calendar'%}?date={{day_data.year}}-{{day_data.month}}-{{day_data.day}}" style="    text-decoration: none;">{{ day_data.day }}</a></div>
-                            {% endif %}
-                        </td>
-                    {% endfor %}
-                </tr>
-            {% endfor %}
-        </tbody>
-    </table>
+﻿<div class="mini-calendar">
+  <div class="mini-calendar-title">{{ month_name }}</div>
+  <table>
+    <thead>
+      <tr>
+        {% for day in header %}
+          <th>{{ day }}</th>
+        {% endfor %}
+      </tr>
+    </thead>
+    <tbody>
+      {% for week in weeks %}
+        <tr>
+          {% for day_data in week %}
+            <td class="{% if day_data.day == 0 %}is-empty{% endif %}">
+              {% if day_data.day != 0 %}
+                <a class="day-link" href="{% url 'calendar' %}?date={{ day_data.year }}-{{ day_data.month }}-{{ day_data.day }}">
+                  <span class="day-number">{{ day_data.day }}</span>
+                  <span class="day-metrics">
+                    {% if day_data.surcharges_count > 0 %}
+                      <span class="metric metric-surcharge" title="Доплаты">{{ day_data.surcharges_count }}</span>
+                    {% endif %}
+                    {% if day_data.count > 0 %}
+                      <span class="metric metric-booking" title="Записи">{{ day_data.count }}</span>
+                    {% endif %}
+                  </span>
+                </a>
+              {% endif %}
+            </td>
+          {% endfor %}
+        </tr>
+      {% endfor %}
+    </tbody>
+  </table>
 </div>
 
 <style>
 .mini-calendar {
-    top: 20px;
-    right: 20px;
-    padding: 10px;
-    box-shadow: 0 2px 5px rgba(0,0,0,0.1);
-    z-index: 1000;
+  border: 1px solid rgba(148, 163, 184, 0.26);
+  border-radius: 14px;
+  background: #243142;
+  padding: 12px;
+  margin-bottom: 14px;
 }
 
-.calendar-header {
-    text-align: center;
-    font-weight: bold;
-    margin-bottom: 8px;
+.mini-calendar-title {
+  text-align: center;
+  font-size: 14px;
+  font-weight: 700;
+  color: #e2e8f0;
+  margin-bottom: 10px;
 }
 
 .mini-calendar table {
-    border-collapse: collapse;
-    font-size: 0.8em;
-        margin-top: 0px;
-        width: 100%;
+  width: 100%;
+  border-collapse: collapse;
+  table-layout: fixed;
 }
 
-.mini-calendar th,
+.mini-calendar th {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  padding: 4px 0 6px;
+}
+
 .mini-calendar td {
-    width: 24px;
-    height: 24px;
-    text-align: center;
-    padding: 2px;
-    font-size:20px;
-    border: none;
-    border: none;
-}
-.mini-calendar td a {
-font-size:20px;
-color:#fff;
+  height: 34px;
+  padding: 2px;
+  vertical-align: top;
 }
 
-.mini-calendar td.other-month {
-    color: #ccc;
+.mini-calendar td.is-empty {
+  opacity: 0.2;
 }
 
-.current-day {
-
-    background: #0048a3;
-    width: 20px;
-    height: 20px;
-    font-size: 12px;
-
+.day-link {
+  display: block;
+  height: 100%;
+  border-radius: 8px;
+  padding: 3px 4px;
+  text-decoration: none;
+  color: #e2e8f0;
+  transition: background-color 0.2s ease;
 }
-.surcharge-count{
-    background: #009b53;
-    width: 20px;
-    height: 20px;
-    font-size: 12px;
 
+.day-link:hover {
+  background: rgba(148, 163, 184, 0.2);
 }
-.caunt{
 
-    display: flex
-;
-    flex-direction: column;
-    height: 30px;
-    align-items: center;    display: flex
-;
-    flex-direction: column;
-    height: 30px;
-    align-items: center;
+.day-number {
+  display: block;
+  font-size: 12px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.day-metrics {
+  display: flex;
+  gap: 3px;
+  margin-top: 4px;
+  min-height: 14px;
+}
+
+.metric {
+  min-width: 14px;
+  height: 14px;
+  border-radius: 999px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  padding: 0 4px;
+}
+
+.metric-booking {
+  background: #2563eb;
+}
+
+.metric-surcharge {
+  background: #10b981;
 }
 </style>
-
-
