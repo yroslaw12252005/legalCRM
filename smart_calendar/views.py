@@ -70,7 +70,13 @@ def add_event(request, pk):
     selected_date = pk
     time_choices = [(f"{h:02}:{m:02}") for h in range(9, 19) for m in (0, 15, 30, 45)]
 
-    busy_times = set(Booking.objects.filter(date=selected_date).values_list("time", flat=True))
+    busy_times = set(
+        Booking.objects.filter(
+            date=selected_date,
+            companys=request.user.companys,
+            felial=request.user.felial,
+        ).values_list("time", flat=True)
+    )
     available_times = [t for t in time_choices if t not in busy_times]
 
     form = AddEventForm(
@@ -82,7 +88,7 @@ def add_event(request, pk):
 
     if request.method == "POST" and form.is_valid():
         event = form.save(commit=False)
-        if Booking.objects.filter(client_id=event.client_id).exists():
+        if Booking.objects.filter(client_id=event.client_id, companys=request.user.companys).exists():
             messages.success(request, "Этот клиент уже записан, удалите предыдущую запись")
             return redirect("calendar")
 

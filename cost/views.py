@@ -41,9 +41,15 @@ def calculating_salaries(request, pk):
 @login_required
 def percent(request, get_employee):
     if get_employee.status == "Юрист пирвичник":
-        get_and_sum_cost_record = Record.objects.filter(employees_UPP=get_employee.username).aggregate(Sum("cost"))
+        get_and_sum_cost_record = Record.objects.filter(
+            employees_UPP=get_employee.username,
+            companys=get_employee.companys,
+        ).aggregate(Sum("cost"))
     elif get_employee.status == "Оператор":
-        get_and_sum_cost_record = Record.objects.filter(employees_KC=get_employee.username).aggregate(Sum("cost"))
+        get_and_sum_cost_record = Record.objects.filter(
+            employees_KC=get_employee.username,
+            companys=get_employee.companys,
+        ).aggregate(Sum("cost"))
     else:
         get_and_sum_cost_record = {"cost__sum": None}
 
@@ -73,9 +79,15 @@ def bet(request, get_employee):
 @login_required
 def percent_and_bet(request, get_employee):
     if get_employee.status == "Юрист пирвичник":
-        get_and_sum_cost_record = Record.objects.filter(employees_UPP=get_employee.username).aggregate(Sum("cost"))
+        get_and_sum_cost_record = Record.objects.filter(
+            employees_UPP=get_employee.username,
+            companys=get_employee.companys,
+        ).aggregate(Sum("cost"))
     elif get_employee.status == "Оператор":
-        get_and_sum_cost_record = Record.objects.filter(employees_KC=get_employee.username).aggregate(Sum("cost"))
+        get_and_sum_cost_record = Record.objects.filter(
+            employees_KC=get_employee.username,
+            companys=get_employee.companys,
+        ).aggregate(Sum("cost"))
     else:
         get_and_sum_cost_record = {"cost__sum": None}
 

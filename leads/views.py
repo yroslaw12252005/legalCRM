@@ -160,6 +160,10 @@ DOCUMENT_ALLOWED_STATUS_VARIANTS = set()
 for _status in DOCUMENT_ALLOWED_STATUSES:
     DOCUMENT_ALLOWED_STATUS_VARIANTS.update(_status_variants(_status))
 
+ASSIGN_KC_ALLOWED_STATUSES = {"Директор КЦ", "Администратор"}
+ASSIGN_UPP_ALLOWED_STATUSES = {"Директор ЮПП", "Администратор"}
+ASSIGN_REP_ALLOWED_STATUSES = {"Директор представителей", "Администратор"}
+
 
 def can_manage_documents(user):
     return user.is_authenticated and user.status in DOCUMENT_ALLOWED_STATUS_VARIANTS
@@ -174,6 +178,18 @@ async def can_manage_documents_async(request):
         lambda: request.user.is_authenticated and request.user.status in DOCUMENT_ALLOWED_STATUS_VARIANTS,
         thread_sensitive=True,
     )()
+
+
+def _can_assign_kc(user):
+    return user.status in ASSIGN_KC_ALLOWED_STATUSES
+
+
+def _can_assign_upp(user):
+    return user.status in ASSIGN_UPP_ALLOWED_STATUSES
+
+
+def _can_assign_rep(user):
+    return user.status in ASSIGN_REP_ALLOWED_STATUSES
 
 def home(request):
     if not request.user.is_authenticated:
@@ -199,7 +215,7 @@ def home(request):
         get_records = Record.objects.filter(companys=request.user.companys)
     else:
         get_records = Record.objects.filter(companys=request.user.companys, felial=request.user.felial)
-    user  =  User.objects.all()
+    user = User.objects.filter(companys=request.user.companys)
     return render(request, "home.html", {"records": get_records, 'users':user, 'todolist':todolist, "now":now})
 
 def filter(request, status):
@@ -215,37 +231,61 @@ def filter_type(request, type):
     return render(request, "home.html", {"records": records})
 
 def brak(request):
-    records = Record.objects.filter(status="Р‘СЂР°Рє")
+    records = Record.objects.filter(status="Р‘СЂР°Рє", companys=request.user.companys)
     return render(request, "home.html", {"records": records})
 
 def logout_user(request):
     logout(request)
     return redirect("desktop")
 
-
-
+@login_required
 async def record(request, pk):
+    current_user = await sync_to_async(lambda: request.user, thread_sensitive=True)()
     # РђСЃРёРЅС…СЂРѕРЅРЅРѕРµ РїРѕР»СѓС‡РµРЅРёРµ РѕР±СЉРµРєС‚РѕРІ РёР· Р‘Р”
-    get_record = sync_to_async(Record.objects.get, thread_sensitive=True)
-    record = await get_record(id=pk)
+    get_record = sync_to_async(_record_for_user_or_404, thread_sensitive=True)
+    record = await get_record(request, pk)
     request.can_manage_documents = await can_manage_documents_async(request)
 
     filter_surcharge = sync_to_async(Surcharge.objects.filter, thread_sensitive=True)
     surcharge = await filter_surcharge(record_id=pk)
-    get_documents = sync_to_async(lambda: list(RecordDocument.objects.filter(record_id=pk)), thread_sensitive=True)
+    get_documents = sync_to_async(lambda: list(RecordDocument.objects.filter(record=record)), thread_sensitive=True)
     documents = await get_documents()
 
     # РђСЃРёРЅС…СЂРѕРЅРЅР°СЏ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С„РѕСЂРј
     init_form = sync_to_async(lambda: StatusForm(request.POST or None, instance=record), thread_sensitive=True)
     form_status = await init_form()
 
-    init_employees_KC = sync_to_async(lambda: Employees_KCForm(request.POST or None, instance=record), thread_sensitive=True)
+    init_employees_KC = sync_to_async(
+        lambda: Employees_KCForm(
+            request.POST or None,
+            instance=record,
+            user=current_user,
+            company_id=record.companys_id,
+        ),
+        thread_sensitive=True,
+    )
     form_employees_KC = await init_employees_KC()
 
-    init_employees_UPP = sync_to_async(lambda: Employees_UPPForm(request.POST or None, instance=record), thread_sensitive=True)
+    init_employees_UPP = sync_to_async(
+        lambda: Employees_UPPForm(
+            request.POST or None,
+            instance=record,
+            user=current_user,
+            company_id=record.companys_id,
+        ),
+        thread_sensitive=True,
+    )
     form_employees_UPP = await init_employees_UPP()
 
-    init_employees_REP = sync_to_async(lambda: Employees_REPForm(request.POST or None, instance=record), thread_sensitive=True)
+    init_employees_REP = sync_to_async(
+        lambda: Employees_REPForm(
+            request.POST or None,
+            instance=record,
+            user=current_user,
+            company_id=record.companys_id,
+        ),
+        thread_sensitive=True,
+    )
     form_employees_REP = await init_employees_REP()
 
     init_cost_form = sync_to_async(lambda: CostForm(request.POST or None, instance=record), thread_sensitive=True)
@@ -257,12 +297,15 @@ async def record(request, pk):
     # РЈРґР°Р»СЏСЋ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЋ TopicForm
 
     # РџСЂРѕРІРµСЂРєР° СЃС‚Р°С‚СѓСЃР° Р±СЂРѕРЅРёСЂРѕРІР°РЅРёСЏ
-    check_booking = sync_to_async(Booking.objects.filter(client_id=pk).exists, thread_sensitive=True)
+    check_booking = sync_to_async(
+        Booking.objects.filter(client_id=pk, companys_id=record.companys_id).exists,
+        thread_sensitive=True,
+    )
     booking_exists = await check_booking()
     get_status_com = 0
     if booking_exists:
         get_booking = sync_to_async(Booking.objects.get, thread_sensitive=True)
-        get_status_com = await get_booking(client_id=pk)
+        get_status_com = await get_booking(client_id=pk, companys_id=record.companys_id)
     form_employees_KC_valid = await sync_to_async(form_employees_KC.is_valid, thread_sensitive=True)()
     form_employees_UPP_valid = await sync_to_async(form_employees_UPP.is_valid, thread_sensitive=True)()
     form_employees_REP_valid = await sync_to_async(form_employees_REP.is_valid, thread_sensitive=True)()
@@ -283,6 +326,9 @@ async def record(request, pk):
 
 
     elif form_employees_KC_valid:
+        if not _can_assign_kc(current_user):
+            await sync_to_async(messages.warning)(request, "Недостаточно прав для прикрепления оператора")
+            return await sync_to_async(redirect)("record", pk=pk)
         save_form = sync_to_async(form_employees_KC.save, thread_sensitive=True)
         await save_form()
         await sync_to_async(messages.success)(request, "РћРїРµСЂР°С‚РѕСЂ РїСЂРёРєСЂРµРїР»РµРЅ")
@@ -293,6 +339,9 @@ async def record(request, pk):
 
 
     elif form_employees_UPP_valid:
+        if not _can_assign_upp(current_user):
+            await sync_to_async(messages.warning)(request, "Недостаточно прав для прикрепления юриста")
+            return await sync_to_async(redirect)("record", pk=pk)
         save_form = sync_to_async(form_employees_UPP.save, thread_sensitive=True)
         await save_form()
         await sync_to_async(messages.success)(request, "Р®СЂРёСЃС‚ РїСЂРёРєСЂРµРїР»РµРЅ")
@@ -302,6 +351,9 @@ async def record(request, pk):
                        })
 
     elif form_employees_REP_valid:
+        if not _can_assign_rep(current_user):
+            await sync_to_async(messages.warning)(request, "Недостаточно прав для прикрепления представителя")
+            return await sync_to_async(redirect)("record", pk=pk)
         save_form = sync_to_async(form_employees_REP.save, thread_sensitive=True)
         await save_form()
         await sync_to_async(messages.success)(request, "РџСЂРµРґСЃС‚Р°РІРёС‚РµР»СЊ РїСЂРёРєСЂРµРїР»РµРЅ")

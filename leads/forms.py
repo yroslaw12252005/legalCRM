@@ -7,6 +7,14 @@ from felial.models import Felial
 from .models import Record
 
 
+def _tenant_user_queryset(user, status, company_id=None):
+    queryset = User.objects.filter(status=status)
+    tenant_id = company_id or getattr(user, "companys_id", None)
+    if tenant_id:
+        queryset = queryset.filter(companys_id=tenant_id)
+    return queryset.order_by("username")
+
+
 class AddRecordForm(forms.ModelForm):
     status = forms.ChoiceField(
         widget=forms.Select(attrs={"class": "form-select"}),
@@ -95,10 +103,16 @@ class StatusForm(forms.ModelForm):
 
 class Employees_KCForm(forms.ModelForm):
     employees_KC = forms.ModelChoiceField(
-        queryset=User.objects.filter(status="Оператор"),
+        queryset=User.objects.none(),
         widget=forms.Select(attrs={"class": "form-select", "style": "margin-bottom: 12px;"}),
         label="",
     )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        company_id = kwargs.pop("company_id", None) or getattr(kwargs.get("instance"), "companys_id", None)
+        super().__init__(*args, **kwargs)
+        self.fields["employees_KC"].queryset = _tenant_user_queryset(user, "Оператор", company_id=company_id)
 
     class Meta:
         model = Record
@@ -107,10 +121,16 @@ class Employees_KCForm(forms.ModelForm):
 
 class Employees_UPPForm(forms.ModelForm):
     employees_UPP = forms.ModelChoiceField(
-        queryset=User.objects.filter(status="Юрист пирвичник"),
+        queryset=User.objects.none(),
         widget=forms.Select(attrs={"class": "form-select", "style": "margin-bottom: 12px;"}),
         label="",
     )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        company_id = kwargs.pop("company_id", None) or getattr(kwargs.get("instance"), "companys_id", None)
+        super().__init__(*args, **kwargs)
+        self.fields["employees_UPP"].queryset = _tenant_user_queryset(user, "Юрист пирвичник", company_id=company_id)
 
     class Meta:
         model = Record
@@ -119,10 +139,16 @@ class Employees_UPPForm(forms.ModelForm):
 
 class Employees_REPForm(forms.ModelForm):
     employees_REP = forms.ModelChoiceField(
-        queryset=User.objects.filter(status="Представитель"),
+        queryset=User.objects.none(),
         widget=forms.Select(attrs={"class": "form-select", "style": "margin-bottom: 12px;"}),
         label="",
     )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        company_id = kwargs.pop("company_id", None) or getattr(kwargs.get("instance"), "companys_id", None)
+        super().__init__(*args, **kwargs)
+        self.fields["employees_REP"].queryset = _tenant_user_queryset(user, "Представитель", company_id=company_id)
 
     class Meta:
         model = Record
