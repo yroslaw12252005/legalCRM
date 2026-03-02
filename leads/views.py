@@ -455,11 +455,11 @@ def add_record(request):
     if form.is_valid():
         add_record = form.save(commit=False)
         add_record.companys = request.user.companys
-        if request.user.status =="РћРїРµСЂР°С‚РѕСЂ":
+        if request.user.status =="Оператор":
             add_record.employees_KC = request.user.username
          # РџСЂРёРєСЂРµРїР»СЏРµС‚СЃСЏ Рє РєСЂРјРїР°РЅРёРё
         add_record.save()
-        messages.success(request, f"Р—Р°СЏРІРєР°  СЃ РёРјРµРЅРµРј {add_record.name} СѓСЃРїРµС€РЅРѕ СЃРѕР·РґР°РЅР°")
+        messages.success(request, f"Создана новая заявка {add_record.name}")
         return redirect("home")
     return render(request, "add_record.html", {"form": form})
 
