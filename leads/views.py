@@ -35,7 +35,7 @@ from .forms import AddRecordForm, StatusForm, Employees_KCForm, Employees_UPPFor
 import asyncio
 from contextlib import asynccontextmanager
 from aiobotocore.session import get_session
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, ParamValidationError
 import os
 import json
 import datetime
@@ -59,7 +59,7 @@ import asyncio
 from contextlib import asynccontextmanager
 
 from aiobotocore.session import get_session
-from botocore.exceptions import ClientError
+from botocore.exceptions import ClientError, ParamValidationError
 
 
 class S3Client:
@@ -98,16 +98,26 @@ class S3Client:
                         Body=file,
                     )
                 print(f"File {file_name} uploaded to {self.bucket_name}")
+                return True
+        except ParamValidationError as e:
+            print(f"S3 config validation error uploading file: {e}")
+            return False
         except ClientError as e:
             print(f"Error uploading file: {e}")
+            return False
 
     async def delete_file(self, object_name: str):
         try:
             async with self.get_client() as client:
                 await client.delete_object(Bucket=self.bucket_name, Key=object_name)
                 print(f"File {object_name} deleted from {self.bucket_name}")
+                return True
+        except ParamValidationError as e:
+            print(f"S3 config validation error deleting file: {e}")
+            return False
         except ClientError as e:
             print(f"Error deleting file: {e}")
+            return False
 
     async def get_file(self, object_name: str, destination_path: str):
         try:
@@ -117,15 +127,20 @@ class S3Client:
                 with open(destination_path, "wb") as file:
                     file.write(data)
                 print(f"File {object_name} downloaded to {destination_path}")
+                return True
+        except ParamValidationError as e:
+            print(f"S3 config validation error downloading file: {e}")
+            return False
         except ClientError as e:
             print(f"Error downloading file: {e}")
+            return False
 
 
 s3_client = S3Client(
-    access_key=os.getenv("S3_ACCESS_KEY", ""),
-    secret_key=os.getenv("S3_SECRET_KEY", ""),
-    endpoint_url=os.getenv("S3_ENDPOINT_URL", "https://s3.twcstorage.ru"),  # РґР»СЏ Selectel РёСЃРїРѕР»СЊР·СѓР№С‚Рµ https://s3.storage.selcloud.ru
-    bucket_name=os.getenv("S3_BUCKET_NAME", ""),
+   access_key="EEFJDEUXC1CROO48RUGL",
+        secret_key="bOWBlZckIVapgodQAZ4X9cMeAWwQ1i9nZ8rBVppE",
+        endpoint_url="https://s3.twcstorage.ru",
+        bucket_name="e5ce452e-71ce-493b-ad29-ff9ea3f60cb4",
 )
 
 
@@ -133,13 +148,22 @@ def _s3_public_base_url():
     return f"{s3_client.config['endpoint_url'].rstrip('/')}/{s3_client.bucket_name}"
 
 
+def _is_s3_configured():
+    return bool(
+        s3_client.bucket_name
+        and s3_client.config.get("aws_access_key_id")
+        and s3_client.config.get("aws_secret_access_key")
+        and s3_client.config.get("endpoint_url")
+    )
+
+
 DOCUMENT_ALLOWED_STATUSES = {
-    "РњРµРЅРµРґР¶РµСЂ",
-    "Р”РёСЂРµРєС‚РѕСЂ Р®РџРџ",
-    "Р”РёСЂРµРєС‚РѕСЂ РїСЂРµРґСЃС‚Р°РІРёС‚РµР»РµР№",
-    "РџСЂРµРґСЃС‚Р°РІРёС‚РµР»СЊ",
-    "Р®СЂРёСЃС‚ РїРёСЂРІРёС‡РЅРёРє",
-    "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ",
+    "Менеджер",
+    "Директор ЮПП",
+    "Директор представителей",
+    "Представитель",
+    "Юрист пирвичник",
+    "Администратор",
 }
 
 
@@ -201,7 +225,7 @@ def home(request):
                 login(request, user)
                 return redirect("home")
             else:
-                messages.warning(request, "РќРµ РїСЂР°РІРёР»СЊРЅС‹Р№ Р»РѕРіРёРЅ РёР»Рё РїР°СЂРѕР»СЊ")
+                messages.warning(request, "Не правильный логин или пароль")
                 return redirect("home")
         else:
             return render(request, "home.html")
@@ -211,7 +235,7 @@ def home(request):
     day = current_time.day
     now = f"{year}-{month}-{day}"
     todolist = ToDoList.objects.all()
-    if request.user.status == "Р”РёСЂРµРєС‚РѕСЂ РљР¦" or request.user.status == "РћРїРµСЂР°С‚РѕСЂ":
+    if request.user.status == "Директор КЦ" or request.user.status == "Оператор":
         get_records = Record.objects.filter(companys=request.user.companys)
     else:
         get_records = Record.objects.filter(companys=request.user.companys, felial=request.user.felial)
@@ -231,7 +255,7 @@ def filter_type(request, type):
     return render(request, "home.html", {"records": records})
 
 def brak(request):
-    records = Record.objects.filter(status="Р‘СЂР°Рє", companys=request.user.companys)
+    records = Record.objects.filter(status="Брак", companys=request.user.companys)
     return render(request, "home.html", {"records": records})
 
 def logout_user(request):
@@ -241,7 +265,7 @@ def logout_user(request):
 @login_required
 async def record(request, pk):
     current_user = await sync_to_async(lambda: request.user, thread_sensitive=True)()
-    # РђСЃРёРЅС…СЂРѕРЅРЅРѕРµ РїРѕР»СѓС‡РµРЅРёРµ РѕР±СЉРµРєС‚РѕРІ РёР· Р‘Р”
+    # Асинхронное получение объектов из БД
     get_record = sync_to_async(_record_for_user_or_404, thread_sensitive=True)
     record = await get_record(request, pk)
     request.can_manage_documents = await can_manage_documents_async(request)
@@ -251,7 +275,7 @@ async def record(request, pk):
     get_documents = sync_to_async(lambda: list(RecordDocument.objects.filter(record=record)), thread_sensitive=True)
     documents = await get_documents()
 
-    # РђСЃРёРЅС…СЂРѕРЅРЅР°СЏ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЏ С„РѕСЂРј
+    # Асинхронная инициализация форм
     init_form = sync_to_async(lambda: StatusForm(request.POST or None, instance=record), thread_sensitive=True)
     form_status = await init_form()
 
@@ -294,9 +318,9 @@ async def record(request, pk):
     init_upload_form = sync_to_async(lambda: FileUploadForm(request.POST or None, request.FILES or None, use_required_attribute=False), thread_sensitive=True)
     upload_file_form = await init_upload_form()
 
-    # РЈРґР°Р»СЏСЋ РёРЅРёС†РёР°Р»РёР·Р°С†РёСЋ TopicForm
+    # Удаляю инициализацию TopicForm
 
-    # РџСЂРѕРІРµСЂРєР° СЃС‚Р°С‚СѓСЃР° Р±СЂРѕРЅРёСЂРѕРІР°РЅРёСЏ
+    # Проверка статуса бронирования
     check_booking = sync_to_async(
         Booking.objects.filter(client_id=pk, companys_id=record.companys_id).exists,
         thread_sensitive=True,
@@ -311,14 +335,14 @@ async def record(request, pk):
     form_employees_REP_valid = await sync_to_async(form_employees_REP.is_valid, thread_sensitive=True)()
     cost_valid = await sync_to_async(cost_form.is_valid, thread_sensitive=True)()
     upload_valid = request.can_manage_documents and await sync_to_async(upload_file_form.is_valid, thread_sensitive=True)()
-    # РЈРґР°Р»СЏСЋ topic_form_valid
-    # РћР±СЂР°Р±РѕС‚РєР° С„РѕСЂРј
+    # Удаляю topic_form_valid
+    # Обработка форм
     form_status_valid = await sync_to_async(form_status.is_valid, thread_sensitive=True)()
     if form_status_valid:
         save_form = sync_to_async(form_status.save, thread_sensitive=True)
         await save_form()
         add_message = sync_to_async(messages.success, thread_sensitive=True)
-        await add_message(request, "РЎС‚Р°С‚СѓСЃ СѓСЃРїРµС€РЅРѕ РѕР±РЅРѕРІР»РµРЅ")
+        await add_message(request, "Статус успешно обновлен")
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
                        'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
@@ -331,7 +355,7 @@ async def record(request, pk):
             return await sync_to_async(redirect)("record", pk=pk)
         save_form = sync_to_async(form_employees_KC.save, thread_sensitive=True)
         await save_form()
-        await sync_to_async(messages.success)(request, "РћРїРµСЂР°С‚РѕСЂ РїСЂРёРєСЂРµРїР»РµРЅ")
+        await sync_to_async(messages.success)(request, "Оператор прикреплен")
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
                        'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
@@ -344,7 +368,7 @@ async def record(request, pk):
             return await sync_to_async(redirect)("record", pk=pk)
         save_form = sync_to_async(form_employees_UPP.save, thread_sensitive=True)
         await save_form()
-        await sync_to_async(messages.success)(request, "Р®СЂРёСЃС‚ РїСЂРёРєСЂРµРїР»РµРЅ")
+        await sync_to_async(messages.success)(request, "Юрист прикреплен")
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
                        'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
@@ -356,7 +380,7 @@ async def record(request, pk):
             return await sync_to_async(redirect)("record", pk=pk)
         save_form = sync_to_async(form_employees_REP.save, thread_sensitive=True)
         await save_form()
-        await sync_to_async(messages.success)(request, "РџСЂРµРґСЃС‚Р°РІРёС‚РµР»СЊ РїСЂРёРєСЂРµРїР»РµРЅ")
+        await sync_to_async(messages.success)(request, "Представитель прикреплен")
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
                        'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
@@ -366,7 +390,7 @@ async def record(request, pk):
     elif cost_valid:
         save_form = sync_to_async(cost_form.save, thread_sensitive=True)
         await save_form()
-        await sync_to_async(messages.success)(request, "Р¦РµРЅР° СѓРєР°Р·Р°РЅР°")
+        await sync_to_async(messages.success)(request, "Цена указана")
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
                        'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
@@ -374,6 +398,13 @@ async def record(request, pk):
 
 
     elif upload_valid:
+        if not _is_s3_configured():
+            await sync_to_async(messages.error, thread_sensitive=True)(
+                request,
+                "S3 не настроен: проверьте S3_BUCKET_NAME, S3_ACCESS_KEY, S3_SECRET_KEY и S3_ENDPOINT_URL в settings.py",
+            )
+            return await sync_to_async(redirect, thread_sensitive=True)("record", pk=pk)
+
         uploaded_files = request.FILES.getlist('file')
         created_docs = 0
         fs = FileSystemStorage(location=os.path.join(settings.MEDIA_ROOT, 'uploads'))
@@ -384,9 +415,16 @@ async def record(request, pk):
         for uploaded_file in uploaded_files:
             filename = await save_file(uploaded_file.name, uploaded_file)
             full_path = os.path.join(settings.MEDIA_ROOT, 'uploads', filename)
-            object_key = f"records/{record.id}/{uuid.uuid4().hex}_{uploaded_file.name}"
+            object_key = f"{record.companys_id}/{record.id}/{uuid.uuid4().hex}_{uploaded_file.name}"
 
-            await s3_client.upload_file(full_path, file_name=object_key)
+            uploaded = await s3_client.upload_file(full_path, file_name=object_key)
+            if not uploaded:
+                await delete_file(filename)
+                await sync_to_async(messages.error, thread_sensitive=True)(
+                    request,
+                    "Ошибка загрузки файла в S3. Проверьте настройки хранилища.",
+                )
+                return await sync_to_async(redirect, thread_sensitive=True)("record", pk=pk)
             safe_object_key = quote(object_key, safe="/")
             await create_doc(
                 record=record,
@@ -398,7 +436,7 @@ async def record(request, pk):
             created_docs += 1
 
         if created_docs:
-            await sync_to_async(messages.success)(request, f"Р¤Р°Р№Р»РѕРІ Р·Р°РіСЂСѓР¶РµРЅРѕ: {created_docs}")
+            await sync_to_async(messages.success)(request, f"Файлов загружено: {created_docs}")
         documents = await get_documents()
 
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
@@ -406,8 +444,8 @@ async def record(request, pk):
                        'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
                        })
 
-    # РЈРґР°Р»СЏСЋ topic_form РёР· РєРѕРЅС‚РµРєСЃС‚Р° СЂРµРЅРґРµСЂР°
-    # Р РµРЅРґРµСЂ СЃС‚СЂР°РЅРёС†С‹, РµСЃР»Рё РЅРµС‚ РІР°Р»РёРґРЅС‹С… С„РѕСЂРј
+    # Удаляю topic_form из контекста рендера
+    # Рендер страницы, если нет валидных форм
     return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                    "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
                    'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
@@ -417,7 +455,7 @@ async def record(request, pk):
 def delete_record(request, pk):
     del_record = _record_for_user_or_404(request, pk)
     del_record.delete()
-    messages.success(request, "Р’С‹ СЃРїРµС€РЅРѕ СѓРґР°Р»РёР» Р·Р°РїРёСЃСЊ")
+    messages.success(request, "Вы спешно удалил запись")
     return redirect("home")
 
 
@@ -457,7 +495,7 @@ def add_record(request):
         add_record.companys = request.user.companys
         if request.user.status =="Оператор":
             add_record.employees_KC = request.user.username
-         # РџСЂРёРєСЂРµРїР»СЏРµС‚СЃСЏ Рє РєСЂРјРїР°РЅРёРё
+         # Прикрепляется к крмпании
         add_record.save()
         messages.success(request, f"Создана новая заявка {add_record.name}")
         return redirect("home")
@@ -470,7 +508,7 @@ def update_record(request, pk):
     form = AddRecordForm(request.POST or None, instance=record,  user=request.user)
     if form.is_valid():
         updated_record = form.save()
-        messages.success(request, f"Р—Р°РїРёСЃСЊ '{updated_record.name}' РѕР±РЅР°РІР»РµРЅР°")
+        messages.success(request, f"Запись '{updated_record.name}' обнавлена")
         return redirect("record", pk=pk)
     return render(request, "update_record.html", {"form": form})
 
@@ -483,13 +521,13 @@ def in_work(request, pk):
 
 @login_required
 def to_representative(request, pk):
-    if request.user.status not in ["Р”РёСЂРµРєС‚РѕСЂ Р®РџРџ", "Р®СЂРёСЃС‚ РїРёСЂРІРёС‡РЅРёРє", "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ"]:
-        messages.warning(request, "РќРµС‚ РїСЂР°РІ РґР»СЏ РїРµСЂРµРґР°С‡Рё РІ РїСЂРµРґСЃС‚Р°РІРёС‚РµР»РµР№")
+    if request.user.status not in ["Директор ЮПП", "Юрист пирвичник", "Администратор"]:
+        messages.warning(request, "Нет прав для передачи в представителей")
         return redirect("record", pk=pk)
     record = _record_for_user_or_404(request, pk)
     record.representative = 1
     record.save()
-    messages.success(request, "Р—Р°СЏРІРєР° РїРµСЂРµРґР°РЅР° РїСЂРµРґСЃС‚Р°РІРёС‚РµР»СЏРј")
+    messages.success(request, "Заявка передана представителям")
     return redirect("record", pk=pk)
 
 
@@ -503,10 +541,10 @@ def download_document(request, doc_id):
     try:
         document = RecordDocument.objects.select_related("record").get(id=doc_id)
     except RecordDocument.DoesNotExist:
-        raise Http404("Р”РѕРєСѓРјРµРЅС‚ РЅРµ РЅР°Р№РґРµРЅ")
+        raise Http404("Документ не найден")
 
     if request.user.companys_id != document.record.companys_id:
-        messages.warning(request, "РќРµС‚ РґРѕСЃС‚СѓРїР° Рє РґРѕРєСѓРјРµРЅС‚Сѓ")
+        messages.warning(request, "Нет доступа к документу")
         return redirect("home")
 
     if document.s3_key:
@@ -526,7 +564,7 @@ def download_document(request, doc_id):
     with urlopen(source_url) as remote_file:
         content = remote_file.read()
    
-        #Wmessages.error(request, "РќРµ СѓРґР°Р»РѕСЃСЊ СЃРєР°С‡Р°С‚СЊ РґРѕРєСѓРјРµРЅС‚")
+        #Wmessages.error(request, "Не удалось скачать документ")
         #Wreturn redirect("record", pk=document.record_id)
 
     encoded_filename = quote(filename)
@@ -580,7 +618,7 @@ def get_tilda_lead(request):
         textarea = None
         get_company = None
         
-        # РЈРЅРёРІРµСЂСЃР°Р»СЊРЅР°СЏ РѕР±СЂР°Р±РѕС‚РєР° РїРѕР»РµР№
+        # Универсальная обработка полей
         for key, value in data.items():
             if key == "id_company":
                 try:
@@ -590,25 +628,25 @@ def get_tilda_lead(request):
                 get_company = Companys.objects.filter(id=id_company).first()
                 continue
             
-            # РџСЂРѕРїСѓСЃРєР°РµРј СЃР»СѓР¶РµР±РЅС‹Рµ РїРѕР»СЏ
+            # Пропускаем служебные поля
             if key in ['test', 'csrfmiddlewaretoken']:
                 continue
                 
-            # РћРїСЂРµРґРµР»СЏРµРј С‚РёРї РїРѕР»СЏ РїРѕ СЃРѕРґРµСЂР¶РёРјРѕРјСѓ Рё РєР»СЋС‡Сѓ
+            # Определяем тип поля по содержимому и ключу
             if not value or value.strip() == '':
                 continue
                 
-            # РћРїСЂРµРґРµР»РµРЅРёРµ С‚РµР»РµС„РѕРЅР°
+            # Определение телефона
             if is_phone_field(key, value):
                 phone = value
-            # РћРїСЂРµРґРµР»РµРЅРёРµ РёРјРµРЅРё
+            # Определение имени
             elif is_name_field(key, value):
                 name = value
-            # РћРїСЂРµРґРµР»РµРЅРёРµ С‚РµРєСЃС‚РѕРІРѕРіРѕ РїРѕР»СЏ (РѕРїРёСЃР°РЅРёРµ)
+            # Определение текстового поля (описание)
             elif is_text_field(key, value):
                 textarea = value
         
-        # РЎРѕР·РґР°РµРј Р·Р°РїРёСЃСЊ С‚РѕР»СЊРєРѕ РµСЃР»Рё РµСЃС‚СЊ С…РѕС‚СЏ Р±С‹ С‚РµР»РµС„РѕРЅ РёР»Рё РёРјСЏ
+        # Создаем запись только если есть хотя бы телефон или имя
         if (phone or name) and get_company is not None:
             led = Record(
                 phone=phone, 
@@ -625,13 +663,13 @@ def get_tilda_lead(request):
             return HttpResponse("No valid data", status=400)
 
 def is_phone_field(key, value):
-    """РћРїСЂРµРґРµР»СЏРµС‚, СЏРІР»СЏРµС‚СЃСЏ Р»Рё РїРѕР»Рµ С‚РµР»РµС„РѕРЅРѕРј"""
-    # РџСЂРѕРІРµСЂСЏРµРј РїРѕ РєР»СЋС‡Сѓ
-    phone_keywords = ['phone', 'tel', 'С‚РµР»РµС„РѕРЅ', 'РЅРѕРјРµСЂ', 'number']
+    """Определяет, является ли поле телефоном"""
+    # Проверяем по ключу
+    phone_keywords = ['phone', 'tel', 'телефон', 'номер', 'number']
     if any(keyword in key.lower() for keyword in phone_keywords):
         return True
     
-    # РџСЂРѕРІРµСЂСЏРµРј РїРѕ СЃРѕРґРµСЂР¶РёРјРѕРјСѓ (СЃРѕРґРµСЂР¶РёС‚ С‚РѕР»СЊРєРѕ С†РёС„СЂС‹, +, -, (, ), РїСЂРѕР±РµР»С‹)
+    # Проверяем по содержимому (содержит только цифры, +, -, (, ), пробелы)
     import re
     phone_pattern = r'^[\+]?[0-9\s\-\(\)]+$'
     if re.match(phone_pattern, value.strip()) and len(value.strip()) >= 7:
@@ -640,15 +678,15 @@ def is_phone_field(key, value):
     return False
 
 def is_name_field(key, value):
-    """РћРїСЂРµРґРµР»СЏРµС‚, СЏРІР»СЏРµС‚СЃСЏ Р»Рё РїРѕР»Рµ РёРјРµРЅРµРј"""
-    # РџСЂРѕРІРµСЂСЏРµРј РїРѕ РєР»СЋС‡Сѓ
-    name_keywords = ['name', 'РёРјСЏ', 'fio', 'С„РёРѕ', 'contact', 'РєРѕРЅС‚Р°РєС‚']
+    """Определяет, является ли поле именем"""
+    # Проверяем по ключу
+    name_keywords = ['name', 'имя', 'fio', 'фио', 'contact', 'контакт']
     if any(keyword in key.lower() for keyword in name_keywords):
         return True
     
-    # РџСЂРѕРІРµСЂСЏРµРј РїРѕ СЃРѕРґРµСЂР¶РёРјРѕРјСѓ (СЃРѕРґРµСЂР¶РёС‚ Р±СѓРєРІС‹, РЅРµ СЃР»РёС€РєРѕРј РґР»РёРЅРЅРѕРµ)
+    # Проверяем по содержимому (содержит буквы, не слишком длинное)
     import re
-    if re.match(r'^[Р°-СЏС‘\s\-]+$', value.strip(), re.IGNORECASE) or \
+    if re.match(r'^[а-яё\s\-]+$', value.strip(), re.IGNORECASE) or \
        re.match(r'^[a-z\s\-]+$', value.strip(), re.IGNORECASE):
         if 2 <= len(value.strip()) <= 50:
             return True
@@ -656,13 +694,13 @@ def is_name_field(key, value):
     return False
 
 def is_text_field(key, value):
-    """РћРїСЂРµРґРµР»СЏРµС‚, СЏРІР»СЏРµС‚СЃСЏ Р»Рё РїРѕР»Рµ С‚РµРєСЃС‚РѕРІС‹Рј РѕРїРёСЃР°РЅРёРµРј"""
-    # РџСЂРѕРІРµСЂСЏРµРј РїРѕ РєР»СЋС‡Сѓ
-    text_keywords = ['text', 'message', 'comment', 'textarea', 'РѕРїРёСЃР°РЅРёРµ', 'СЃРѕРѕР±С‰РµРЅРёРµ', 'РєРѕРјРјРµРЅС‚Р°СЂРёР№']
+    """Определяет, является ли поле текстовым описанием"""
+    # Проверяем по ключу
+    text_keywords = ['text', 'message', 'comment', 'textarea', 'описание', 'сообщение', 'комментарий']
     if any(keyword in key.lower() for keyword in text_keywords):
         return True
     
-    # Р•СЃР»Рё РїРѕР»Рµ РґР»РёРЅРЅРѕРµ Рё РЅРµ РїРѕРґС…РѕРґРёС‚ РїРѕРґ С‚РµР»РµС„РѕРЅ/РёРјСЏ
+    # Если поле длинное и не подходит под телефон/имя
     if len(value.strip()) > 20:
         return True
     
@@ -676,14 +714,14 @@ class SearchView(ListView):
         if not query or not self.request.user.is_authenticated:
             return Record.objects.none()
         return Record.objects.filter(companys=self.request.user.companys).filter(
-            Q(name__icontains=query) |  # РџРѕРёСЃРє РїРѕ С‡Р°СЃС‚Рё РёРјРµРЅРё
+            Q(name__icontains=query) |  # Поиск по части имени
             Q(phone__icontains=query)|
             Q(id__icontains=query)|
             Q(description__icontains=query)
         )
 
 @csrf_exempt
-@require_http_methods(["POST", "OPTIONS"])  # РР·РјРµРЅРёС‚СЊ СЌС‚Рѕ
+@require_http_methods(["POST", "OPTIONS"])  # Изменить это
 def get_time(request):
     def _status_matches(value, *targets):
         if not value:
@@ -792,8 +830,7 @@ def get_time(request):
             },
         )
     
-    return HttpResponse("РњРµС‚РѕРґ РЅРµ СЂР°Р·СЂРµС€С‘РЅ", status=405)
-
+    return HttpResponse("Метод не разрешён", status=405)
 
 
 

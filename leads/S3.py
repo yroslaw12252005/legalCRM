@@ -70,8 +70,8 @@ async def main():
     s3_client = S3Client(
         access_key="EEFJDEUXC1CROO48RUGL",
         secret_key="bOWBlZckIVapgodQAZ4X9cMeAWwQ1i9nZ8rBVppE",
-        endpoint_url="https://s3.twcstorage.ru",  # для Selectel используйте https://s3.storage.selcloud.ru
-        bucket_name="edb6a103-vsecrm",
+        endpoint_url="https://s3.twcstorage.ru",
+        bucket_name="e5ce452e-71ce-493b-ad29-ff9ea3f60cb4",
     )
 
     # Проверка, что мы можем загрузить, скачать и удалить файл

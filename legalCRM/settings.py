@@ -15,11 +15,11 @@ import os
 from dotenv import load_dotenv
 from django.core.exceptions import ImproperlyConfigured
 
-# Load environment variables from .env file
-load_dotenv()
-
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Load environment variables from project-local .env file regardless of current working directory.
+load_dotenv(BASE_DIR / ".env")
 
 
 # Quick-start development settings - unsuitable for production
@@ -172,6 +172,12 @@ SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
 
 # CSRF settings - только для HTTPS
 CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'False').lower() == 'true'
+
+# S3 settings (explicit values without .env dependency)
+S3_ACCESS_KEY = "EEFJDEUXC1CROO48RUGL"
+S3_SECRET_KEY = "bOWBlZckIVapgodQAZ4X9cMeAWwQ1i9nZ8rBVppE"
+S3_ENDPOINT_URL = "https://s3.twcstorage.ru"
+S3_BUCKET_NAME = "edb6a103-vsecrm"
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')

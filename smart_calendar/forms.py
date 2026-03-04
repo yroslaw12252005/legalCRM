@@ -30,11 +30,11 @@ class AddEventForm(forms.ModelForm):
 
         self.fields["employees"].queryset = User.objects.filter(
             companys_id=self.user.companys_id,
-            status="Р®СЂРёСЃС‚ РїРёСЂРІРёС‡РЅРёРє",
+            status="Юрист пирвичник",
         )
         clients_queryset = Record.objects.filter(
             companys_id=self.user.companys_id,
-            status="Р—Р°РїРёСЃСЊ РІ РѕС„РёСЃ",
+            status="Запись в офис",
         )
         if self.user.felial_id:
             clients_queryset = clients_queryset.filter(felial_id=self.user.felial_id)
