@@ -10,8 +10,8 @@ from leads.models import Record
 
 class TenantIsolationTests(TestCase):
     def setUp(self):
-        self.company_1 = Companys.objects.create(title="Company 1", telegram_bot="bot-1")
-        self.company_2 = Companys.objects.create(title="Company 2", telegram_bot="bot-2")
+        self.company_1 = Companys.objects.create(title="Company 1")
+        self.company_2 = Companys.objects.create(title="Company 2")
 
         self.felial_1 = Felial.objects.create(title="Main", cites="Moscow", companys=self.company_1)
         self.felial_2 = Felial.objects.create(title="Main", cites="SPB", companys=self.company_2)
