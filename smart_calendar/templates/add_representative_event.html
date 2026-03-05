@@ -1,0 +1,32 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/add_lead.css' %}" />
+<style>
+  .form-container {
+    background: white;
+    padding: 2.5rem;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    width: 100%;
+    max-width: 560px;
+  }
+  h1 {
+    color: #2c3e50;
+    margin-bottom: 2rem;
+    font-size: 1.8rem;
+    text-align: center;
+  }
+</style>
+
+<div class="row" style="justify-content: center; margin-top:50px;">
+  <div class="form-container">
+    <h1>Запись в суд/инстанцию</h1>
+    <form method="post">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button type="submit" class="btn btn-success">Сохранить</button>
+    </form>
+  </div>
+</div>
+{% endblock content %}

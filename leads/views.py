@@ -26,7 +26,7 @@ from todolist.models import ToDoList
 from django.db.models import Sum
 from cost.models import Surcharge
 from accounts.models import User
-from smart_calendar.models import Booking
+from smart_calendar.models import Booking, RepresentativeBooking
 from company.models import Companys
 from cost.models import Surcharge
 
@@ -767,29 +767,45 @@ def get_time(request):
         start_date = date(year, month, 1)
         end_date = (start_date + timedelta(days=31)).replace(day=1)
 
-        base_bookings = Booking.objects.filter(
-            date__gte=start_date,
-            date__lt=end_date,
-            companys=request.user.companys,
-            felial=request.user.felial,
-            client__status="Запись в офис",
-        )
+        is_rep_director = _status_matches(employee_status, "Директор представителей")
+        is_representative = _status_matches(employee_status, "Представитель")
 
-        is_management = _status_matches(
-            employee_status,
-            "Менеджер",
-            "Администратор",
-            "Директор ЮПП",
-            "Директор КЦ",
-        )
-        is_lawyer = _status_matches(employee_status, "Юрист пирвичник")
-
-        if is_management:
-            bookings = base_bookings
-        elif is_lawyer:
-            bookings = base_bookings.filter(employees=employee_id)
+        if is_rep_director or is_representative:
+            base_bookings = RepresentativeBooking.objects.filter(
+                date__gte=start_date,
+                date__lt=end_date,
+                companys=request.user.companys,
+            )
+            if is_representative:
+                bookings = base_bookings.filter(representative=employee_id)
+            else:
+                bookings = base_bookings
+            day_link_name = "representative_calendar"
         else:
-            bookings = base_bookings.filter(registrar=employee_id)
+            base_bookings = Booking.objects.filter(
+                date__gte=start_date,
+                date__lt=end_date,
+                companys=request.user.companys,
+                felial=request.user.felial,
+                client__status="Запись в офис",
+            )
+
+            is_management = _status_matches(
+                employee_status,
+                "Менеджер",
+                "Администратор",
+                "Директор ЮПП",
+                "Директор КЦ",
+            )
+            is_lawyer = _status_matches(employee_status, "Юрист пирвичник")
+
+            if is_management:
+                bookings = base_bookings
+            elif is_lawyer:
+                bookings = base_bookings.filter(employees=employee_id)
+            else:
+                bookings = base_bookings.filter(registrar=employee_id)
+            day_link_name = "calendar"
 
         bookings_per_day = defaultdict(int)
         for booking in bookings:
@@ -827,11 +843,11 @@ def get_time(request):
                 "header": ["Пн", "Вт", "Ср", "Чт", "Пт", "Сб", "Вс"],
                 "weeks": formatted_weeks,
                 "today": today_date.day,
+                "day_link_name": day_link_name,
             },
         )
     
     return HttpResponse("Метод не разрешён", status=405)
-
 
 
 

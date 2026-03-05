@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  .calendar-page { padding: 0 12px 20px; }
+  .calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+  .calendar-grid {
+    background: #e3ebf6;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  }
+  .resource-header {
+    background: white;
+    padding: 15px;
+    font-weight: 600;
+    color: #2c7be5;
+    text-align: center;
+    border-bottom: 2px solid #e3ebf6;
+  }
+  .event {
+    position: relative;
+    width: 100%;
+    background: #fff8e8;
+    border: 1px solid #e6a700;
+    border-radius: 4px;
+    margin: 4px 0;
+    padding: 8px;
+  }
+  .event-time { font-weight: 600; color: #9a6700; }
+</style>
+
+<div class="calendar-page">
+  <div class="calendar-header">
+    <h3 style="margin: 0 20px;">
+      <a href="?date={{ previous_date|date:'Y-m-d' }}" style="color: black; font-size: 35px; text-decoration: none;">←</a>
+      {{ selected_date|date:"d.m.Y" }}
+      <a href="?date={{ next_date|date:'Y-m-d' }}" style="color: black; font-size: 35px; text-decoration: none;">→</a>
+    </h3>
+    {% if can_add_event %}
+      <a href="{% url 'add_representative_event' selected_date %}" class="btn btn-success" style="margin-top:0; min-width: 220px;">Добавить запись в суд/инстанцию</a>
+    {% endif %}
+  </div>
+
+  <div class="calendar-grid">
+    <div class="empl row">
+      {% for representative in representatives %}
+        <div class="col">
+          <h6 class="resource-header">{{ representative.username }}</h6>
+          {% for booking in bookings %}
+            {% if booking.representative_id == representative.id %}
+              <a href="{% url 'record' booking.client.id %}" style="text-decoration: none;">
+                <div class="event">
+                  <div class="event-time">{{ booking.time }}</div>
+                  <div><strong>{{ booking.destination }}</strong></div>
+                  <div>{{ booking.client }}</div>
+                </div>
+              </a>
+            {% endif %}
+          {% endfor %}
+        </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+{% endblock content %}

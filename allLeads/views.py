@@ -49,7 +49,7 @@ def all_leads(request):
     todolist = ToDoList.objects.filter(user=request.user.id)
 
     # Фильтрация заявок в зависимости от роли пользователя
-    if request.user.status == "Директор КЦ" or request.user.status == "Оператор":
+    if request.user.status == "Директор КЦ" or request.user.status == "Оператор" or request.user.status == "Администратор":
         base_records = Record.objects.filter(companys=request.user.companys)
     else:
         base_records = Record.objects.filter(companys=request.user.companys, felial=request.user.felial)
