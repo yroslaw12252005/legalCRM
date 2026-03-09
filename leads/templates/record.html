@@ -330,8 +330,18 @@
         <h2>{{ record.name }}</h2>
         <a href="{% url 'client_inform' record.id %}"  style="color: black;     margin-bottom: 10px;">https://yblochko.rosscrm.ru/{% url 'client_inform' record.id %}</a>
         <div class="stat-item" style="margin-bottom: 1.5rem;">
-            <div class="stat-label">Комментарий</div>
+            <div class="stat-label">Описание</div>
             <div class="stat-value">{{ record.description }}</div>
+        </div>
+        <div class="stat-item" style="margin-bottom: 1.5rem;">
+            <div class="stat-label">Комментарий по ведению заявки</div>
+            <div class="stat-value">
+                {% if record.work_comment %}
+                    {{ record.work_comment }}
+                {% else %}
+                    Нет комментария
+                {% endif %}
+            </div>
         </div>
 
         <div class="stats-grid">
@@ -510,6 +520,12 @@
     {% endif %}
     {% if user.status == "Директор ЮПП" or user.status == "Юрист пирвичник" or user.status == "Администратор"%}
       <a href="{% url 'to_representative' record.id %}" class="btn btn-primary">Передать представителям</a>
+    {% endif %}
+    {% if user.status == "Юрист пирвичник" or user.status == "Директор ЮПП" or user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Менеджер" or user.status == "Администратор" %}
+      <a href="{% url 'add_office_booking' record.id %}" class="btn btn-primary">Запись в офис</a>
+    {% endif %}
+    {% if user.status == "Директор ЮПП" or user.status == "Юрист пирвичник" %}
+      <a href="{% url 'add_call_event' record.id %}" class="btn btn-warning">Назначить созвон</a>
     {% endif %}
 
 {% if record.status == "Запись в офис" %}

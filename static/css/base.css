@@ -239,12 +239,10 @@ table,
   background: #f8fafc;
 }
 
-.card,
 .stat-item,
 .desktop-toolbar,
 .calendar-header,
 .calendar-grid {
-  background: var(--bg-surface);
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);

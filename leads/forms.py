@@ -191,3 +191,29 @@ class MultipleFileField(forms.FileField):
 
 class FileUploadForm(forms.Form):
     file = MultipleFileField(label="", widget=MultipleFileInput(attrs={"class": "file"}))
+
+
+class RecordEditForm(forms.ModelForm):
+    class Meta:
+        model = Record
+        fields = ["name", "description"]
+        widgets = {
+            "name": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 5}),
+        }
+        labels = {
+            "name": "Имя",
+            "description": "Описание",
+        }
+
+
+class RecordCommentForm(forms.ModelForm):
+    class Meta:
+        model = Record
+        fields = ["work_comment"]
+        widgets = {
+            "work_comment": forms.Textarea(attrs={"class": "form-control", "rows": 5}),
+        }
+        labels = {
+            "work_comment": "Комментарий по ведению заявки",
+        }

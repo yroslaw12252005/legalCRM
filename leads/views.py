@@ -26,11 +26,21 @@ from todolist.models import ToDoList
 from django.db.models import Sum
 from cost.models import Surcharge
 from accounts.models import User
-from smart_calendar.models import Booking, RepresentativeBooking
+from smart_calendar.models import Booking, RepresentativeBooking, CallBooking
 from company.models import Companys
 from cost.models import Surcharge
 
-from .forms import AddRecordForm, StatusForm, Employees_KCForm, Employees_UPPForm, Employees_REPForm, CostForm,FileUploadForm
+from .forms import (
+    AddRecordForm,
+    StatusForm,
+    Employees_KCForm,
+    Employees_UPPForm,
+    Employees_REPForm,
+    CostForm,
+    FileUploadForm,
+    RecordEditForm,
+    RecordCommentForm,
+)
 
 import asyncio
 from contextlib import asynccontextmanager
@@ -187,6 +197,11 @@ for _status in DOCUMENT_ALLOWED_STATUSES:
 ASSIGN_KC_ALLOWED_STATUSES = {"Директор КЦ", "Администратор"}
 ASSIGN_UPP_ALLOWED_STATUSES = {"Директор ЮПП", "Администратор"}
 ASSIGN_REP_ALLOWED_STATUSES = {"Директор представителей", "Администратор"}
+EDIT_RECORD_ALLOWED_STATUSES = {"Директор ЮПП", "Директор КЦ", "Администратор"}
+
+EDIT_RECORD_ALLOWED_STATUS_VARIANTS = set()
+for _status in EDIT_RECORD_ALLOWED_STATUSES:
+    EDIT_RECORD_ALLOWED_STATUS_VARIANTS.update(_status_variants(_status))
 
 
 def can_manage_documents(user):
@@ -214,6 +229,10 @@ def _can_assign_upp(user):
 
 def _can_assign_rep(user):
     return user.status in ASSIGN_REP_ALLOWED_STATUSES
+
+
+def _can_edit_record_main(user):
+    return user.status in EDIT_RECORD_ALLOWED_STATUS_VARIANTS
 
 def home(request):
     if not request.user.is_authenticated:
@@ -493,6 +512,9 @@ def add_record(request):
     if form.is_valid():
         add_record = form.save(commit=False)
         add_record.companys = request.user.companys
+        if request.user.status in _status_variants("Директор ЮПП"):
+            add_record.in_work = True
+            add_record.felial = request.user.felial
         if request.user.status =="Оператор":
             add_record.employees_KC = request.user.username
          # Прикрепляется к крмпании
@@ -505,12 +527,32 @@ def add_record(request):
 @login_required
 def update_record(request, pk):
     record = _record_for_user_or_404(request, pk)
-    form = AddRecordForm(request.POST or None, instance=record,  user=request.user)
-    if form.is_valid():
-        updated_record = form.save()
-        messages.success(request, f"Запись '{updated_record.name}' обнавлена")
-        return redirect("record", pk=pk)
-    return render(request, "update_record.html", {"form": form})
+    can_edit_main = _can_edit_record_main(request.user)
+    edit_form = RecordEditForm(request.POST or None, instance=record)
+    comment_form = RecordCommentForm(request.POST or None, instance=record)
+
+    if request.method == "POST":
+        action = request.POST.get("action")
+
+        if action == "update_record":
+            if not can_edit_main:
+                messages.warning(request, "Нет прав для редактирования имени и описания")
+                return redirect("update_record", pk=pk)
+            if edit_form.is_valid():
+                updated_record = edit_form.save()
+                messages.success(request, f"Заявка '{updated_record.name}' обновлена")
+                return redirect("record", pk=pk)
+        elif action == "update_comment":
+            if comment_form.is_valid():
+                comment_form.save()
+                messages.success(request, "Комментарий по ведению заявки обновлен")
+                return redirect("record", pk=pk)
+
+    return render(
+        request,
+        "update_record.html",
+        {"edit_form": edit_form, "comment_form": comment_form, "can_edit_main": can_edit_main, "record": record},
+    )
 
 @login_required
 def in_work(request, pk):
@@ -789,6 +831,12 @@ def get_time(request):
                 felial=request.user.felial,
                 client__status="Запись в офис",
             )
+            base_call_bookings = CallBooking.objects.filter(
+                date__gte=start_date,
+                date__lt=end_date,
+                companys=request.user.companys,
+                felial=request.user.felial,
+            )
 
             is_management = _status_matches(
                 employee_status,
@@ -801,10 +849,13 @@ def get_time(request):
 
             if is_management:
                 bookings = base_bookings
+                call_bookings = base_call_bookings
             elif is_lawyer:
                 bookings = base_bookings.filter(employees=employee_id)
+                call_bookings = base_call_bookings.filter(employees=employee_id)
             else:
                 bookings = base_bookings.filter(registrar=employee_id)
+                call_bookings = base_call_bookings.filter(registrar=employee_id)
             day_link_name = "calendar"
 
         bookings_per_day = defaultdict(int)
@@ -812,6 +863,11 @@ def get_time(request):
             current_day = booking.date
             if current_day and start_date <= current_day < end_date:
                 bookings_per_day[current_day.day] += 1
+        if day_link_name == "calendar":
+            for call_booking in call_bookings:
+                current_day = call_booking.date
+                if current_day and start_date <= current_day < end_date:
+                    bookings_per_day[current_day.day] += 1
 
         today_date = date.today()
         formatted_weeks = []
@@ -848,6 +904,3 @@ def get_time(request):
         )
     
     return HttpResponse("Метод не разрешён", status=405)
-
-
-

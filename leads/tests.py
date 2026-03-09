@@ -102,3 +102,49 @@ class TenantIsolationTests(TestCase):
 
         self.record_1.refresh_from_db()
         self.assertNotEqual(self.record_1.employees_KC, self.operator_1.username)
+
+    def test_update_record_rejects_non_director_main_edit(self):
+        self.client.force_login(self.operator_actor)
+        response = self.client.post(
+            reverse("update_record", args=[self.record_1.id]),
+            data={
+                "action": "update_record",
+                "name": "Updated by operator",
+                "description": "Changed",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+
+        self.record_1.refresh_from_db()
+        self.assertEqual(self.record_1.name, "Lead 1")
+        self.assertEqual(self.record_1.description, "test")
+
+    def test_update_record_allows_comment_for_non_director(self):
+        self.client.force_login(self.operator_actor)
+        response = self.client.post(
+            reverse("update_record", args=[self.record_1.id]),
+            data={
+                "action": "update_comment",
+                "work_comment": "Комментарий оператора",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+
+        self.record_1.refresh_from_db()
+        self.assertEqual(self.record_1.work_comment, "Комментарий оператора")
+
+    def test_update_record_allows_main_edit_for_kc_director(self):
+        self.client.force_login(self.director_1)
+        response = self.client.post(
+            reverse("update_record", args=[self.record_1.id]),
+            data={
+                "action": "update_record",
+                "name": "Updated by director",
+                "description": "Director description",
+            },
+        )
+        self.assertEqual(response.status_code, 302)
+
+        self.record_1.refresh_from_db()
+        self.assertEqual(self.record_1.name, "Updated by director")
+        self.assertEqual(self.record_1.description, "Director description")

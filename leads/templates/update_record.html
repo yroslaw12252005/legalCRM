@@ -1,14 +1,37 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="col-md-6 offset-md-3">
-    <h1>Редактирование заявки</h1>
-    <form method="post">
-        {% csrf_token %}
-        {{form.as_p}}
-        <button type="submit" class="btn btn-success">Изменить запись</button>
-    </form>
+<div class="col-md-8 offset-md-2">
+    <h1>Редактирование заявки #{{ record.id }}</h1>
+
+    {% if can_edit_main %}
+        <div class="card mb-4">
+            <div class="card-body">
+                <h4>Основные данные заявки</h4>
+                <form method="post">
+                    {% csrf_token %}
+                    <input type="hidden" name="action" value="update_record">
+                    {{ edit_form.as_p }}
+                    <button type="submit" class="btn btn-success">Сохранить имя и описание</button>
+                </form>
+            </div>
+        </div>
+    {% endif %}
+
+    <div class="card">
+        <div class="card-body">
+            <h4>Комментарий по ведению заявки</h4>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_comment">
+                {{ comment_form.as_p }}
+                <button type="submit" class="btn btn-primary">Сохранить комментарий</button>
+            </form>
+        </div>
     </div>
+
+    <div style="margin-top: 16px;">
+        <a href="{% url 'record' record.id %}" class="btn btn-secondary">Назад к заявке</a>
+    </div>
+</div>
 {% endblock content %}
-
-

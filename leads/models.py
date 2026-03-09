@@ -6,6 +6,7 @@ class Record(models.Model):
     name = models.CharField(max_length=50,default=None, null=True)
     phone = models.CharField(max_length=50, default=None, null=True)
     description  = models.CharField(max_length=500, default=None, null=True)
+    work_comment = models.TextField(default="", blank=True)
     status = models.CharField(max_length=50,  default='Новая', null=True)
     type = models.CharField(max_length=50,  default='Неизвестен', null=True)
     created_at = models.DateTimeField(auto_now_add=True)

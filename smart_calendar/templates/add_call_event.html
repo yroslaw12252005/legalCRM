@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="row" style="justify-content: center; margin-top:50px;">
+    <div class="col-md-6">
+        <div class="card p-4">
+            <h3 style="margin-bottom: 16px;">Назначить созвон</h3>
+            <p style="margin-bottom: 16px;">Клиент: <strong>{{ record.name }}</strong> (ID {{ record.id }})</p>
+            <form method="post">
+                {% csrf_token %}
+                {{ form.as_p }}
+                <button type="submit" class="btn btn-success">Сохранить</button>
+                <a href="{% url 'record' record.id %}" class="btn btn-secondary">Отмена</a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock content %}

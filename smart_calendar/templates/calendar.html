@@ -1,257 +1,115 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% block content %}
-    <style>
-        .schedule-container {
-            position: relative;
-            height: 720px; /* 12 часов * 60px */
-            margin: 20px;
-        }
+<style>
+  :root {
+    --primary-color: #2c7be5;
+    --border-color: #e3ebf6;
+  }
+  .calendar-page { padding: 0 12px 20px; }
+  .calendar-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 15px;
+    margin-bottom: 20px;
+    padding: 12px;
+    background: white;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .calendar-grid {
+    background: var(--border-color);
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .resource-header {
+    background: white;
+    padding: 15px;
+    font-weight: 600;
+    color: var(--primary-color);
+    text-align: center;
+    border-bottom: 2px solid var(--border-color);
+  }
+  .event {
+    background: #f0f5ff;
+    border: 1px solid var(--primary-color);
+    border-radius: 4px;
+    padding: 8px;
+    margin: 6px;
+    font-size: 0.85em;
+    position: relative;
+  }
+  .event-content { padding-left: 10px; }
+  .event-time {
+    color: var(--primary-color);
+    font-weight: 500;
+    margin-bottom: 3px;
+  }
+  .event-call {
+    background: #fff4e5;
+    border-color: #ff9800;
+  }
+  .event-call .event-time { color: #b26a00; }
+</style>
 
-        .time-column {
-            left: 0;
-            width: 60px;
-            height: 100%;
-        }
+<div class="calendar-page">
+  <div class="calendar-header">
+    <h3 style="margin: 0 20px;">
+      <a href="?date={{ previous_date|date:'Y-m-d' }}" style="color:black; font-size:35px; text-decoration:none;">←</a>
+      {{ selected_date|date:"d.m.Y" }}
+      <a href="?date={{ next_date|date:'Y-m-d' }}" style="color:black; font-size:35px; text-decoration:none;">→</a>
+    </h3>
+    
+  </div>
 
-        .time-slot {
-            height: 60px;
-            border-bottom: 1px solid #eee;
-            text-align: right;
-            padding-right: 5px;
-        }
+  <div class="calendar-grid">
+    <div style="padding:10px 15px; background:#fff; border-bottom:1px solid #e3ebf6;">
+      <span style="display:inline-block; margin-right:16px;">
+        <span style="display:inline-block; width:12px; height:12px; background:#E6FFE6; border:1px solid #00C851; margin-right:6px;"></span>
+        Запись в офис
+      </span>
+      <span style="display:inline-block;">
+        <span style="display:inline-block; width:12px; height:12px; background:#fff4e5; border:1px solid #ff9800; margin-right:6px;"></span>
+        Созвон
+      </span>
+    </div>
 
-        .bookings-container {
-            left: 60px;
-            right: 0;
-            height: 4800px;
-            background: #f8f9fa;
-        }
+    <div class="empl row" style="margin: 0;">
+      {% for user in lawyers %}
+        <div class="col">
+          <h6 class="resource-header">{{ user.username }}</h6>
 
-        .booking-card {
-                position: absolute;
-            background: #e3f2fd;
-            border-left: 4px solid #2196f3;
-            padding: 8px;
-            overflow: hidden;
-            box-sizing: border-box;
-            border-radius: 4px;
-            #baffdf
-        }
-        .surcharge-card {
-                position: relative;
-            background: #baffdf;
-            border-left: 4px solid #009b53;
-            padding: 8px;
-            overflow: hidden;
-            box-sizing: border-box;
-            border-radius: 4px;
-            #baffdf
-        }
-
-        .navigation {
-            margin: 20px;
-            text-align: center;
-        }
-    </style>
-
-
-{% load custom_tags %}
-{% load static %}
-
-<!--
-    <div class="schedule-container row">
-        <div class="time-column col-1" style="margin-top:28px; font-size: 16px;">
-            {% for hour in 9|get_range:20 %}
-                <div class="time-slot" style="height: 400px;">
-                    <p style="font-size: 16px;    margin-bottom: 170px;">{{ hour }}:00</p>
-                    <p style="font-size: 14px; ">{{ hour }}:30</p>
+          {% for booking in bookings %}
+            {% if booking.employees.id == user.id %}
+              <a href="{% url 'record' booking.client.id %}" style="text-decoration:none;">
+                <div class="event" style="background:#E6FFE6; border-color:#00C851;">
+                  <div class="event-content">
+                    <div class="event-time">{{ booking.time }}</div>
+                    {{ booking.client }}
+                  </div>
                 </div>
-            {% endfor %}
-        </div>
+              </a>
+            {% endif %}
+          {% endfor %}
 
-        <div class="col row">
-        <div class="bookings-container col-12">
-            <div class="row">
-                {% for user in users %}
-                {% if user.status == "Юрист пирвичник" %}
-                <div style="position: relative;     width: 150px;"><h6 style="    color: #595959; border-bottom: 1px solid; text-align: center;">{{ user.username}}</h6>
-                    {% for booking in bookings %}
-                        {% if booking.employees.id == user.id %}
-                            {% with start=booking.time %}
-                            {% with top=start|math:400%}
-                            {% with height=100 %}
-                            <div class="booking-card"
-                                 style="top: {{ top }}px;
-                                        height: {{ height }}px;
-                                        left: 10px;
-                                        right: 10px; margin-top:15px;">
-                                <strong> <a href="{% url 'record' booking.client.id %}" style="    color: #7e7f7f; text-decoration: none;">{{ booking.client }}</a></strong><br>
-
-                            </div>
-                            {% endwith %}{% endwith %}{% endwith %}
-                        {% endif %}
-                    {% endfor %}
+          {% for call_booking in call_bookings %}
+            {% if call_booking.employees.id == user.id %}
+              <a href="{% url 'record' call_booking.client.id %}" style="text-decoration:none;">
+                <div class="event event-call">
+                  <div class="event-content">
+                    <div class="event-time">{{ call_booking.time }}</div>
+                    Созвон: {{ call_booking.client }}
+                  </div>
                 </div>
-                {% endif %}
-                {% endfor %}
-            </div>
+              </a>
+            {% endif %}
+          {% endfor %}
         </div>
-
-
-
-        </div>
+      {% empty %}
+        <div class="col" style="padding: 16px; background: #fff;">Юристы первичного приема не найдены</div>
+      {% endfor %}
+    </div>
+  </div>
 </div>
-
--->
-
-    <style>
-        :root {
-            --primary-color: #2C7BE5;
-            --border-color: #E3EBF6;
-            --hover-bg: #F9FAFB;
-        }
-
-        .calendar-header {
-            display: flex;
-            align-items: center;
-            gap: 15px;
-            margin-bottom: 20px;
-            padding: 12px;
-            background: white;
-            border-radius: 8px;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-                justify-content: space-between;
-        }
-
-        .calendar-grid {
-            background: var(--border-color);
-            border-radius: 8px;
-            overflow: hidden;
-            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-        }
-
-        .time-slot {
-            padding: 10px;
-            background: white;
-            font-size: 0.9em;
-            color: #6E84A3;
-            text-align: right;
-            border-bottom: 1px solid var(--border-color);
-        }
-
-        .resource-header {
-            background: white;
-            padding: 15px;
-            font-weight: 600;
-            color: var(--primary-color);
-            text-align: center;
-            border-bottom: 2px solid var(--border-color);
-        }
-
-        .event {
-            background: #F0F5FF;
-            border: 1px solid var(--primary-color);
-            border-radius: 4px;
-            padding: 8px;
-            margin: 2px;
-            font-size: 0.85em;
-            position: relative;
-            cursor: pointer;
-            transition: 0.2s;
-        }
-
-        .event:hover {
-            background: #E6F0FF;
-            transform: translateY(-1px);
-        }
-
-        .event::before {
-            content: '';
-            position: absolute;
-            left: 3px;
-            top: 5px;
-            bottom: 5px;
-            width: 3px;
-            background: var(--primary-color);
-            border-radius: 2px;
-        }
-
-        .event-content {
-            padding-left: 10px;
-        }
-
-        .event-time {
-            color: var(--primary-color);
-            font-weight: 500;
-            margin-bottom: 3px;
-        }
-
-        .current-time {
-            background: #FFF8DD;
-            border-color: #FFD700;
-        }
-
-        .calendar-page {
-            padding: 0 12px 20px;
-        }
-
-    </style>
-
-    <div class="calendar-page">
-    <div class="calendar-header">
-        <h3 style="margin: 0 20px;"><a href="?date={{ previous_date|date:'Y-m-d' }}" style="color: black;
-    font-size: 35px;
-    text-decoration: none;">←</a>  {{ selected_date|date:"d.m.Y" }}  <a href="?date={{ next_date|date:'Y-m-d' }}" style="color: black;
-    font-size: 35px;
-    text-decoration: none;">→</a></h3>
-
-        <a href="{% url 'add_event' selected_date%}" class="btn btn-success" style="margin-top:0; min-width: 170px;">Добавить запись</a>
-    </div>
-
-    <div class="calendar-grid ">
-        <div class="empl row">
-            {% for user in users %}{% if user.status == "Юрист пирвичник" %}
-                    <div class="col"> <h6 class="resource-header">{{ user.username}}</h6>
-
-                           {% if user.status == "Юрист пирвичник" %}
-                            {% for booking in bookings %}
-                            {% if booking.employees.id == user.id %}
-
-
-                            {% with start=booking.time %}
-                            {% with top=start|math:400%}
-
-
-                            {% with height=100 %}
-<a href="{% url 'record' booking.client.id %}" style="text-decoration: none;">
-                                    <div class="event" style="position: relative; width: 100%; background: #E6FFE6; border-color: #00C851;">
-                                        <div class="event-content">
-                                            <div class="event-time">{{ booking.time }}</div>
-                                            {{ booking.client }}
-                                        </div>
-                                    </div>
-</a>
-                        {% endwith %}{% endwith %}{% endwith %}{% endif %}
-
-                        
-
-
-                    {% endfor %}
-
-        {% endif %}
-
-
-                    </div>
-                        {% endif %}
-                    {% endfor %}
-                    </div>
-
-
-
-
-
-
-    </div>
-    </div>
-
 {% endblock content %}

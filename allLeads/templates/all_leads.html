@@ -145,7 +145,9 @@
           <th>Имя</th>
           <th>Телефон</th>
           <th>Описание</th>
+          {% if user.status == "Администратор"%}
           <th>Источник</th>
+          {% endif %}
           <th>Статус</th>
           {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
             <th>В работе</th>
@@ -183,11 +185,13 @@
                     {{ record.description|truncatechars:40 }}
                   {% endif %}
                 </td>
+                {% if user.status == "Администратор"%}
                 <td title="{{ record.where }}">
                   {% if record.name != None %}
                     {{ record.where|truncatechars:15 }}
                   {% endif %}
                 </td>
+                {% endif %}
                 <td class="crm-status">
                   {% if record.status == "Новая" %}
                     <span class="status-badge" style="color:#fff; background-color: #077EC2;">Новая</span>
