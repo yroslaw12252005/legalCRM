@@ -383,6 +383,13 @@
                 <div class="stat-label">Статус заявки</div>
                 <div class="status-badge">{{ record.status }}</div>
             </div>
+            {% if user.status == "Администратор" %}
+            <form method="post">
+                {% csrf_token %}
+                {{form_status.as_p}}
+                <button type="submit" class="btn btn-success">Изменить статус</button>
+            </form>
+            {% endif %}
             <div class="stat-item">
                 <div class="stat-label">Передано представителям</div>
                 <div class="status-badge">{% if record.representative %}Да{% else %}Нет{% endif %}</div>
