@@ -383,7 +383,7 @@
                 <div class="stat-label">Статус заявки</div>
                 <div class="status-badge">{{ record.status }}</div>
             </div>
-            {% if user.status == "Администратор" %}
+            {% if user.status == "Администратор" or user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Менеджер" %}
             <form method="post">
                 {% csrf_token %}
                 {{form_status.as_p}}
