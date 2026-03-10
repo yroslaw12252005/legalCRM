@@ -197,7 +197,7 @@ for _status in DOCUMENT_ALLOWED_STATUSES:
 ASSIGN_KC_ALLOWED_STATUSES = {"Директор КЦ", "Администратор"}
 ASSIGN_UPP_ALLOWED_STATUSES = {"Директор ЮПП", "Администратор"}
 ASSIGN_REP_ALLOWED_STATUSES = {"Директор представителей", "Администратор"}
-EDIT_RECORD_ALLOWED_STATUSES = {"Директор ЮПП", "Директор КЦ", "Администратор"}
+EDIT_RECORD_ALLOWED_STATUSES = {"Директор ЮПП", "Директор КЦ", "Администратор", "Оператор"}
 
 EDIT_RECORD_ALLOWED_STATUS_VARIANTS = set()
 for _status in EDIT_RECORD_ALLOWED_STATUSES:
