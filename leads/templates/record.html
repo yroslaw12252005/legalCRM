@@ -374,6 +374,24 @@
                 <div class="stat-value">{{ record.phone }}</div>
             </div>
             <div class="stat-item">
+                <div class="stat-label">Почта</div>
+                <div class="stat-value">
+                    {% if record.email %}{{ record.email }}{% else %}Нет{% endif %}
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Дата рождения</div>
+                <div class="stat-value">
+                    {% if record.birth_date %}{{ record.birth_date }}{% else %}Нет{% endif %}
+                </div>
+            </div>
+            <div class="stat-item">
+                <div class="stat-label">Соц. сети</div>
+                <div class="stat-value">
+                    {% if record.social_links %}{{ record.social_links }}{% else %}Нет{% endif %}
+                </div>
+            </div>
+            <div class="stat-item">
                 <div class="stat-label">Дата поступления</div>
                 <div class="stat-value">{{ record.created_at }}</div>
             </div>

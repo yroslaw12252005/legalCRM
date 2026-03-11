@@ -5,6 +5,9 @@ from felial.models import Felial
 class Record(models.Model):
     name = models.CharField(max_length=50,default=None, null=True)
     phone = models.CharField(max_length=50, default=None, null=True)
+    email = models.EmailField(max_length=254, null=True, blank=True)
+    birth_date = models.DateField(null=True, blank=True)
+    social_links = models.TextField(default="", blank=True)
     description  = models.CharField(max_length=500, default=None, null=True)
     work_comment_kc = models.TextField(default="", blank=True)
     work_comment = models.TextField(default="", blank=True)
