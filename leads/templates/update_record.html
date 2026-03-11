@@ -18,17 +18,47 @@
         </div>
     {% endif %}
 
-    <div class="card">
+    {% if can_edit_comment_kc %}
+    <div class="card mb-4">
         <div class="card-body">
-            <h4>Комментарий по ведению заявки</h4>
+            <h4>Комментарии КЦ</h4>
             <form method="post">
                 {% csrf_token %}
-                <input type="hidden" name="action" value="update_comment">
-                {{ comment_form.as_p }}
-                <button type="submit" class="btn btn-primary">Сохранить комментарий</button>
+                <input type="hidden" name="action" value="update_comment_kc">
+                {{ comment_kc_form.as_p }}
+                <button type="submit" class="btn btn-primary">Сохранить комментарии КЦ</button>
             </form>
         </div>
     </div>
+    {% endif %}
+
+    {% if can_edit_comment_upp %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4>Комментарии ЮПП</h4>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_comment_upp">
+                {{ comment_upp_form.as_p }}
+                <button type="submit" class="btn btn-primary">Сохранить комментарии ЮПП</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
+
+    {% if can_edit_comment_op %}
+    <div class="card mb-4">
+        <div class="card-body">
+            <h4>Комментарии ОП</h4>
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_comment_op">
+                {{ comment_op_form.as_p }}
+                <button type="submit" class="btn btn-primary">Сохранить комментарии ОП</button>
+            </form>
+        </div>
+    </div>
+    {% endif %}
 
     <div style="margin-top: 16px;">
         <a href="{% url 'record' record.id %}" class="btn btn-secondary">Назад к заявке</a>

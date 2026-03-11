@@ -334,10 +334,30 @@
             <div class="stat-value">{{ record.description }}</div>
         </div>
         <div class="stat-item" style="margin-bottom: 1.5rem;">
-            <div class="stat-label">Комментарий по ведению заявки</div>
+            <div class="stat-label">Комментарии КЦ</div>
+            <div class="stat-value">
+                {% if record.work_comment_kc %}
+                    {{ record.work_comment_kc }}
+                {% else %}
+                    Нет комментария
+                {% endif %}
+            </div>
+        </div>
+        <div class="stat-item" style="margin-bottom: 1.5rem;">
+            <div class="stat-label">Комментарии ЮПП</div>
             <div class="stat-value">
                 {% if record.work_comment %}
                     {{ record.work_comment }}
+                {% else %}
+                    Нет комментария
+                {% endif %}
+            </div>
+        </div>
+        <div class="stat-item" style="margin-bottom: 1.5rem;">
+            <div class="stat-label">Комментарии ОП</div>
+            <div class="stat-value">
+                {% if record.work_comment_op %}
+                    {{ record.work_comment_op }}
                 {% else %}
                     Нет комментария
                 {% endif %}
@@ -430,19 +450,24 @@
 
         {% endif %}
         </div>
-{% if user.status == "Менеджер" or user.status == "Администратор"%}
+{% if user.status == "Менеджер" or user.status == "Администратор" or user.status == "Директор ЮПП" %}
         <div class="stat-item" style="margin: 1.5rem 0;">
             <div class="stat-label">Цена: {{ record.cost }}</div>
+            {% if user.status == "Менеджер" or user.status == "Администратор" %}
                 <form class="form_add_lead" method="post">
                     {% csrf_token %}
                     {{cost.as_p}}
                     <button type="submit" class="btn btn-primary" style="margin-top: 0.8rem;">Добавить стоимость</button>
                 </form>
+            {% endif %}
             <table class="table table-striped table-hover rounded-3" style="margin-top:50px">
                 <thead>
                  <tr class="table-primary">
-                   <th scope="col"><p>Цена</p></th>
+                   <th scope="col"><p>Сумма</p></th>
                    <th scope="col"><p>Дата</p></th>
+                   {% if user.status == "Администратор" %}
+                   <th scope="col"><p></p></th>
+                   {% endif %}
                 </tr>
               </thead>
 
@@ -451,13 +476,48 @@
                     <tr>
                         <td class="table-default"><p>{{surcharge.cost}}</p></td>
                         <td class="table-default"><p>{{surcharge.dat}}</p></td>
+                        {% if user.status == "Администратор" %}
+                        <td class="table-default">
+                            <a href="{% url 'delete_surcharge' surcharge.id %}" style="color:#e74c3c; text-decoration:none;" title="Удалить">X</a>
+                        </td>
+                        {% endif %}
                     </tr>
                {% endfor %}
                 </tbody>
             </table>
-            <a href="{% url 'cost' record.id %}">Внести доплату</a>
+            <a href="{% url 'cost' record.id %}" class="btn btn-primary" style="margin-top: 0.8rem;">Доплата</a>
         </div>
-    </div>
+{% endif %}
+{% if user.status == "Юрист пирвичник" and record.employees_UPP == user.username %}
+        <div class="stat-item" style="margin: 1.5rem 0;">
+            <div class="stat-label">Цена: {{ record.cost }}</div>
+            <table class="table table-striped table-hover rounded-3" style="margin-top:50px">
+                <thead>
+                 <tr class="table-primary">
+                   <th scope="col"><p>Сумма</p></th>
+                   <th scope="col"><p>Дата</p></th>
+                   {% if user.status == "Администратор" %}
+                   <th scope="col"><p></p></th>
+                   {% endif %}
+                </tr>
+              </thead>
+
+               <tbody>
+               {% for surcharge in surcharge %}
+                    <tr>
+                        <td class="table-default"><p>{{surcharge.cost}}</p></td>
+                        <td class="table-default"><p>{{surcharge.dat}}</p></td>
+                        {% if user.status == "Администратор" %}
+                        <td class="table-default">
+                            <a href="{% url 'delete_surcharge' surcharge.id %}" style="color:#e74c3c; text-decoration:none;" title="Удалить">X</a>
+                        </td>
+                        {% endif %}
+                    </tr>
+               {% endfor %}
+                </tbody>
+            </table>
+            <a href="{% url 'cost' record.id %}" class="btn btn-primary" style="margin-top: 0.8rem;">Доплата</a>
+        </div>
 {% endif %}
         <div class="stats-grid">
             {% if user.status == "Директор КЦ" or user.status == "Администратор"%}
@@ -525,7 +585,7 @@
     {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
       <a href="{% url 'in_work' record.id %}" class="btn btn-primary">В работу</a>
     {% endif %}
-    {% if user.status == "Директор ЮПП" or user.status == "Юрист пирвичник" or user.status == "Администратор"%}
+    {% if user.status == "Директор ЮПП" or user.status == "Администратор"%}
       <a href="{% url 'to_representative' record.id %}" class="btn btn-primary">Передать представителям</a>
     {% endif %}
     {% if user.status == "Юрист пирвичник" or user.status == "Директор ЮПП" or user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Менеджер" or user.status == "Администратор" %}

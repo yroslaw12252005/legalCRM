@@ -215,5 +215,29 @@ class RecordCommentForm(forms.ModelForm):
             "work_comment": forms.Textarea(attrs={"class": "form-control", "rows": 5}),
         }
         labels = {
-            "work_comment": "Комментарий по ведению заявки",
+            "work_comment": "Комментарии ЮПП",
+        }
+
+
+class RecordCommentKCForm(forms.ModelForm):
+    class Meta:
+        model = Record
+        fields = ["work_comment_kc"]
+        widgets = {
+            "work_comment_kc": forms.Textarea(attrs={"class": "form-control", "rows": 5}),
+        }
+        labels = {
+            "work_comment_kc": "Комментарии КЦ",
+        }
+
+
+class RecordCommentOPForm(forms.ModelForm):
+    class Meta:
+        model = Record
+        fields = ["work_comment_op"]
+        widgets = {
+            "work_comment_op": forms.Textarea(attrs={"class": "form-control", "rows": 5}),
+        }
+        labels = {
+            "work_comment_op": "Комментарии ОП",
         }

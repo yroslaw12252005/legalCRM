@@ -15,8 +15,14 @@
             <td class="{% if day_data.day == 0 %}is-empty{% endif %}">
               {% if day_data.day != 0 %}
                 <a class="day-link {% if day_data.is_today %}is-today{% endif %}" href="{% url day_link_name %}?date={{ day_data.year }}-{{ day_data.month }}-{{ day_data.day }}">
-                  <div class="day-counts">
+                  <div class="day-counts{% if day_data.count and day_data.calls_count and day_data.surcharges_count %} counts-triangle{% endif %}">
                     <span class="count {% if day_data.count %}count-bookings{% else %}count-zero{% endif %}" title="Записано">{{ day_data.count|default_if_none:0 }}</span>
+                    {% if day_data.calls_count %}
+                      <span class="count count-calls" title="Созвоны">{{ day_data.calls_count }}</span>
+                    {% endif %}
+                    {% if day_data.surcharges_count %}
+                      <span class="count count-surcharge" title="Доплата">{{ day_data.surcharges_count }}</span>
+                    {% endif %}
                   </div>
                   <div class="day-number">{{ day_data.day }}</div>
                 </a>
@@ -91,11 +97,38 @@
 }
 
 .day-counts {
+  position: relative;
   height: 16px;
   display: flex;
   align-items: center;
+  justify-content: center;
   gap: 3px;
   margin-bottom: 3px;
+}
+
+.day-counts.counts-triangle {
+  height: 22px;
+  display: block;
+}
+
+.day-counts.counts-triangle .count {
+  position: absolute;
+}
+
+.day-counts.counts-triangle .count:nth-child(1) {
+  left: 0;
+  top: 0;
+}
+
+.day-counts.counts-triangle .count:nth-child(2) {
+  right: 0;
+  top: 0;
+}
+
+.day-counts.counts-triangle .count:nth-child(3) {
+  left: 50%;
+  top: 9px;
+  transform: translateX(-50%);
 }
 
 .count {
@@ -115,6 +148,14 @@
 
 .count-bookings {
   background: #2563eb;
+}
+
+.count-calls {
+  background: #ff9800;
+}
+
+.count-surcharge {
+  background: #e53935;
 }
 
 .count-zero {

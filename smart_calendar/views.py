@@ -98,7 +98,16 @@ def smart_calendar(request):
     start_dat = datetime.combine(selected_date, time.min)
     end_dat = datetime.combine(selected_date, time.max)
 
-    get_all_employees = User.objects.filter(companys=request.user.companys, felial=request.user.felial)
+    can_view_all_surcharges = _status_matches(
+        request.user.status,
+        "Администратор",
+        "Менеджер",
+        "Директор ЮПП",
+    )
+    if can_view_all_surcharges:
+        get_all_employees = User.objects.filter(companys=request.user.companys)
+    else:
+        get_all_employees = User.objects.filter(companys=request.user.companys, felial=request.user.felial)
     lawyers = get_all_employees.filter(status__in=list(_status_variants(STATUS_LAWYER_PRIMARY_RU)))
 
     prev_date = selected_date - timedelta(days=1)
@@ -112,7 +121,7 @@ def smart_calendar(request):
         "Директор КЦ",
         "Оператор",
     )
-    can_view_all_call_bookings = _status_matches(request.user.status, "Администратор", "Директор ЮПП")
+    can_view_all_call_bookings = _status_matches(request.user.status, "Администратор", "Директор ЮПП", "Менеджер")
 
     if can_view_all_office_bookings:
         bookings = Booking.objects.filter(
@@ -149,20 +158,21 @@ def smart_calendar(request):
             felial=request.user.felial,
             registrar=request.user.id,
         ).order_by("time")
-        call_bookings = CallBooking.objects.filter(
-            date=selected_date,
-            companys=request.user.companys,
-            felial=request.user.felial,
-            registrar=request.user.id,
-        ).order_by("time")
+        call_bookings = CallBooking.objects.none()
 
     surcharges = None
-    if request.user.status in {STATUS_ADMIN, STATUS_MANAGER, STATUS_DIRECTOR_UPP}:
+    if can_view_all_surcharges:
+        surcharges = Surcharge.objects.filter(
+            dat__range=(start_dat, end_dat),
+            record__companys=request.user.companys,
+        ).select_related("record").order_by("dat")
+    elif _status_matches(request.user.status, "Юрист пирвичник"):
         surcharges = Surcharge.objects.filter(
             dat__range=(start_dat, end_dat),
             record__companys=request.user.companys,
             record__felial=request.user.felial,
-        ).order_by("dat")
+            record__employees_UPP=request.user.username,
+        ).select_related("record").order_by("dat")
 
     context = {
         "bookings": bookings,

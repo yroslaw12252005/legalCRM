@@ -40,6 +40,8 @@ from .forms import (
     FileUploadForm,
     RecordEditForm,
     RecordCommentForm,
+    RecordCommentKCForm,
+    RecordCommentOPForm,
 )
 
 import asyncio
@@ -529,7 +531,12 @@ def update_record(request, pk):
     record = _record_for_user_or_404(request, pk)
     can_edit_main = _can_edit_record_main(request.user)
     edit_form = RecordEditForm(request.POST or None, instance=record)
-    comment_form = RecordCommentForm(request.POST or None, instance=record)
+    comment_kc_form = RecordCommentKCForm(request.POST or None, instance=record)
+    comment_upp_form = RecordCommentForm(request.POST or None, instance=record)
+    comment_op_form = RecordCommentOPForm(request.POST or None, instance=record)
+    can_edit_comment_kc = request.user.status in {"Директор КЦ", "Оператор", "Администратор"}
+    can_edit_comment_upp = request.user.status in {"Директор ЮПП", "Юрист пирвичник", "Администратор"}
+    can_edit_comment_op = request.user.status in {"Директор представителей", "Представитель", "Администратор"}
 
     if request.method == "POST":
         action = request.POST.get("action")
@@ -542,16 +549,45 @@ def update_record(request, pk):
                 updated_record = edit_form.save()
                 messages.success(request, f"Заявка '{updated_record.name}' обновлена")
                 return redirect("record", pk=pk)
-        elif action == "update_comment":
-            if comment_form.is_valid():
-                comment_form.save()
-                messages.success(request, "Комментарий по ведению заявки обновлен")
+        elif action == "update_comment_kc":
+            if not can_edit_comment_kc:
+                messages.warning(request, "Нет прав для редактирования комментариев КЦ")
+                return redirect("update_record", pk=pk)
+            if comment_kc_form.is_valid():
+                comment_kc_form.save()
+                messages.success(request, "Комментарии КЦ обновлены")
+                return redirect("record", pk=pk)
+        elif action == "update_comment_upp":
+            if not can_edit_comment_upp:
+                messages.warning(request, "Нет прав для редактирования комментариев ЮПП")
+                return redirect("update_record", pk=pk)
+            if comment_upp_form.is_valid():
+                comment_upp_form.save()
+                messages.success(request, "Комментарии ЮПП обновлены")
+                return redirect("record", pk=pk)
+        elif action == "update_comment_op":
+            if not can_edit_comment_op:
+                messages.warning(request, "Нет прав для редактирования комментариев ОП")
+                return redirect("update_record", pk=pk)
+            if comment_op_form.is_valid():
+                comment_op_form.save()
+                messages.success(request, "Комментарии ОП обновлены")
                 return redirect("record", pk=pk)
 
     return render(
         request,
         "update_record.html",
-        {"edit_form": edit_form, "comment_form": comment_form, "can_edit_main": can_edit_main, "record": record},
+        {
+            "edit_form": edit_form,
+            "comment_kc_form": comment_kc_form,
+            "comment_upp_form": comment_upp_form,
+            "comment_op_form": comment_op_form,
+            "can_edit_main": can_edit_main,
+            "can_edit_comment_kc": can_edit_comment_kc,
+            "can_edit_comment_upp": can_edit_comment_upp,
+            "can_edit_comment_op": can_edit_comment_op,
+            "record": record,
+        },
     )
 
 @login_required
@@ -563,7 +599,7 @@ def in_work(request, pk):
 
 @login_required
 def to_representative(request, pk):
-    if request.user.status not in ["Директор ЮПП", "Юрист пирвичник", "Администратор"]:
+    if request.user.status not in ["Директор ЮПП", "Администратор"]:
         messages.warning(request, "Нет прав для передачи в представителей")
         return redirect("record", pk=pk)
     record = _record_for_user_or_404(request, pk)
@@ -824,41 +860,49 @@ def get_time(request):
                 bookings = base_bookings
             day_link_name = "representative_calendar"
         else:
+            filter_by_felial = not _status_matches(employee_status, "Директор КЦ", "Оператор")
             base_bookings = Booking.objects.filter(
                 date__gte=start_date,
                 date__lt=end_date,
                 companys=request.user.companys,
-                felial=request.user.felial,
                 client__status="Запись в офис",
             )
             base_call_bookings = CallBooking.objects.filter(
                 date__gte=start_date,
                 date__lt=end_date,
                 companys=request.user.companys,
-                felial=request.user.felial,
             )
+            if filter_by_felial:
+                base_bookings = base_bookings.filter(felial=request.user.felial)
+                base_call_bookings = base_call_bookings.filter(felial=request.user.felial)
 
-            is_management = _status_matches(
-                employee_status,
-                "Менеджер",
-                "Администратор",
-                "Директор ЮПП",
-                "Директор КЦ",
-            )
-            is_lawyer = _status_matches(employee_status, "Юрист пирвичник")
+        is_management = _status_matches(
+            employee_status,
+            "Менеджер",
+            "Администратор",
+            "Директор ЮПП",
+            "Директор КЦ",
+        )
+        is_lawyer = _status_matches(employee_status, "Юрист пирвичник")
+        is_operator = _status_matches(employee_status, "Оператор")
 
-            if is_management:
-                bookings = base_bookings
-                call_bookings = base_call_bookings
-            elif is_lawyer:
-                bookings = base_bookings.filter(employees=employee_id)
-                call_bookings = base_call_bookings.filter(employees=employee_id)
-            else:
-                bookings = base_bookings.filter(registrar=employee_id)
-                call_bookings = base_call_bookings.filter(registrar=employee_id)
-            day_link_name = "calendar"
+        if is_management:
+            bookings = base_bookings
+            can_view_calls = _status_matches(employee_status, "Менеджер", "Администратор", "Директор ЮПП")
+            call_bookings = base_call_bookings if can_view_calls else CallBooking.objects.none()
+        elif is_lawyer:
+            bookings = base_bookings.filter(employees=employee_id)
+            call_bookings = base_call_bookings.filter(employees=employee_id)
+        elif is_operator:
+            bookings = base_bookings.filter(client__employees_KC=request.user.username)
+            call_bookings = base_call_bookings.filter(client__employees_KC=request.user.username)
+        else:
+            bookings = base_bookings.filter(registrar=employee_id)
+            call_bookings = base_call_bookings.filter(registrar=employee_id)
+        day_link_name = "calendar"
 
         bookings_per_day = defaultdict(int)
+        calls_per_day = defaultdict(int)
         for booking in bookings:
             current_day = booking.date
             if current_day and start_date <= current_day < end_date:
@@ -867,7 +911,31 @@ def get_time(request):
             for call_booking in call_bookings:
                 current_day = call_booking.date
                 if current_day and start_date <= current_day < end_date:
-                    bookings_per_day[current_day.day] += 1
+                    calls_per_day[current_day.day] += 1
+        surcharges_per_day = defaultdict(int)
+        if day_link_name == "calendar":
+            can_see_surcharges = _status_matches(
+                employee_status,
+                "Менеджер",
+                "Администратор",
+                "Директор ЮПП",
+                "Юрист пирвичник",
+            )
+            if can_see_surcharges:
+                base_surcharges = Surcharge.objects.filter(
+                    dat__gte=start_date,
+                    dat__lt=end_date,
+                    record__companys=request.user.companys,
+                )
+                if is_lawyer:
+                    base_surcharges = base_surcharges.filter(
+                        record__employees_UPP=request.user.username,
+                        record__felial=request.user.felial,
+                    )
+                for surcharge in base_surcharges:
+                    current_day = surcharge.dat.date() if surcharge.dat else None
+                    if current_day and start_date <= current_day < end_date:
+                        surcharges_per_day[current_day.day] += 1
 
         today_date = date.today()
         formatted_weeks = []
@@ -881,7 +949,8 @@ def get_time(request):
                         "year": year,
                         "month": month,
                         "count": bookings_per_day.get(day, 0),
-                        "surcharges_count": 0,
+                        "calls_count": calls_per_day.get(day, 0),
+                        "surcharges_count": surcharges_per_day.get(day, 0),
                         "is_today": is_today,
                     }
                 )

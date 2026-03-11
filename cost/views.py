@@ -8,11 +8,18 @@ from accounts.models import User
 from leads.models import Record
 
 from .forms import Surcharge_form
+from .models import Surcharge
 
 
 @login_required
 def cost(request, pk):
     get_record_single = get_object_or_404(Record, id=pk, companys=request.user.companys)
+    if request.user.status not in {"Юрист пирвичник", "Менеджер", "Администратор", "Директор ЮПП"}:
+        messages.warning(request, "Нет прав для внесения доплаты")
+        return redirect("record", pk=pk)
+    if request.user.status == "Юрист пирвичник" and get_record_single.employees_UPP != request.user.username:
+        messages.warning(request, "Нет прав для внесения доплаты")
+        return redirect("record", pk=pk)
     get_surcharge_form = Surcharge_form(request.POST or None)
     if get_surcharge_form.is_valid():
         add_surcharge_form = get_surcharge_form.save(commit=False)
@@ -36,6 +43,18 @@ def calculating_salaries(request, pk):
         return percent_and_bet(request, get_employee)
 
     return HttpResponse("Неизвестный тип зарплаты", status=400)
+
+
+@login_required
+def delete_surcharge(request, pk):
+    if request.user.status != "Администратор":
+        messages.warning(request, "Нет прав для удаления доплаты")
+        return redirect("home")
+    surcharge = get_object_or_404(Surcharge, id=pk, record__companys=request.user.companys)
+    record_id = surcharge.record_id
+    surcharge.delete()
+    messages.success(request, "Доплата удалена")
+    return redirect("record", pk=record_id)
 
 
 @login_required

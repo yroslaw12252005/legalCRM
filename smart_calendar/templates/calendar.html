@@ -51,6 +51,11 @@
     border-color: #ff9800;
   }
   .event-call .event-time { color: #b26a00; }
+  .event-surcharge {
+    background: #ffebee;
+    border-color: #e53935;
+  }
+  .event-surcharge .event-time { color: #b71c1c; }
 </style>
 
 <div class="calendar-page">
@@ -72,6 +77,10 @@
       <span style="display:inline-block;">
         <span style="display:inline-block; width:12px; height:12px; background:#fff4e5; border:1px solid #ff9800; margin-right:6px;"></span>
         Созвон
+      </span>
+      <span style="display:inline-block; margin-left:16px;">
+        <span style="display:inline-block; width:12px; height:12px; background:#ffebee; border:1px solid #e53935; margin-right:6px;"></span>
+        Доплата
       </span>
     </div>
 
@@ -105,6 +114,21 @@
               </a>
             {% endif %}
           {% endfor %}
+
+          {% if surcharges %}
+            {% for surcharge in surcharges %}
+              {% if surcharge.record.employees_UPP == user.username %}
+                <a href="{% url 'record' surcharge.record.id %}" style="text-decoration:none;">
+                  <div class="event event-surcharge">
+                    <div class="event-content">
+                      <div class="event-time">{{ surcharge.dat|date:"H:i" }}</div>
+                      Доплата: {{ surcharge.record }} ({{ surcharge.cost }})
+                    </div>
+                  </div>
+                </a>
+              {% endif %}
+            {% endfor %}
+          {% endif %}
         </div>
       {% empty %}
         <div class="col" style="padding: 16px; background: #fff;">Юристы первичного приема не найдены</div>
