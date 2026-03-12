@@ -895,7 +895,7 @@ def get_time(request):
             call_bookings = base_call_bookings.filter(employees=employee_id)
         elif is_operator:
             bookings = base_bookings.filter(client__employees_KC=request.user.username)
-            call_bookings = base_call_bookings.filter(client__employees_KC=request.user.username)
+            call_bookings = CallBooking.objects.none()
         else:
             bookings = base_bookings.filter(registrar=employee_id)
             call_bookings = base_call_bookings.filter(registrar=employee_id)

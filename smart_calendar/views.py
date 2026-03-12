@@ -1,4 +1,4 @@
-﻿from datetime import datetime, time, timedelta
+from datetime import datetime, time, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
@@ -11,14 +11,14 @@ from leads.models import Record
 from .forms import AddRepresentativeEventForm, AddCallEventForm, AddOfficeBookingFromRecordForm
 from .models import Booking, RepresentativeBooking, CallBooking
 
-STATUS_OP = "РћРџ"
-STATUS_ADMIN = "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ"
-STATUS_MANAGER = "РњРµРЅРµРґР¶РµСЂ"
-STATUS_DIRECTOR_UPP = "Р”РёСЂРµРєС‚РѕСЂ Р®РџРџ"
-STATUS_DIRECTOR_KC = "Р”РёСЂРµРєС‚РѕСЂ РљР¦"
-STATUS_LAWYER_PRIMARY = "Р®СЂРёСЃС‚ РїРёСЂРІРёС‡РЅРёРє"
-STATUS_DIRECTOR_REP = "Р”РёСЂРµРєС‚РѕСЂ РїСЂРµРґСЃС‚Р°РІРёС‚РµР»РµР№"
-STATUS_REPRESENTATIVE = "РџСЂРµРґСЃС‚Р°РІРёС‚РµР»СЊ"
+STATUS_OP = "ОП"
+STATUS_ADMIN = "Администратор"
+STATUS_MANAGER = "Менеджер"
+STATUS_DIRECTOR_UPP = "Директор ЮПП"
+STATUS_DIRECTOR_KC = "Директор КЦ"
+STATUS_LAWYER_PRIMARY = "Юрист пирвичник"
+STATUS_DIRECTOR_REP = "Директор представителей"
+STATUS_REPRESENTATIVE = "Представитель"
 
 
 def _status_variants(value):
@@ -34,11 +34,11 @@ def _status_variants(value):
     return variants
 
 
-STATUS_DIRECTOR_UPP_RU = "Р”РёСЂРµРєС‚РѕСЂ Р®РџРџ"
-STATUS_LAWYER_PRIMARY_RU = "Р®СЂРёСЃС‚ РїРёСЂРІРёС‡РЅРёРє"
-STATUS_ADMIN_RU = "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ"
-STATUS_MANAGER_RU = "РњРµРЅРµРґР¶РµСЂ"
-STATUS_DIRECTOR_KC_RU = "Р”РёСЂРµРєС‚РѕСЂ РљР¦"
+STATUS_DIRECTOR_UPP_RU = "Директор ЮПП"
+STATUS_LAWYER_PRIMARY_RU = "Юрист пирвичник"
+STATUS_ADMIN_RU = "Администратор"
+STATUS_MANAGER_RU = "Менеджер"
+STATUS_DIRECTOR_KC_RU = "Директор КЦ"
 
 
 def _status_matches(value, *targets):
@@ -67,25 +67,25 @@ def _can_manage_office_booking(user):
     return _status_matches(
         user.status,
         STATUS_LAWYER_PRIMARY_RU,
-        "Р”РёСЂРµРєС‚РѕСЂ Р®РџРџ",
-        "Р”РёСЂРµРєС‚РѕСЂ РљР¦",
-        "РћРїРµСЂР°С‚РѕСЂ",
-        "РњРµРЅРµРґР¶РµСЂ",
-        "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ",
+        "Директор ЮПП",
+        "Директор КЦ",
+        "Оператор",
+        "Менеджер",
+        "Администратор",
     )
 
 
 def _can_choose_office_lawyer(user):
-    return _status_matches(user.status, "Р”РёСЂРµРєС‚РѕСЂ Р®РџРџ", "Р”РёСЂРµРєС‚РѕСЂ РљР¦", "РћРїРµСЂР°С‚РѕСЂ", "РњРµРЅРµРґР¶РµСЂ", "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ")
+    return _status_matches(user.status, "Директор ЮПП", "Директор КЦ", "Оператор", "Менеджер", "Администратор")
 
 
 @login_required
 def smart_calendar(request):
     if request.user.status == STATUS_OP:
-        messages.warning(request, "Р”РѕСЃС‚СѓРї Рє РєР°Р»РµРЅРґР°СЂСЋ РѕРіСЂР°РЅРёС‡РµРЅ")
+        messages.warning(request, "Доступ к календарю ограничен")
         return redirect("home")
     if _is_representative_role(request.user):
-        messages.info(request, "Р”Р»СЏ РІР°С€РµР№ СЂРѕР»Рё РґРѕСЃС‚СѓРїРµРЅ РєР°Р»РµРЅРґР°СЂСЊ СЃСѓРґРѕРІ Рё РёРЅСЃС‚Р°РЅС†РёР№")
+        messages.info(request, "Для вашей роли доступен календарь судов и инстанций")
         return redirect("representative_calendar")
 
     selected_date = datetime.today().date()
@@ -113,13 +113,13 @@ def smart_calendar(request):
     prev_date = selected_date - timedelta(days=1)
     next_date = selected_date + timedelta(days=1)
 
+    is_operator = _status_matches(request.user.status, "Оператор")
     can_view_all_office_bookings = _status_matches(
         request.user.status,
         "Администратор",
         "Менеджер",
         "Директор ЮПП",
         "Директор КЦ",
-        "Оператор",
     )
     can_view_all_call_bookings = _status_matches(request.user.status, "Администратор", "Директор ЮПП", "Менеджер")
 
@@ -151,6 +151,14 @@ def smart_calendar(request):
             employees=request.user.id,
         ).order_by("time")
         lawyers = lawyers.filter(id=request.user.id)
+    elif is_operator:
+        bookings = Booking.objects.filter(
+            date=selected_date,
+            companys=request.user.companys,
+            felial=request.user.felial,
+            client__employees_KC=request.user.username,
+        ).order_by("time")
+        call_bookings = CallBooking.objects.none()
     else:
         bookings = Booking.objects.filter(
             date=selected_date,
@@ -190,7 +198,7 @@ def smart_calendar(request):
 @login_required
 def representative_calendar(request):
     if not _is_representative_role(request.user):
-        messages.warning(request, "Р”РѕСЃС‚СѓРї Рє РєР°Р»РµРЅРґР°СЂСЋ СЃСѓРґРѕРІ Рё РёРЅСЃС‚Р°РЅС†РёР№ РѕРіСЂР°РЅРёС‡РµРЅ")
+        messages.warning(request, "Доступ к календарю судов и инстанций ограничен")
         return redirect("home")
 
     selected_date = datetime.today().date()
@@ -230,7 +238,7 @@ def representative_calendar(request):
 @login_required
 def add_representative_event(request, pk):
     if request.user.status not in _status_variants(STATUS_DIRECTOR_REP):
-        messages.warning(request, "РќР°Р·РЅР°С‡Р°С‚СЊ РїСЂРµРґСЃС‚Р°РІРёС‚РµР»СЏ РјРѕР¶РµС‚ С‚РѕР»СЊРєРѕ РґРёСЂРµРєС‚РѕСЂ РїСЂРµРґСЃС‚Р°РІРёС‚РµР»РµР№")
+        messages.warning(request, "Назначать представителя может только директор представителей")
         return redirect("representative_calendar")
 
     selected_date = pk
@@ -252,7 +260,7 @@ def add_representative_event(request, pk):
             companys=request.user.companys,
         ).exists()
         if exists_for_rep:
-            messages.warning(request, "РЈ РІС‹Р±СЂР°РЅРЅРѕРіРѕ РїСЂРµРґСЃС‚Р°РІРёС‚РµР»СЏ СѓР¶Рµ РµСЃС‚СЊ Р·Р°РїРёСЃСЊ РЅР° СЌС‚Рѕ РІСЂРµРјСЏ")
+            messages.warning(request, "У выбранного представителя уже есть запись на это время")
             return redirect("representative_calendar")
 
         event.companys = request.user.companys
@@ -260,7 +268,7 @@ def add_representative_event(request, pk):
         event.date = selected_date
         event.registrar = request.user
         event.save()
-        messages.success(request, "Р—Р°РїРёСЃСЊ РІ СЃСѓРґ/РёРЅСЃС‚Р°РЅС†РёСЋ СѓСЃРїРµС€РЅРѕ СЃРѕР·РґР°РЅР°")
+        messages.success(request, "Запись в суд/инстанцию успешно создана")
         return redirect("representative_calendar")
 
     return render(request, "add_representative_event.html", {"form": form})
@@ -269,12 +277,12 @@ def add_representative_event(request, pk):
 @login_required
 def add_call_event(request, pk):
     if not _can_manage_call_booking(request.user):
-        messages.warning(request, "РќР°Р·РЅР°С‡Р°С‚СЊ СЃРѕР·РІРѕРЅ РјРѕР¶РµС‚ С‚РѕР»СЊРєРѕ СЋСЂРёСЃС‚ РїРµСЂРІРёС‡РЅРёРє РёР»Рё РґРёСЂРµРєС‚РѕСЂ Р®РџРџ")
+        messages.warning(request, "Назначать созвон может только юрист первичник или директор ЮПП")
         return redirect("record", pk=pk)
 
     record = get_object_or_404(Record, id=pk, companys=request.user.companys)
     if request.user.felial_id and record.felial_id and request.user.felial_id != record.felial_id:
-        messages.warning(request, "РќРµС‚ РґРѕСЃС‚СѓРїР° Рє Р·Р°СЏРІРєРµ РґСЂСѓРіРѕРіРѕ С„РёР»РёР°Р»Р°")
+        messages.warning(request, "Нет доступа к заявке другого филиала")
         return redirect("record", pk=pk)
 
     form = AddCallEventForm(
@@ -302,7 +310,7 @@ def add_call_event(request, pk):
             employees=event.employees,
         ).exists()
         if has_office_conflict or has_call_conflict:
-            messages.warning(request, "РЈ РІС‹Р±СЂР°РЅРЅРѕРіРѕ СЋСЂРёСЃС‚Р° СѓР¶Рµ РµСЃС‚СЊ СЃРѕР±С‹С‚РёРµ РЅР° СЌС‚Рѕ РІСЂРµРјСЏ")
+            messages.warning(request, "У выбранного юриста уже есть событие на это время")
             return render(request, "add_call_event.html", {"form": form, "record": record})
 
         event.client = record
@@ -310,7 +318,7 @@ def add_call_event(request, pk):
         event.felial = record.felial or request.user.felial
         event.registrar = request.user
         event.save()
-        messages.success(request, "РЎРѕР·РІРѕРЅ СѓСЃРїРµС€РЅРѕ РЅР°Р·РЅР°С‡РµРЅ")
+        messages.success(request, "Созвон успешно назначен")
         return redirect("record", pk=record.id)
 
     return render(request, "add_call_event.html", {"form": form, "record": record})
@@ -319,7 +327,7 @@ def add_call_event(request, pk):
 @login_required
 def add_office_booking(request, pk):
     if not _can_manage_office_booking(request.user):
-        messages.warning(request, "РќРµРґРѕСЃС‚Р°С‚РѕС‡РЅРѕ РїСЂР°РІ РґР»СЏ Р·Р°РїРёСЃРё РІ РѕС„РёСЃ")
+        messages.warning(request, "Недостаточно прав для записи в офис")
         return redirect("record", pk=pk)
 
     record = get_object_or_404(Record, id=pk, companys=request.user.companys)
@@ -335,7 +343,7 @@ def add_office_booking(request, pk):
             event.employees = request.user
 
         if Booking.objects.filter(client_id=record.id, companys=request.user.companys).exists():
-            messages.warning(request, "Р­С‚РѕС‚ РєР»РёРµРЅС‚ СѓР¶Рµ Р·Р°РїРёСЃР°РЅ РІ РѕС„РёСЃ, СѓРґР°Р»РёС‚Рµ СЃС‚Р°СЂСѓСЋ Р·Р°РїРёСЃСЊ РїРµСЂРµРґ РЅРѕРІРѕР№")
+            messages.warning(request, "Этот клиент уже записан в офис, удалите старую запись перед новой")
             return redirect("record", pk=record.id)
 
         has_office_conflict = Booking.objects.filter(
@@ -353,7 +361,7 @@ def add_office_booking(request, pk):
             employees=event.employees,
         ).exists()
         if has_office_conflict or has_call_conflict:
-            messages.warning(request, "РЈ РІС‹Р±СЂР°РЅРЅРѕРіРѕ СЋСЂРёСЃС‚Р° СѓР¶Рµ РµСЃС‚СЊ СЃРѕР±С‹С‚РёРµ РЅР° СЌС‚Рѕ РІСЂРµРјСЏ")
+            messages.warning(request, "У выбранного юриста уже есть событие на это время")
             return render(request, "add_office_booking.html", {"form": form, "record": record})
 
         event.client = record
@@ -361,7 +369,7 @@ def add_office_booking(request, pk):
         event.felial = record.felial or request.user.felial
         event.registrar = request.user
         event.save()
-        messages.success(request, "РљР»РёРµРЅС‚ СѓСЃРїРµС€РЅРѕ Р·Р°РїРёСЃР°РЅ РІ РѕС„РёСЃ")
+        messages.success(request, "Клиент успешно записан в офис")
         return redirect("record", pk=record.id)
 
     return render(request, "add_office_booking.html", {"form": form, "record": record})
@@ -371,7 +379,7 @@ def add_office_booking(request, pk):
 def delete_come(request, pk):
     del_come = get_object_or_404(Booking, client_id=pk, companys=request.user.companys)
     del_come.delete()
-    messages.success(request, "Р’С‹ СѓСЃРїРµС€РЅРѕ СѓРґР°Р»РёР»Рё Р·Р°РїРёСЃСЊ РЅР° РїСЂРёРµРј")
+    messages.success(request, "Вы успешно удалили запись на прием")
     return redirect("home")
 
 
@@ -389,4 +397,3 @@ def come_False(request, pk):
     bookin.come = 0
     bookin.save()
     return redirect("home")
-

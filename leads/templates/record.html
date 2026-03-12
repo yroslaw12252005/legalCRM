@@ -606,7 +606,7 @@
     {% if user.status == "Директор ЮПП" or user.status == "Администратор"%}
       <a href="{% url 'to_representative' record.id %}" class="btn btn-primary">Передать представителям</a>
     {% endif %}
-    {% if user.status == "Юрист пирвичник" or user.status == "Директор ЮПП" or user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Менеджер" or user.status == "Администратор" %}
+    {% if record.status == "Запись в офис" and user.status == "Юрист пирвичник" or record.status == "Запись в офис" and user.status == "Директор ЮПП" or record.status == "Запись в офис" and user.status == "Директор КЦ" or record.status == "Запись в офис" and user.status == "Оператор" or record.status == "Запись в офис" and user.status == "Менеджер" or record.status == "Запись в офис" and user.status == "Администратор" %}
       <a href="{% url 'add_office_booking' record.id %}" class="btn btn-primary">Запись в офис</a>
     {% endif %}
     {% if user.status == "Директор ЮПП" or user.status == "Юрист пирвичник" %}
