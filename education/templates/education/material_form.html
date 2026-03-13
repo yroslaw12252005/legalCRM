@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="mb-3">
+    <a href="{% url 'education_list' %}" class="btn btn-sm btn-outline-secondary">Назад</a>
+  </div>
+
+  <h3 class="mb-3">{% if material %}Редактировать материал{% else %}Добавить материал{% endif %}</h3>
+
+  <form method="post" enctype="multipart/form-data" class="card card-body">
+    {% csrf_token %}
+    <div class="mb-3">
+      {{ form.title.label_tag }}
+      {{ form.title }}
+      {% if form.title.errors %}
+        <div class="text-danger small">{{ form.title.errors }}</div>
+      {% endif %}
+    </div>
+    <div class="mb-3">
+      {{ form.body.label_tag }}
+      {{ form.body }}
+      {% if form.body.errors %}
+        <div class="text-danger small">{{ form.body.errors }}</div>
+      {% endif %}
+    </div>
+    <div class="mb-3">
+      {{ form.document.label_tag }}
+      {{ form.document }}
+      {% if form.document.errors %}
+        <div class="text-danger small">{{ form.document.errors }}</div>
+      {% endif %}
+    </div>
+    <div class="mb-3">
+      {{ form.category.label_tag }}
+      {{ form.category }}
+      {% if form.category.errors %}
+        <div class="text-danger small">{{ form.category.errors }}</div>
+      {% endif %}
+    </div>
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+  </form>
+</div>
+{% endblock content %}

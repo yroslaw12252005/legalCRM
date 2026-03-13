@@ -54,7 +54,8 @@ INSTALLED_APPS = [
     'landing',
     "client",
     "desktop",
-    "call_recording"
+    "call_recording",
+    "education"
 ]
 
 MIDDLEWARE = [

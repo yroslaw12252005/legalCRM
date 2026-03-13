@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
+    <h3 class="mb-0">База знаний</h3>
+    {% if user.status == "Администратор" %}
+      <div class="d-flex gap-2">
+        <a class="btn btn-outline-primary" href="{% url 'education_category_add' %}">Добавить категорию</a>
+        <a class="btn btn-primary" href="{% url 'education_add' %}">Добавить материал</a>
+      </div>
+    {% endif %}
+  </div>
+
+  <form class="row g-2 mb-4" method="get">
+    <div class="col-12 col-lg-6">
+      <input
+        type="text"
+        name="q"
+        class="form-control"
+        placeholder="Поиск по ключевым словам"
+        value="{{ query }}"
+      />
+    </div>
+    <div class="col-12 col-lg-4">
+      <select name="category" class="form-select">
+        <option value="">Все категории</option>
+        {% for category in categories %}
+          <option value="{{ category.id }}" {% if selected_category == category.id|stringformat:"s" %}selected{% endif %}>
+            {{ category.name }}
+          </option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="col-12 col-lg-2">
+      <button class="btn btn-outline-primary w-100" type="submit">Найти</button>
+    </div>
+  </form>
+
+  {% if materials %}
+    <div class="row g-3">
+      {% for material in materials %}
+        <div class="col-12 col-lg-6">
+          <div class="card h-100">
+            <div class="card-body">
+              <h5 class="card-title mb-1">
+                <a href="{% url 'education_detail' material.id %}" class="text-decoration-none">
+                  {{ material.title }}
+                </a>
+              </h5>
+              <div class="text-muted small mb-2">
+                Категория: {{ material.category.name }}
+                {% if material.created_at %} • {{ material.created_at|date:"d.m.Y" }}{% endif %}
+              </div>
+              {% if material.body %}
+                <p class="card-text">{{ material.body|truncatechars:200 }}</p>
+              {% endif %}
+              <a href="{% url 'education_detail' material.id %}" class="btn btn-sm btn-outline-secondary">
+                Открыть
+              </a>
+              {% if material.document %}
+                <span class="badge bg-light text-dark ms-2">Документ</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="alert alert-info">Материалы не найдены.</div>
+  {% endif %}
+</div>
+{% endblock content %}

@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="mb-3">
+    <a href="{% url 'education_list' %}" class="btn btn-sm btn-outline-secondary">Назад</a>
+  </div>
+
+  <h3 class="mb-3">Добавить категорию</h3>
+
+  <form method="post" class="card card-body">
+    {% csrf_token %}
+    <div class="mb-3">
+      {{ form.name.label_tag }}
+      {{ form.name }}
+      {% if form.name.errors %}
+        <div class="text-danger small">{{ form.name.errors }}</div>
+      {% endif %}
+    </div>
+    <button type="submit" class="btn btn-primary">Сохранить</button>
+  </form>
+</div>
+{% endblock content %}

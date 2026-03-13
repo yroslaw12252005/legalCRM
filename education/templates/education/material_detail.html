@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="mb-3 d-flex gap-2">
+    <a href="{% url 'education_list' %}" class="btn btn-sm btn-outline-secondary">Назад</a>
+    {% if user.status == "Администратор" %}
+      <a href="{% url 'education_edit' material.id %}" class="btn btn-sm btn-outline-primary">Редактировать</a>
+      <a href="{% url 'education_delete' material.id %}" class="btn btn-sm btn-outline-danger">Удалить</a>
+    {% endif %}
+  </div>
+
+  <h2 class="mb-2">{{ material.title }}</h2>
+  <div class="text-muted mb-3">
+    Категория: {{ material.category.name }}
+    {% if material.created_at %} • {{ material.created_at|date:"d.m.Y" }}{% endif %}
+  </div>
+
+  {% if material.body %}
+    <div class="mb-4" style="white-space: pre-wrap;">{{ material.body }}</div>
+  {% endif %}
+
+  {% if material.document %}
+    <div class="card">
+      <div class="card-body">
+        <div class="d-flex align-items-center justify-content-between">
+          <div>
+            <div class="fw-semibold">Документ</div>
+            <div class="text-muted small">{{ material.document.name }}</div>
+          </div>
+          <a class="btn btn-primary" href="{{ material.document.url }}" download>
+            Скачать файл
+          </a>
+        </div>
+      </div>
+    </div>
+  {% endif %}
+</div>
+{% endblock content %}

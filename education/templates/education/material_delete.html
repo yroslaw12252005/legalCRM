@@ -1,0 +1,20 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="mb-3">
+    <a href="{% url 'education_detail' material.id %}" class="btn btn-sm btn-outline-secondary">Назад</a>
+  </div>
+
+  <div class="card">
+    <div class="card-body">
+      <h4 class="mb-3">Удалить материал?</h4>
+      <p class="mb-4">Материал: <strong>{{ material.title }}</strong></p>
+      <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">Удалить</button>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock content %}
