@@ -31,7 +31,7 @@ def companys(request):
         leads = len(Record.objects.filter(companys=company.id))
 
         # Число закрытх сделок
-        try_leads = len(Record.objects.filter(companys=company.id, status="Акт"))
+        try_leads = len(Record.objects.filter(companys=company.id, status="Договор"))
 
         # Число сделок в работе
         in_work_leads = leads-try_leads

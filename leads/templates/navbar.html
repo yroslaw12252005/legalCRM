@@ -123,6 +123,12 @@ $(document).ready(function() {
                 <li>
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'brak' %}"><img src="{% static 'img/brak.png' %}" width="28" alt=""> Бракованные сделки</a></span>
                 </li>
+                            <li>
+                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'reg' %}"><img src="{% static 'img/add_user.png' %}" alt=""> Добавить пользователя</a></span>
+                </li>
+                            <li>
+                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'employees' %}"><img src="{% static 'img/employee.png' %}" width="28" alt=""> Пользователи</a></span>
+                </li>
             {% endif %}
 
             {% if user.status == "Юрист пирвичник" %}
@@ -159,6 +165,7 @@ $(document).ready(function() {
                 <li>
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
                 </li>
+
             {% endif %}
 
             {% if user.status == "Представитель" %}
