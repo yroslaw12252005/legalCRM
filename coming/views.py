@@ -23,7 +23,7 @@ class AppointmentsView(ListView):
 class AddAppointmentView(CreateView):
     form_class = AddComing
     template_name = "add_appointment.html"
-    success_url = reverse_lazy('home')
+    success_url = reverse_lazy('all_leads')
 
 class BaseComeView(View):
     come_value = None

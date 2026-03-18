@@ -1,6 +1,6 @@
 <div class="col-md-6 offset-md-3">
         <h5>Добро пожаловать в legaCRM - <br>CRM для настоящих юристов</h5>
-        <form action="{% url 'home' %}" method="post">
+        <form action="{% url 'all_leads' %}" method="post">
             {% csrf_token %}
             <div class="mb-3">
             <input type="text" class="form-control" name="username" placeholder="Имя" required>

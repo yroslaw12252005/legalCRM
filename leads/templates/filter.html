@@ -126,14 +126,14 @@ background-color: #212529;
     Фильтр
   </button>
   <ul class="dropdown-menu">
-    <li><a class="dropdown-item" href="{% url 'filter' 'Новая' %}">Новая</a> </li>
-    <li><a class="dropdown-item" href="{% url 'filter' 'Брак' %}">Брак</a> </li>
-    <li><a class="dropdown-item" href="{% url 'filter' 'Недозвон' %}">Недозвон</a> </li>
-    <li><a class="dropdown-item" href="{% url 'filter' 'Перезвон' %}">Перезвон</a> </li>
-    <li><a class="dropdown-item" href="{% url 'filter' 'Запись' %}">Запись</a> </li>
-    <li><a class="dropdown-item" href="{% url 'filter' 'Отказ' %}">Отказ</a> </li>
+    <li><a class="dropdown-item" href="{% url 'filter_by_status' 'Новая' %}">Новая</a> </li>
+    <li><a class="dropdown-item" href="{% url 'filter_by_status' 'Брак' %}">Брак</a> </li>
+    <li><a class="dropdown-item" href="{% url 'filter_by_status' 'Недозвон' %}">Недозвон</a> </li>
+    <li><a class="dropdown-item" href="{% url 'filter_by_status' 'Перезвон' %}">Перезвон</a> </li>
+    <li><a class="dropdown-item" href="{% url 'filter_by_status' 'Запись' %}">Запись</a> </li>
+    <li><a class="dropdown-item" href="{% url 'filter_by_status' 'Отказ' %}">Отказ</a> </li>
     <li><hr class="dropdown-divider"></li>
-    <li><a class="dropdown-item" href="{% url 'home'%}">Все</a></li>
+    <li><a class="dropdown-item" href="{% url 'all_leads' %}">Все</a></li>
   </ul>
     <table class="table table-striped table-bordered table-hover">
       <thead class="table-success">
@@ -304,7 +304,7 @@ tasksListElement.addEventListener(`dragover`, (evt) => {
     {% else %}
     <div class="col-md-6 offset-md-3">
         <h5>Добро пожаловать в legaCRM - <br>CRM для настоящих юристов</h5>
-        <form action="{% url 'home' %}" method="post">
+        <form action="{% url 'all_leads' %}" method="post">
             {% csrf_token %}
             <div class="mb-3">
             <input type="text" class="form-control" name="username" placeholder="Имя" required>

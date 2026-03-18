@@ -421,6 +421,23 @@
                 <div class="stat-label">Статус заявки</div>
                 <div class="status-badge">{{ record.status }}</div>
             </div>
+            <div class="stat-item">
+                <div class="stat-label">Оплата онлайн</div>
+                <div class="stat-value">
+                    {% if record.status == "Онлайн" %}
+                        {% if record.paid_online == 1 %}
+                            Оплачено
+                        {% else %}
+                            Не оплачено
+                        {% endif %}
+                    {% else %}
+                        Не требуется
+                    {% endif %}
+                </div>
+                {% if record.status == "Онлайн" and record.paid_online == 0 %}
+                    <a href="{% url 'paid_online' record.id %}" class="btn btn-success" style="margin-top: 0.8rem;">Оплачено</a>
+                {% endif %}
+            </div>
             {% if user.status == "Администратор" or user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Менеджер" %}
             <form method="post">
                 {% csrf_token %}
@@ -594,7 +611,7 @@
         </div>
     {% endif %}
         <div class="action-buttons">
-             <a href="{% url 'home' %}" class="btn btn-secondary">Вернуться к списку</a>
+             <a href="{% url 'all_leads' %}" class="btn btn-secondary">Вернуться к списку</a>
     {% if user.status == "Администратор"%}
 
       <a href="{% url 'delete_record' record.id %}" class="btn btn-danger">Удалить</a>
@@ -673,7 +690,7 @@
                     </form>
     </div>
 
-       <a href="{% url 'home' %}" class="btn btn-secondary">Вернуться к списку</a>
+       <a href="{% url 'all_leads' %}" class="btn btn-secondary">Вернуться к списку</a>
     {% if user.status == "Администратор"%}
 
       <a href="{% url 'delete_record' record.id %}" class="btn btn-danger">Удалить</a>
@@ -682,7 +699,7 @@
     {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
       <a href="{% url 'in_work' record.id %}" class="btn btn-primary">В работу</a>
     {% endif %}
-      <a href="{% url 'home' %}" class="btn btn-primary">Отмена</a>
+      <a href="{% url 'all_leads' %}" class="btn btn-primary">Отмена</a>
 
   </div>
 
@@ -735,7 +752,7 @@
         </div>
     </div>
 
-      <a href="{% url 'home' %}" class="btn btn-secondary">Вернуться к списку</a>
+      <a href="{% url 'all_leads' %}" class="btn btn-secondary">Вернуться к списку</a>
     {% if user.status == "Администратор"%}
 
       <a href="{% url 'delete_record' record.id %}" class="btn btn-danger">Удалить</a>
@@ -744,7 +761,7 @@
     {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
       <a href="{% url 'in_work' record.id %}" class="btn btn-primary">В работу</a>
     {% endif %}
-      <a href="{% url 'home' %}" class="btn btn-secondary">Отмена</a>
+      <a href="{% url 'all_leads' %}" class="btn btn-secondary">Отмена</a>
 -->
 {% endif %}
 {% endblock content %}

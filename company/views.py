@@ -211,7 +211,7 @@ def reg_admin_user(request, id_company):
             user = authenticate(username=username, password=password)
             login(request, user)
             messages.success(request, "Пользователь зарегестрирован")
-            return redirect("home")
+            return redirect("all_leads")
         else:
             messages.error(request, "An error occured during registration")
             

@@ -88,20 +88,20 @@ $(document).ready(function() {
 
             {% if user.status == "Директор КЦ" %}
                 <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'desktop' %}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
-                </li>
-                <li class="active">
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
                 </li>
                 <li>
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
                 </li>
+                <li>
+                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'reg' %}"><img src="{% static 'img/add_user.png' %}" alt=""> Добавить пользователя</a></span>
+                </li>
+                <li>
+                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'employees' %}"><img src="{% static 'img/employee.png' %}" width="28" alt=""> Пользователи</a></span>
+                </li>
             {% endif %}
 
             {% if user.status == "Оператор" %}
-                <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'desktop' %}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
-                </li>
                 <li class="active">
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
                 </li>
@@ -111,9 +111,6 @@ $(document).ready(function() {
             {% endif %}
 
             {% if user.status == "Директор ЮПП" %}
-                <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'desktop' %}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
-                </li>
                 <li class="active">
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
                 </li>
@@ -133,9 +130,6 @@ $(document).ready(function() {
 
             {% if user.status == "Юрист пирвичник" %}
                 <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'desktop' %}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
-                </li>
-                <li class="active">
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
                 </li>
                 <li>
@@ -145,9 +139,6 @@ $(document).ready(function() {
 
             {% if user.status == "ОП" %}
                 <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'desktop' %}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
-                </li>
-                <li class="active">
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
                 </li>
                 <li>
@@ -156,9 +147,6 @@ $(document).ready(function() {
             {% endif %}
 
             {% if user.status == "Директор представителей" %}
-                <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'desktop' %}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
-                </li>
                 <li class="active">
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
                 </li>
@@ -170,9 +158,6 @@ $(document).ready(function() {
 
             {% if user.status == "Представитель" %}
                 <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'desktop' %}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
-                </li>
-                <li class="active">
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
                 </li>
                 <li>
@@ -182,9 +167,6 @@ $(document).ready(function() {
 
             {% if user.status == "Менеджер" %}
                 <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'desktop' %}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
-                </li>
-                <li class="active">
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
                 </li>
                 <li>
@@ -193,9 +175,6 @@ $(document).ready(function() {
             {% endif %}
 
             {% if user.status == "Администратор" %}
-                <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'desktop' %}"><img src="{% static 'img/leads.png' %}" alt=""> Рабочий стол</a></span>
-                </li>
                 <li class="active">
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
                 </li>

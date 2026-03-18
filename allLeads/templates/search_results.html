@@ -60,6 +60,21 @@
     table.crm-table tr:last-child td {
       border-bottom: none;
     }
+    table.crm-table tbody tr.crm-row-paid-online td {
+      border-top: 4px solid #FFD400;
+      border-bottom: 4px solid #FFD400;
+      box-shadow: none;
+    }
+    table.crm-table tbody tr.crm-row-paid-online td:first-child {
+      border-left: 4px solid #FFD400;
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+    }
+    table.crm-table tbody tr.crm-row-paid-online td:last-child {
+      border-right: 4px solid #FFD400;
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
     .crm-status {
       color: #2563eb;
       font-weight: 600;
@@ -142,7 +157,7 @@
         {% for record in object_list %}
           {% if user.companys.id == record.companys.id %}
             {% if user.status == "Директор КЦ" and record.in_work == 0 or user.status == "Директор КЦ" and record.in_work == 1 or user.status == "Директор ЮПП" and record.in_work == 1 or user.status == "Юрист пирвичник" and record.employees_UPP == user.username or user.status == "ОП" and record.employees_UPP == user.username or user.status == "Директор представителей" and record.representative == 1 or user.status == "Представитель" and record.employees_REP == user.username and record.representative == 1 or user.status == "Оператор" and record.employees_KC == user.username or user.status == "Менеджер" or user.status == "Администратор"%}
-              <tr>
+              <tr class="{% if record.paid_online == 1 and (record.status == 'Онлайн' or record.status == 'РћРЅР»Р°Р№РЅ') %}crm-row-paid-online{% endif %}">
                 <td>
                   <a href="{% url 'leads:record' record.id %}" style="text-decoration: none; color:#595959;">
                     {{ record.name }}

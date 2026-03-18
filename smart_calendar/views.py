@@ -83,7 +83,7 @@ def _can_choose_office_lawyer(user):
 def smart_calendar(request):
     if request.user.status == STATUS_OP:
         messages.warning(request, "Доступ к календарю ограничен")
-        return redirect("home")
+        return redirect("all_leads")
     if _is_representative_role(request.user):
         messages.info(request, "Для вашей роли доступен календарь судов и инстанций")
         return redirect("representative_calendar")
@@ -199,7 +199,7 @@ def smart_calendar(request):
 def representative_calendar(request):
     if not _is_representative_role(request.user):
         messages.warning(request, "Доступ к календарю судов и инстанций ограничен")
-        return redirect("home")
+        return redirect("all_leads")
 
     selected_date = datetime.today().date()
     if "date" in request.GET:
@@ -380,7 +380,7 @@ def delete_come(request, pk):
     del_come = get_object_or_404(Booking, client_id=pk, companys=request.user.companys)
     del_come.delete()
     messages.success(request, "Вы успешно удалили запись на прием")
-    return redirect("home")
+    return redirect("all_leads")
 
 
 @login_required
@@ -388,7 +388,7 @@ def come_True(request, pk):
     bookin = get_object_or_404(Booking, client_id=pk, companys=request.user.companys)
     bookin.come = 1
     bookin.save()
-    return redirect("home")
+    return redirect("all_leads")
 
 
 @login_required
@@ -396,4 +396,4 @@ def come_False(request, pk):
     bookin = get_object_or_404(Booking, client_id=pk, companys=request.user.companys)
     bookin.come = 0
     bookin.save()
-    return redirect("home")
+    return redirect("all_leads")

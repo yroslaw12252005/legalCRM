@@ -32,6 +32,7 @@ class Record(models.Model):
     in_work = models.BooleanField(default=False)
     representative = models.BooleanField(default=False)
     doc = models.URLField(max_length=200, null=True)
+    paid_online = models.PositiveSmallIntegerField(default=0, verbose_name="Paid Online")
     def __str__(self):
 
 

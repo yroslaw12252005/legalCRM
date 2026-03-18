@@ -30,4 +30,4 @@ def delete_task(request, pk):
     del_task = get_object_or_404(ToDoList, id=pk, user=request.user.id)
     del_task.delete()
     messages.success(request, "Вы успешно удалили задачу")
-    return redirect("home")
+    return redirect("all_leads")

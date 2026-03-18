@@ -16,7 +16,7 @@ def add_felial(request):
         add_felial.companys = request.user.companys
         add_felial.save()
         messages.success(request, f"Филиал {add_felial.title} успешно создан")
-        return redirect("home")
+        return redirect("all_leads")
     return render(request, "add_felial.html", {"form": form})
 
 
@@ -29,4 +29,4 @@ def felials(request):
 @login_required
 def felial_info(request, id_feleal):
     get_recrds_felial = Record.objects.filter(companys=request.user.companys, felial=id_feleal)
-    return render(request, "home.html", {"records": get_recrds_felial})
+    return render(request, "all_leads.html", {"records": get_recrds_felial})

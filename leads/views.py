@@ -1,4 +1,4 @@
-﻿from django.shortcuts import redirect, render, get_object_or_404
+from django.shortcuts import redirect, render, get_object_or_404
 import os
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
@@ -199,7 +199,7 @@ for _status in DOCUMENT_ALLOWED_STATUSES:
 ASSIGN_KC_ALLOWED_STATUSES = {"Директор КЦ", "Администратор"}
 ASSIGN_UPP_ALLOWED_STATUSES = {"Директор ЮПП", "Администратор"}
 ASSIGN_REP_ALLOWED_STATUSES = {"Директор представителей", "Администратор"}
-EDIT_RECORD_ALLOWED_STATUSES = {"Директор ЮПП", "Директор КЦ", "Администратор", "Оператор"}
+EDIT_RECORD_ALLOWED_STATUSES = {"Директор ЮПП", "Директор КЦ", "Администратор", "Оператор", "Юрист пирвичник"}
 
 EDIT_RECORD_ALLOWED_STATUS_VARIANTS = set()
 for _status in EDIT_RECORD_ALLOWED_STATUSES:
@@ -236,52 +236,9 @@ def _can_assign_rep(user):
 def _can_edit_record_main(user):
     return user.status in EDIT_RECORD_ALLOWED_STATUS_VARIANTS
 
-def home(request):
-    if not request.user.is_authenticated:
-        if request.method == "POST":
-            username = request.POST["username"]
-            password = request.POST["password"]
-            user = authenticate(request, username=username, password=password)
-            if user is not None:
-                login(request, user)
-                return redirect("home")
-            else:
-                messages.warning(request, "Не правильный логин или пароль")
-                return redirect("home")
-        else:
-            return render(request, "home.html")
-    current_time = datetime.now()
-    year = current_time.year
-    month = current_time.month
-    day = current_time.day
-    now = f"{year}-{month}-{day}"
-    todolist = ToDoList.objects.all()
-    if request.user.status == "Директор КЦ" or request.user.status == "Оператор":
-        get_records = Record.objects.filter(companys=request.user.companys)
-    else:
-        get_records = Record.objects.filter(companys=request.user.companys, felial=request.user.felial)
-    user = User.objects.filter(companys=request.user.companys)
-    return render(request, "home.html", {"records": get_records, 'users':user, 'todolist':todolist, "now":now})
-
-def filter(request, status):
-    records = Record.objects.filter(status=status, companys=request.user.companys, felial=request.user.felial)
-    return render(request, "home.html", {"records": records})
-
-def filter_upp(request, filter_upp):
-    records = Record.objects.filter(employees_UPP=filter_upp, companys=request.user.companys, felial=request.user.felial)
-    return render(request, "home.html", {"records": records})
-
-def filter_type(request, type):
-    records = Record.objects.filter(type=type, companys=request.user.companys, felial=request.user.felial)
-    return render(request, "home.html", {"records": records})
-
-def brak(request):
-    records = Record.objects.filter(status="Брак", companys=request.user.companys)
-    return render(request, "home.html", {"records": records})
-
 def logout_user(request):
     logout(request)
-    return redirect("desktop")
+    return redirect("all_leads")
 
 @login_required
 async def record(request, pk):
@@ -477,14 +434,14 @@ def delete_record(request, pk):
     del_record = _record_for_user_or_404(request, pk)
     del_record.delete()
     messages.success(request, "Вы спешно удалил запись")
-    return redirect("home")
+    return redirect("all_leads")
 
 
 async def delete_doc(request, pk):
     can_manage_docs = await can_manage_documents_async(request)
     if not can_manage_docs:
         await sync_to_async(messages.warning, thread_sensitive=True)(request, "Нет прав для удаления документа")
-        return await sync_to_async(redirect, thread_sensitive=True)("home")
+        return await sync_to_async(redirect, thread_sensitive=True)("all_leads")
 
     get_document = sync_to_async(RecordDocument.objects.select_related("record").get)
     delete_document = sync_to_async(lambda instance: instance.delete())
@@ -494,7 +451,7 @@ async def delete_doc(request, pk):
         user_company_id = await get_user_company_id()
         if user_company_id != del_doc.record.companys_id:
             await sync_to_async(messages.warning, thread_sensitive=True)(request, "Нет доступа к документу")
-            return await sync_to_async(redirect, thread_sensitive=True)("home")
+            return await sync_to_async(redirect, thread_sensitive=True)("all_leads")
 
         if del_doc.s3_key:
             await s3_client.delete_file(object_name=del_doc.s3_key)
@@ -506,7 +463,7 @@ async def delete_doc(request, pk):
     except RecordDocument.DoesNotExist:
         sync_messages_error = sync_to_async(messages.error, thread_sensitive=True)
         await sync_messages_error(request, "Документ не найден")
-        return await sync_to_async(redirect, thread_sensitive=True)("home")
+        return await sync_to_async(redirect, thread_sensitive=True)("all_leads")
 
 @login_required
 def add_record(request):
@@ -522,7 +479,7 @@ def add_record(request):
          # Прикрепляется к крмпании
         add_record.save()
         messages.success(request, f"Создана новая заявка {add_record.name}")
-        return redirect("home")
+        return redirect("all_leads")
     return render(request, "add_record.html", {"form": form})
 
 
@@ -598,6 +555,20 @@ def in_work(request, pk):
     return redirect("record", pk=pk)
 
 @login_required
+def paid_online(request, pk):
+    record = _record_for_user_or_404(request, pk)
+    if record.status != "Онлайн":
+        messages.warning(request, "Оплата доступна только для заявок со статусом Онлайн")
+        return redirect("record", pk=pk)
+    if record.paid_online == 1:
+        messages.info(request, "Оплата уже отмечена")
+        return redirect("record", pk=pk)
+    record.paid_online = 1
+    record.save(update_fields=["paid_online"])
+    messages.success(request, "Оплата отмечена")
+    return redirect("record", pk=pk)
+
+@login_required
 def to_representative(request, pk):
     if request.user.status not in ["Директор ЮПП", "Администратор"]:
         messages.warning(request, "Нет прав для передачи в представителей")
@@ -611,10 +582,10 @@ def to_representative(request, pk):
 
 def download_document(request, doc_id):
     if not request.user.is_authenticated:
-        return redirect("home")
+        return redirect("all_leads")
     if not can_manage_documents(request.user):
         messages.warning(request, "Нет прав для скачивания документа")
-        return redirect("home")
+        return redirect("all_leads")
 
     try:
         document = RecordDocument.objects.select_related("record").get(id=doc_id)
@@ -623,7 +594,7 @@ def download_document(request, doc_id):
 
     if request.user.companys_id != document.record.companys_id:
         messages.warning(request, "Нет доступа к документу")
-        return redirect("home")
+        return redirect("all_leads")
 
     if document.s3_key:
         source_url = f"{_s3_public_base_url()}/{quote(document.s3_key, safe='/')}"
@@ -973,3 +944,4 @@ def get_time(request):
         )
     
     return HttpResponse("Метод не разрешён", status=405)
+

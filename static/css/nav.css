@@ -151,6 +151,29 @@ nav {
     transition: color 0.2s ease;
 }
 
+.sidebar-menu a svg {
+    width: 20px;
+    height: 20px;
+    flex: 0 0 auto;
+}
+
+.create-lead-link svg {
+    width: 40px;
+    height: 40px;
+}
+
+.nav-icon-home { color: #38bdf8; }
+.nav-icon-list { color: #a78bfa; }
+.nav-icon-check { color: #34d399; }
+.nav-icon-warning { color: #f59e0b; }
+.nav-icon-user-plus { color: #22d3ee; }
+.nav-icon-users { color: #f472b6; }
+.nav-icon-branch-plus { color: #f97316; }
+.nav-icon-branch { color: #60a5fa; }
+.nav-icon-chart { color: #eab308; }
+.nav-icon-book { color: #10b981; }
+.nav-icon-cta { color: #3b82f6; }
+
 /* Font Awesome icons */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
 /***************************/

@@ -53,7 +53,6 @@ INSTALLED_APPS = [
     'smart_calendar',
     'landing',
     "client",
-    "desktop",
     "call_recording",
     "education"
 ]

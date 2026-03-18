@@ -49,7 +49,7 @@ def calculating_salaries(request, pk):
 def delete_surcharge(request, pk):
     if request.user.status != "Администратор":
         messages.warning(request, "Нет прав для удаления доплаты")
-        return redirect("home")
+        return redirect("all_leads")
     surcharge = get_object_or_404(Surcharge, id=pk, record__companys=request.user.companys)
     record_id = surcharge.record_id
     surcharge.delete()
