@@ -56,6 +56,16 @@ def _base_records_for_user(user):
 
         return Record.objects.filter(companys=user.companys)
 
+    if user.status == STATUS_DIRECTOR_REP:
+        return Record.objects.filter(companys=user.companys, representative=True)
+
+    if user.status == STATUS_REPRESENTATIVE:
+        return Record.objects.filter(
+            companys=user.companys,
+            representative=True,
+            employees_REP=user.username,
+        )
+
     return Record.objects.filter(companys=user.companys, felial=user.felial)
 
 
