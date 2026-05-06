@@ -1,4 +1,4 @@
-{% extends "base.html" %}
+﻿{% extends "base.html" %}
 {% load static %}
 {% block content %}
 
@@ -100,14 +100,17 @@
       transform: translateX(-50%);
       background: #111827;
       color: #fff;
-      display: flex;
+      display: none;
       align-items: center;
       gap: 10px;
       padding: 10px 14px;
       border-radius: 10px;
       box-shadow: 0 10px 24px rgba(0,0,0,0.25);
-      z-index: 999;
+      z-index: 10000;
       flex-wrap: wrap;
+    }
+    .bulk-action-bar.is-visible {
+      display: flex !important;
     }
     .bulk-select {
       min-width: 160px;
@@ -128,6 +131,51 @@
     table.crm-table tbody tr:hover {
       background: #f8fafc;
     }
+    .crm-pagination-wrap {
+      margin: 14px 24px 0;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+    .crm-pagination-info {
+      color: #4b5563;
+      font-size: 13px;
+    }
+    .crm-pagination {
+      display: flex;
+      gap: 6px;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+    .crm-pagination-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 34px;
+      height: 34px;
+      padding: 0 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #374151;
+      background: #fff;
+      font-size: 13px;
+    }
+    .crm-pagination-link:hover {
+      background: #f3f4f6;
+    }
+    .crm-pagination-link.active {
+      background: #2563eb;
+      border-color: #2563eb;
+      color: #fff;
+    }
+    .crm-empty {
+      text-align: center !important;
+      color: #6b7280;
+      padding: 24px 12px !important;
+    }
 </style>
 
 {% if user.is_authenticated %}
@@ -143,11 +191,11 @@
             {% else %}
               <th></th>
             {% endif %}
-            <th>Имя</th>
+            <th>РРјСЏ</th>
             <th>Телефон</th>
             <th>Описание</th>
             {% if user.status == "Администратор"%}
-              <th>Источник</th>
+              <th>РСЃС‚РѕС‡РЅРёРє</th>
             {% endif %}
             <th>Статус</th>
             {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
@@ -167,7 +215,6 @@
         <tbody>
           {% if records %}
             {% for record in records %}
-              {% if user.status == "Директор КЦ" and record.in_work == 0 or user.status == "Директор КЦ" and record.in_work == 1 or user.status == "Директор ЮПП" and record.in_work == 1 or user.status == "Юрист пирвичник" and record.employees_UPP == user.username or user.status == "ОП" and record.employees_UPP == user.username or user.status == "Директор представителей" and record.representative == 1 or user.status == "Представитель" and record.employees_REP == user.username and record.representative == 1 or user.status == "Оператор" and record.employees_KC == user.username or user.status == "Менеджер" and record.in_work == 1 or user.status == "Администратор"%}
                 <tr class="{% if record.paid_online == 1 and record.status == 'Онлайн' %}crm-row-paid-online{% endif %}">
                   {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep %}
                     <td>
@@ -240,15 +287,36 @@
                     <td title="{{ record.employees_REP }}">{{ record.employees_REP|truncatechars:8 }}</td>
                   {% endif %}
                 </tr>
-              {% endif %}
             {% endfor %}
+          {% else %}
+            <tr>
+              <td colspan="10" class="crm-empty">Заявки не найдены</td>
+            </tr>
           {% endif %}
         </tbody>
       </table>
     </div>
+    {% if page_obj %}
+      <div class="crm-pagination-wrap">
+        <div class="crm-pagination-info">
+          Показано {{ records|length }} из {{ total_records }} (страница {{ page_obj.number }} из {{ page_obj.paginator.num_pages }})
+        </div>
+        <div class="crm-pagination">
+          {% if page_obj.has_previous %}
+            <a class="crm-pagination-link" href="?{{ page_query_prefix }}page=1">«</a>
+            <a class="crm-pagination-link" href="?{{ page_query_prefix }}page={{ page_obj.previous_page_number }}">‹</a>
+          {% endif %}
+          <span class="crm-pagination-link active">{{ page_obj.number }}</span>
+          {% if page_obj.has_next %}
+            <a class="crm-pagination-link" href="?{{ page_query_prefix }}page={{ page_obj.next_page_number }}">›</a>
+            <a class="crm-pagination-link" href="?{{ page_query_prefix }}page={{ page_obj.paginator.num_pages }}">»</a>
+          {% endif %}
+        </div>
+      </div>
+    {% endif %}
 
     {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep %}
-      <div class="bulk-action-bar" id="bulkActionBar" style="display: none;">
+      <div class="bulk-action-bar" id="bulkActionBar">
         <span id="selectedCounter">Selected: 0</span>
 
         {% if can_bulk_send_to_work %}
@@ -309,7 +377,7 @@
     function updateSelectionState() {
       const selected = checkboxes.filter((item) => item.checked).length;
       counter.textContent = 'Selected: ' + selected;
-      actionBar.style.display = selected > 0 ? 'flex' : 'none';
+      actionBar.classList.toggle('is-visible', selected > 0);
       if (selectAll) {
         selectAll.checked = selected > 0 && selected === checkboxes.length;
       }
@@ -324,8 +392,10 @@
       });
     }
 
-    checkboxes.forEach((item) => {
-      item.addEventListener('change', updateSelectionState);
+    form.addEventListener('change', function (event) {
+      if (event.target && event.target.classList.contains('record-checkbox')) {
+        updateSelectionState();
+      }
     });
 
     form.addEventListener('submit', function (event) {
@@ -344,7 +414,7 @@
         <form action="{% url 'all_leads' %}" class="authenticated" method="post">
             {% csrf_token %}
             <div class="mb-3">
-                <input type="text" class="form-control" name="username" placeholder="Имя" required>
+                <input type="text" class="form-control" name="username" placeholder="РРјСЏ" required>
             </div>
             <div class="mb-3">
                 <input type="password" class="form-control" name="password" placeholder="Пароль" required>

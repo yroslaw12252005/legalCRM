@@ -1,10 +1,11 @@
-from datetime import date, datetime
+﻿from datetime import date, datetime
 
 
 
 from django.contrib import messages
 
 from django.contrib.auth import authenticate, login
+from django.core.paginator import Paginator
 
 from django.db.models import Q
 
@@ -43,8 +44,10 @@ STATUS_DIRECTOR_REP = "Директор представителей"
 STATUS_REPRESENTATIVE = "Представитель"
 
 LEAD_STATUS_NEW = "Новая"
-
 LEAD_STATUS_OFFICE = "Запись в офис"
+
+
+DEFAULT_RECORDS_PER_PAGE = 100
 
 
 
@@ -71,6 +74,38 @@ def _base_records_for_user(user):
 
 
 
+
+def _visible_records_for_user(records, user):
+
+    if user.status in {STATUS_DIRECTOR_KC, STATUS_ADMIN}:
+
+        return records
+
+    if user.status == STATUS_OPERATOR:
+
+        return records.filter(employees_KC=user.username)
+
+    if user.status == STATUS_DIRECTOR_UPP:
+
+        return records.filter(in_work=True)
+
+    if user.status in {STATUS_LAWYER_PRIMARY, STATUS_OP}:
+
+        return records.filter(employees_UPP=user.username)
+
+    if user.status == STATUS_DIRECTOR_REP:
+
+        return records.filter(representative=True)
+
+    if user.status == STATUS_REPRESENTATIVE:
+
+        return records.filter(representative=True, employees_REP=user.username)
+
+    if user.status == STATUS_MANAGER:
+
+        return records.filter(in_work=True)
+
+    return records
 
 def _current_records_for_user(user):
 
@@ -228,7 +263,7 @@ def all_leads(request):
 
     search_query, selected_employee, selected_topic, selected_status = _parse_filters(request)
 
-    base_records = _base_records_for_user(request.user)
+    base_records = _visible_records_for_user(_base_records_for_user(request.user), request.user)
 
     get_records = base_records
 
@@ -282,8 +317,6 @@ def all_leads(request):
 
     company_id = request.user.companys_id
 
-    users = User.objects.filter(companys_id=company_id)
-
     operators = User.objects.filter(companys_id=company_id, status=STATUS_OPERATOR).order_by("username")
 
     lawyers = User.objects.filter(companys_id=company_id, status__in=[STATUS_LAWYER_PRIMARY, STATUS_OP]).order_by("username")
@@ -299,8 +332,7 @@ def all_leads(request):
     ).order_by("username")
 
     topics = (
-
-        Record.objects.filter(companys_id=company_id)
+        base_records
 
         .exclude(type__isnull=True)
 
@@ -313,8 +345,7 @@ def all_leads(request):
     )
 
     statuses = (
-
-        Record.objects.filter(companys_id=company_id)
+        base_records
 
         .exclude(status__isnull=True)
 
@@ -328,6 +359,25 @@ def all_leads(request):
 
 
 
+    get_records = get_records.only(
+        "id",
+        "name",
+        "phone",
+        "description",
+        "where",
+        "status",
+        "in_work",
+        "employees_KC",
+        "employees_UPP",
+        "employees_REP",
+        "paid_online",
+    )
+    paginator = Paginator(get_records, DEFAULT_RECORDS_PER_PAGE)
+    page_obj = paginator.get_page(request.GET.get("page"))
+    query_params = request.GET.copy()
+    query_params.pop("page", None)
+    query_string = query_params.urlencode()
+
     return render(
 
         request,
@@ -336,9 +386,11 @@ def all_leads(request):
 
         {
 
-            "records": get_records,
-
-            "users": users,
+            "records": page_obj.object_list,
+            "page_obj": page_obj,
+            "total_records": paginator.count,
+            "records_per_page": DEFAULT_RECORDS_PER_PAGE,
+            "page_query_prefix": f"{query_string}&" if query_string else "",
 
             "todolist": todolist,
 
@@ -363,7 +415,7 @@ def all_leads(request):
             "selected_topic": selected_topic,
 
             "selected_status": selected_status,
-"can_bulk_send_to_work": _can_send_to_work(request.user),
+            "can_bulk_send_to_work": _can_send_to_work(request.user),
 
             "can_assign_kc": _can_assign_kc(request.user),
 
@@ -521,7 +573,7 @@ def bulk_in_work(request):
 
     action = request.POST.get("action", "in_work")
 
-    records_for_user = _base_records_for_user(request.user).filter(id__in=selected_ids)
+    records_for_user = _visible_records_for_user(_base_records_for_user(request.user), request.user).filter(id__in=selected_ids)
 
 
 
@@ -696,4 +748,5 @@ def bulk_in_work(request):
     messages.warning(request, "Неизвестное действие")
 
     return redirect("all_leads")
+
 
