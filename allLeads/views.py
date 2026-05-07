@@ -7,7 +7,7 @@ from django.contrib import messages
 from django.contrib.auth import authenticate, login
 from django.core.paginator import Paginator
 
-from django.db.models import Q
+from django.db.models import OuterRef, Q, Subquery
 
 from django.shortcuts import redirect, render
 
@@ -20,6 +20,7 @@ from django.views.generic import ListView
 from accounts.models import User
 
 from leads.models import Record
+from smart_calendar.models import Booking
 
 from todolist.models import ToDoList
 
@@ -48,6 +49,11 @@ LEAD_STATUS_OFFICE = "Запись в офис"
 
 
 DEFAULT_RECORDS_PER_PAGE = 100
+
+
+def _with_booking_come(queryset):
+    booking_come = Booking.objects.filter(client_id=OuterRef("pk")).values("come")[:1]
+    return queryset.annotate(booking_come=Subquery(booking_come))
 
 
 
@@ -263,7 +269,7 @@ def all_leads(request):
 
     search_query, selected_employee, selected_topic, selected_status = _parse_filters(request)
 
-    base_records = _visible_records_for_user(_base_records_for_user(request.user), request.user)
+    base_records = _with_booking_come(_visible_records_for_user(_base_records_for_user(request.user), request.user))
 
     get_records = base_records
 
@@ -535,7 +541,7 @@ class SearchView(ListView):
 
             query_filter |= Q(id=int(query))
 
-        return Record.objects.filter(companys=self.request.user.companys).filter(query_filter)
+        return _with_booking_come(Record.objects.filter(companys=self.request.user.companys).filter(query_filter))
 
 
 

@@ -66,6 +66,36 @@
       border-top-right-radius: 8px;
       border-bottom-right-radius: 8px;
     }
+    table.crm-table tbody tr.crm-row-not-came td {
+      border-top: 4px solid #f8b6b6 !important;
+      border-bottom: 4px solid #f8b6b6 !important;
+      box-shadow: none;
+    }
+    table.crm-table tbody tr.crm-row-not-came td:first-child {
+      border-left: 4px solid #f8b6b6 !important;
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+    }
+    table.crm-table tbody tr.crm-row-not-came td:last-child {
+      border-right: 4px solid #f8b6b6 !important;
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
+    table.crm-table tbody tr.crm-row-came td {
+      border-top: 4px solid #bfeac5 !important;
+      border-bottom: 4px solid #bfeac5 !important;
+      box-shadow: none;
+    }
+    table.crm-table tbody tr.crm-row-came td:first-child {
+      border-left: 4px solid #bfeac5 !important;
+      border-top-left-radius: 8px;
+      border-bottom-left-radius: 8px;
+    }
+    table.crm-table tbody tr.crm-row-came td:last-child {
+      border-right: 4px solid #bfeac5 !important;
+      border-top-right-radius: 8px;
+      border-bottom-right-radius: 8px;
+    }
     table.crm-table th:nth-child(1), table.crm-table td:nth-child(1) { width: 4%; }
     table.crm-table th:nth-child(2), table.crm-table td:nth-child(2) { width: 18%; }
     table.crm-table th:nth-child(3), table.crm-table td:nth-child(3) { width: 12%; }
@@ -215,7 +245,7 @@
         <tbody>
           {% if records %}
             {% for record in records %}
-                <tr class="{% if record.paid_online == 1 and record.status == 'Онлайн' %}crm-row-paid-online{% endif %}">
+                <tr class="{% if record.paid_online == 1 and record.status == 'Онлайн' %}crm-row-paid-online{% endif %}{% if record.booking_come == 0 %} crm-row-not-came{% elif record.booking_come == 1 %} crm-row-came{% endif %}">
                   {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep %}
                     <td>
                       <input type="checkbox" class="record-checkbox" name="selected_records" value="{{ record.id }}">
