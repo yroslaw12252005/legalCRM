@@ -27,6 +27,7 @@ from django.db.models import Sum
 from cost.models import Surcharge
 from accounts.models import User
 from smart_calendar.models import Booking, RepresentativeBooking, CallBooking
+from smart_calendar.services import record_office_bookings_have_lawyer_conflict, sync_record_office_bookings_to_lawyer
 from company.models import Companys
 from cost.models import Surcharge
 
@@ -192,6 +193,16 @@ def _status_variants(value):
     return variants
 
 
+def _status_matches(value, *targets):
+    if not value:
+        return False
+    variants = _status_variants(value)
+    for target in targets:
+        if variants & _status_variants(target):
+            return True
+    return False
+
+
 DOCUMENT_ALLOWED_STATUS_VARIANTS = set()
 for _status in DOCUMENT_ALLOWED_STATUSES:
     DOCUMENT_ALLOWED_STATUS_VARIANTS.update(_status_variants(_status))
@@ -222,15 +233,15 @@ async def can_manage_documents_async(request):
 
 
 def _can_assign_kc(user):
-    return user.status in ASSIGN_KC_ALLOWED_STATUSES
+    return _status_matches(user.status, *ASSIGN_KC_ALLOWED_STATUSES)
 
 
 def _can_assign_upp(user):
-    return user.status in ASSIGN_UPP_ALLOWED_STATUSES
+    return _status_matches(user.status, *ASSIGN_UPP_ALLOWED_STATUSES)
 
 
 def _can_assign_rep(user):
-    return user.status in ASSIGN_REP_ALLOWED_STATUSES
+    return _status_matches(user.status, *ASSIGN_REP_ALLOWED_STATUSES)
 
 
 def _can_edit_record_main(user):
@@ -344,8 +355,23 @@ async def record(request, pk):
         if not _can_assign_upp(current_user):
             await sync_to_async(messages.warning)(request, "Недостаточно прав для прикрепления юриста")
             return await sync_to_async(redirect)("record", pk=pk)
+        selected_lawyer = form_employees_UPP.cleaned_data.get("employees_UPP")
+        has_booking_conflict = await sync_to_async(
+            record_office_bookings_have_lawyer_conflict,
+            thread_sensitive=True,
+        )(record, selected_lawyer)
+        if has_booking_conflict:
+            await sync_to_async(messages.warning)(
+                request,
+                "У выбранного юриста уже есть событие на время офисной записи",
+            )
+            return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+                       "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
+                       })
         save_form = sync_to_async(form_employees_UPP.save, thread_sensitive=True)
-        await save_form()
+        record = await save_form()
+        await sync_to_async(sync_record_office_bookings_to_lawyer, thread_sensitive=True)(record, selected_lawyer)
         await sync_to_async(messages.success)(request, "Юрист прикреплен")
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
@@ -837,6 +863,7 @@ def get_time(request):
                 date__lt=end_date,
                 companys=request.user.companys,
                 client__status="Запись в офис",
+                employees__isnull=False,
             )
             base_call_bookings = CallBooking.objects.filter(
                 date__gte=start_date,

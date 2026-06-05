@@ -133,39 +133,12 @@ class AddOfficeBookingFromRecordForm(forms.ModelForm):
         widget=forms.DateInput(attrs={"type": "date", "class": "form-control"}),
     )
     time = forms.ChoiceField(choices=(), label="Время записи")
-    employees = forms.ModelChoiceField(
-        queryset=User.objects.none(),
-        required=False,
-        label="Юрист первичник",
-    )
-
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user")
         super().__init__(*args, **kwargs)
         time_choices = [(f"{h:02}:{m:02}", f"{h:02}:{m:02}") for h in range(9, 19) for m in (0, 15, 30, 45)]
         self.fields["time"].choices = time_choices
 
-        lawyers_qs = User.objects.filter(
-            companys_id=self.user.companys_id,
-            status__in=list(_status_variants("Юрист пирвичник")),
-        ).order_by("username")
-        if self.user.felial_id:
-            lawyers_qs = lawyers_qs.filter(felial_id=self.user.felial_id)
-        self.fields["employees"].queryset = lawyers_qs
-
-        can_choose = _status_matches(
-            self.user.status,
-            "Директор ЮПП",
-            "Директор КЦ",
-            "Оператор",
-            "Менеджер",
-            "Администратор",
-        )
-        if can_choose:
-            self.fields["employees"].required = True
-        else:
-            self.fields.pop("employees")
-
     class Meta:
         model = Booking
-        fields = ["date", "time", "employees"]
+        fields = ["date", "time"]

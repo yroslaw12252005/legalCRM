@@ -10,6 +10,7 @@ from leads.models import Record
 
 from .forms import AddRepresentativeEventForm, AddCallEventForm, AddOfficeBookingFromRecordForm
 from .models import Booking, RepresentativeBooking, CallBooking
+from .services import get_record_primary_lawyer, office_booking_has_lawyer_conflict
 
 STATUS_OP = "ОП"
 STATUS_ADMIN = "Администратор"
@@ -75,10 +76,6 @@ def _can_manage_office_booking(user):
     )
 
 
-def _can_choose_office_lawyer(user):
-    return _status_matches(user.status, "Директор ЮПП", "Директор КЦ", "Оператор", "Менеджер", "Администратор")
-
-
 @login_required
 def smart_calendar(request):
     if request.user.status == STATUS_OP:
@@ -128,6 +125,7 @@ def smart_calendar(request):
             date=selected_date,
             companys=request.user.companys,
             felial=request.user.felial,
+            employees__isnull=False,
         ).order_by("time")
         if can_view_all_call_bookings:
             call_bookings = CallBooking.objects.filter(
@@ -157,6 +155,7 @@ def smart_calendar(request):
             companys=request.user.companys,
             felial=request.user.felial,
             client__employees_KC=request.user.username,
+            employees__isnull=False,
         ).order_by("time")
         call_bookings = CallBooking.objects.none()
     else:
@@ -165,6 +164,7 @@ def smart_calendar(request):
             companys=request.user.companys,
             felial=request.user.felial,
             registrar=request.user.id,
+            employees__isnull=False,
         ).order_by("time")
         call_bookings = CallBooking.objects.none()
 
@@ -339,35 +339,21 @@ def add_office_booking(request, pk):
     )
     if request.method == "POST" and form.is_valid():
         event = form.save(commit=False)
-        if not _can_choose_office_lawyer(request.user):
-            event.employees = request.user
 
         if Booking.objects.filter(client_id=record.id, companys=request.user.companys).exists():
             messages.warning(request, "Этот клиент уже записан в офис, удалите старую запись перед новой")
             return redirect("record", pk=record.id)
 
-        has_office_conflict = Booking.objects.filter(
-            date=event.date,
-            time=event.time,
-            companys=request.user.companys,
-            felial=record.felial,
-            employees=event.employees,
-        ).exists()
-        has_call_conflict = CallBooking.objects.filter(
-            date=event.date,
-            time=event.time,
-            companys=request.user.companys,
-            felial=record.felial,
-            employees=event.employees,
-        ).exists()
-        if has_office_conflict or has_call_conflict:
-            messages.warning(request, "У выбранного юриста уже есть событие на это время")
-            return render(request, "add_office_booking.html", {"form": form, "record": record})
-
         event.client = record
         event.companys = request.user.companys
         event.felial = record.felial or request.user.felial
         event.registrar = request.user
+        event.employees = get_record_primary_lawyer(record)
+
+        if office_booking_has_lawyer_conflict(event, event.employees):
+            messages.warning(request, "У выбранного юриста уже есть событие на это время")
+            return render(request, "add_office_booking.html", {"form": form, "record": record})
+
         event.save()
         messages.success(request, "Клиент успешно записан в офис")
         return redirect("record", pk=record.id)

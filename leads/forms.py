@@ -7,8 +7,21 @@ from felial.models import Felial
 from .models import Record
 
 
+def _status_variants(value):
+    variants = {value}
+    try:
+        variants.add(value.encode("utf-8").decode("cp1251"))
+    except Exception:
+        pass
+    try:
+        variants.add(value.encode("cp1251").decode("utf-8"))
+    except Exception:
+        pass
+    return variants
+
+
 def _tenant_user_queryset(user, status, company_id=None):
-    queryset = User.objects.filter(status=status)
+    queryset = User.objects.filter(status__in=list(_status_variants(status)))
     tenant_id = company_id or getattr(user, "companys_id", None)
     if tenant_id:
         queryset = queryset.filter(companys_id=tenant_id)

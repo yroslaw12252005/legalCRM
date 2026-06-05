@@ -6,7 +6,7 @@ from company.models import Companys
 from felial.models import Felial
 from leads.models import Record
 
-from .models import CallBooking
+from .models import Booking, CallBooking
 
 
 class CallBookingTests(TestCase):
@@ -46,6 +46,13 @@ class CallBookingTests(TestCase):
             username="manager_1",
             password="test-pass-123",
             status="Менеджер",
+            companys=self.company,
+            felial=self.felial,
+        )
+        self.director_kc = User.objects.create_user(
+            username="director_kc",
+            password="test-pass-123",
+            status="Директор КЦ",
             companys=self.company,
             felial=self.felial,
         )
@@ -89,21 +96,69 @@ class CallBookingTests(TestCase):
         self.assertEqual(response.status_code, 302)
         self.assertFalse(CallBooking.objects.filter(client=self.record).exists())
 
-    def test_lawyer_can_create_office_booking_for_self(self):
+    def test_lawyer_can_create_office_booking_without_lawyer_field(self):
         self.client.force_login(self.lawyer_1)
         response = self.client.post(
             reverse("add_office_booking", args=[self.record.id]),
             data={"date": "2026-03-16", "time": "10:15"},
         )
         self.assertEqual(response.status_code, 302)
+        booking = Booking.objects.get(client=self.record)
+        self.assertIsNone(booking.employees_id)
 
-    def test_manager_must_choose_lawyer_for_office_booking(self):
-        self.client.force_login(self.manager)
+    def test_operator_can_create_office_booking_without_lawyer(self):
+        self.client.force_login(self.operator)
         response = self.client.post(
             reverse("add_office_booking", args=[self.record.id]),
             data={"date": "2026-03-16", "time": "10:30"},
         )
+        self.assertEqual(response.status_code, 302)
+        booking = Booking.objects.get(client=self.record)
+        self.assertIsNone(booking.employees_id)
+        self.assertEqual(booking.registrar_id, self.operator.id)
+
+    def test_director_kc_can_create_office_booking_without_lawyer(self):
+        self.client.force_login(self.director_kc)
+        response = self.client.post(
+            reverse("add_office_booking", args=[self.record.id]),
+            data={"date": "2026-03-16", "time": "10:45"},
+        )
+        self.assertEqual(response.status_code, 302)
+        booking = Booking.objects.get(client=self.record)
+        self.assertIsNone(booking.employees_id)
+        self.assertEqual(booking.registrar_id, self.director_kc.id)
+
+    def test_unassigned_office_booking_is_hidden_from_calendar(self):
+        booking = Booking.objects.create(
+            client=self.record,
+            date="2026-03-16",
+            time="10:30",
+            companys=self.company,
+            felial=self.felial,
+            registrar=self.operator,
+        )
+        self.client.force_login(self.manager)
+        response = self.client.get(reverse("calendar"), {"date": "2026-03-16"})
         self.assertEqual(response.status_code, 200)
+        self.assertNotIn(booking, list(response.context["bookings"]))
+
+    def test_assign_lawyer_attaches_existing_office_booking_to_lawyer(self):
+        booking = Booking.objects.create(
+            client=self.record,
+            date="2026-03-16",
+            time="10:30",
+            companys=self.company,
+            felial=self.felial,
+            registrar=self.operator,
+        )
+        self.client.force_login(self.director_upp)
+        response = self.client.post(
+            reverse("record", args=[self.record.id]),
+            data={"employees_UPP": str(self.lawyer_1.id)},
+        )
+        self.assertEqual(response.status_code, 200)
+        booking.refresh_from_db()
+        self.assertEqual(booking.employees_id, self.lawyer_1.id)
 
     def test_lawyer_calendar_shows_only_self_column(self):
         self.client.force_login(self.lawyer_1)
