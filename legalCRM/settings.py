@@ -31,8 +31,8 @@ SECRET_KEY = os.getenv('SECRET_KEY', 'change-me-in-production')
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = 'true'
 
-ALLOWED_HOSTS = ["yblochko.rosscrm.ru",'127.0.0.1', '46.229.213.252', "78.40.217.164"]
-
+# ALLOWED_HOSTS = ["yblochko.rosscrm.ru",'127.0.0.1', '46.229.213.252', "78.40.217.164"]
+ALLOWED_HOSTS = ['*']
 
 # Application definition
 
