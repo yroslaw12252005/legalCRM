@@ -29,6 +29,7 @@ from accounts.models import User
 from smart_calendar.models import Booking, RepresentativeBooking, CallBooking
 from smart_calendar.services import record_office_bookings_have_lawyer_conflict, sync_record_office_bookings_to_lawyer
 from company.models import Companys
+from felial.models import Felial
 from cost.models import Surcharge
 
 from .forms import (
@@ -703,6 +704,15 @@ def get_tilda_lead(request):
                 get_company = Companys.objects.filter(id=id_company).first()
                 continue
             
+
+            if key == "id_felial":
+                try:
+                    id_felial = int(value)
+                except (TypeError, ValueError):
+                    return HttpResponse("Invalid company id", status=400)
+                get_felial = Felial.objects.filter(id=id_felial).first()
+                continue
+
             # Пропускаем служебные поля
             if key in ['test', 'csrfmiddlewaretoken']:
                 continue
@@ -729,7 +739,7 @@ def get_tilda_lead(request):
                 description=textarea, 
                 where="Tilda", 
                 companys=get_company,
-                felial=5
+                felial=get_felial
             )
             led.save()
             print(200)
