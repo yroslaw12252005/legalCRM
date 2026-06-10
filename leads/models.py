@@ -33,7 +33,6 @@ class Record(models.Model):
     representative = models.BooleanField(default=False)
     doc = models.URLField(max_length=200, null=True)
     paid_online = models.PositiveSmallIntegerField(default=0, verbose_name="Paid Online")
-    date_change = models.DateTimeField(auto_now_add=True)
     def __str__(self):
 
 
