@@ -693,6 +693,7 @@ def get_tilda_lead(request):
         name = None
         textarea = None
         get_company = None
+        get_felial = Felial.objects.get(id=5)  
         
         # Универсальная обработка полей
         for key, value in data.items():
@@ -704,15 +705,6 @@ def get_tilda_lead(request):
                 get_company = Companys.objects.filter(id=id_company).first()
                 continue
             
-
-            if key == "id_felial":
-                try:
-                    id_felial = 5
-                except (TypeError, ValueError):
-                    return HttpResponse("Invalid company id", status=400)
-                get_felial = Felial.objects.filter(id=id_felial).first()
-                continue
-
             # Пропускаем служебные поля
             if key in ['test', 'csrfmiddlewaretoken']:
                 continue
