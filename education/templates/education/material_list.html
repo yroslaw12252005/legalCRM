@@ -4,7 +4,7 @@
 <div class="container py-4">
   <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
     <h3 class="mb-0">База знаний</h3>
-    {% if user.status == "Администратор" %}
+    {% if user.status == "Администратор" or user.status == "Директор КЦ" or user.status == "Директор ЮПП" %}
       <div class="d-flex gap-2">
         <a class="btn btn-outline-primary" href="{% url 'education_category_add' %}">Добавить категорию</a>
         <a class="btn btn-primary" href="{% url 'education_add' %}">Добавить материал</a>

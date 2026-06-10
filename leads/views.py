@@ -728,7 +728,8 @@ def get_tilda_lead(request):
                 name=name,  
                 description=textarea, 
                 where="Tilda", 
-                companys=get_company
+                companys=get_company,
+                felial=5
             )
             led.save()
             print(200)
