@@ -707,7 +707,7 @@ def get_tilda_lead(request):
 
             if key == "id_felial":
                 try:
-                    id_felial = int(value)
+                    id_felial = 5
                 except (TypeError, ValueError):
                     return HttpResponse("Invalid company id", status=400)
                 get_felial = Felial.objects.filter(id=id_felial).first()
