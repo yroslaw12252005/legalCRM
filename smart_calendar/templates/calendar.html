@@ -68,6 +68,24 @@
     
   </div>
 
+  {% if unassigned_bookings %}
+    <div style="margin-bottom:20px; padding:14px 16px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px;">
+      <h5 style="margin:0 0 10px; color:#1d4ed8;">Не распределены по юристу</h5>
+      <div style="display:flex; flex-direction:column; gap:8px;">
+        {% for booking in unassigned_bookings %}
+          <a href="{% url 'record' booking.client.id %}" style="text-decoration:none;">
+            <div style="padding:10px 12px; background:#fff; border:1px solid #dbeafe; border-radius:6px; color:#1e293b;">
+              <strong>ID {{ booking.client.id }}</strong> | {{ booking.client.name|default:"Без имени" }} | {{ booking.client.phone|default:"Телефон не указан" }}
+              {% if booking.time %}
+                <span style="color:#2563eb;"> | {{ booking.time }}</span>
+              {% endif %}
+            </div>
+          </a>
+        {% endfor %}
+      </div>
+    </div>
+  {% endif %}
+
   <div class="calendar-grid">
     <div style="padding:10px 15px; background:#fff; border-bottom:1px solid #e3ebf6;">
       <span style="display:inline-block; margin-right:16px;">

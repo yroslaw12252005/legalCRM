@@ -247,7 +247,7 @@ def all_leads(request):
 
                 login(request, user)
 
-                return redirect("all_leads")
+                return redirect("current_applications")
 
             messages.warning(request, "Неправильный логин или пароль")
 

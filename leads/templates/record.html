@@ -467,7 +467,8 @@
                <a href="{{record.doc}}" download style="text-decoration:none;">{{ record.doc }}</a>
             </div>
             {% endif %}
-            {% if user.status == "Менеджер" and record.status == "Запись в офис" or user.status == "Администратор" and record.status == "Запись в офис"%}
+            {% if user.status == "Менеджер" and record.status == "Запись в офис" or user.status == "Администратор" and record.status == "Запись в офис" %}
+            {% if get_status_com %}
             <div class="stat-item">
                 <div class="stat-label">Статус прихода</div>
                 <div class="stat-value">{% if get_status_com.come == None %}
@@ -482,6 +483,7 @@
             <a href="{% url 'come_false' record.id %}" class="btn btn-primary" style="margin-top: 0.8rem;" >Не дошел</a>
 
             </div>
+            {% endif %}
 
         {% endif %}
         </div>

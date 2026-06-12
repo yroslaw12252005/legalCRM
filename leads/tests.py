@@ -6,6 +6,7 @@ from company.models import Companys
 from felial.models import Felial
 from leads.forms import Employees_KCForm
 from leads.models import Record
+from smart_calendar.models import Booking
 
 
 class TenantIsolationTests(TestCase):
@@ -148,3 +149,49 @@ class TenantIsolationTests(TestCase):
         self.record_1.refresh_from_db()
         self.assertEqual(self.record_1.name, "Updated by director")
         self.assertEqual(self.record_1.description, "Director description")
+
+    def test_record_page_hides_come_buttons_without_booking(self):
+        manager = User.objects.create_user(
+            username="manager_1",
+            password="test-pass-123",
+            status="Менеджер",
+            companys=self.company_1,
+            felial=self.felial_1,
+        )
+        self.record_1.status = "Запись в офис"
+        self.record_1.save(update_fields=["status"])
+
+        self.client.force_login(manager)
+        response = self.client.get(reverse("record", args=[self.record_1.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotContains(response, "Статус прихода")
+        self.assertNotContains(response, "Дошел")
+        self.assertNotContains(response, "Не дошел")
+
+    def test_record_page_shows_come_buttons_with_booking(self):
+        manager = User.objects.create_user(
+            username="manager_2",
+            password="test-pass-123",
+            status="Менеджер",
+            companys=self.company_1,
+            felial=self.felial_1,
+        )
+        self.record_1.status = "Запись в офис"
+        self.record_1.save(update_fields=["status"])
+        Booking.objects.create(
+            client=self.record_1,
+            date="2026-03-16",
+            time="10:30",
+            companys=self.company_1,
+            felial=self.felial_1,
+            registrar=manager,
+        )
+
+        self.client.force_login(manager)
+        response = self.client.get(reverse("record", args=[self.record_1.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Статус прихода")
+        self.assertContains(response, "Дошел")
+        self.assertContains(response, "Не дошел")

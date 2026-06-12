@@ -871,7 +871,6 @@ def get_time(request):
                 date__lt=end_date,
                 companys=request.user.companys,
                 client__status="Запись в офис",
-                employees__isnull=False,
             )
             base_call_bookings = CallBooking.objects.filter(
                 date__gte=start_date,

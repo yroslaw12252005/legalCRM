@@ -120,13 +120,16 @@ def smart_calendar(request):
     )
     can_view_all_call_bookings = _status_matches(request.user.status, "Администратор", "Директор ЮПП", "Менеджер")
 
+    unassigned_bookings = Booking.objects.none()
+
     if can_view_all_office_bookings:
-        bookings = Booking.objects.filter(
+        base_office_bookings = Booking.objects.filter(
             date=selected_date,
             companys=request.user.companys,
             felial=request.user.felial,
-            employees__isnull=False,
         ).order_by("time")
+        bookings = base_office_bookings.filter(employees__isnull=False)
+        unassigned_bookings = base_office_bookings.filter(employees__isnull=True).select_related("client")
         if can_view_all_call_bookings:
             call_bookings = CallBooking.objects.filter(
                 date=selected_date,
@@ -150,22 +153,24 @@ def smart_calendar(request):
         ).order_by("time")
         lawyers = lawyers.filter(id=request.user.id)
     elif is_operator:
-        bookings = Booking.objects.filter(
+        base_office_bookings = Booking.objects.filter(
             date=selected_date,
             companys=request.user.companys,
             felial=request.user.felial,
             client__employees_KC=request.user.username,
-            employees__isnull=False,
         ).order_by("time")
+        bookings = base_office_bookings.filter(employees__isnull=False)
+        unassigned_bookings = base_office_bookings.filter(employees__isnull=True).select_related("client")
         call_bookings = CallBooking.objects.none()
     else:
-        bookings = Booking.objects.filter(
+        base_office_bookings = Booking.objects.filter(
             date=selected_date,
             companys=request.user.companys,
             felial=request.user.felial,
             registrar=request.user.id,
-            employees__isnull=False,
         ).order_by("time")
+        bookings = base_office_bookings.filter(employees__isnull=False)
+        unassigned_bookings = base_office_bookings.filter(employees__isnull=True).select_related("client")
         call_bookings = CallBooking.objects.none()
 
     surcharges = None
@@ -191,6 +196,7 @@ def smart_calendar(request):
         "surcharges": surcharges,
         "users": get_all_employees,
         "lawyers": lawyers,
+        "unassigned_bookings": unassigned_bookings,
     }
     return render(request, "calendar.html", context)
 

@@ -128,7 +128,7 @@ class CallBookingTests(TestCase):
         self.assertIsNone(booking.employees_id)
         self.assertEqual(booking.registrar_id, self.director_kc.id)
 
-    def test_unassigned_office_booking_is_hidden_from_calendar(self):
+    def test_unassigned_office_booking_is_shown_in_unassigned_list(self):
         booking = Booking.objects.create(
             client=self.record,
             date="2026-03-16",
@@ -141,6 +141,22 @@ class CallBookingTests(TestCase):
         response = self.client.get(reverse("calendar"), {"date": "2026-03-16"})
         self.assertEqual(response.status_code, 200)
         self.assertNotIn(booking, list(response.context["bookings"]))
+        self.assertIn(booking, list(response.context["unassigned_bookings"]))
+
+    def test_unassigned_office_booking_is_counted_in_mini_calendar(self):
+        Booking.objects.create(
+            client=self.record,
+            date="2026-03-16",
+            time="10:30",
+            companys=self.company,
+            felial=self.felial,
+            registrar=self.operator,
+        )
+        self.client.force_login(self.manager)
+        response = self.client.post(reverse("get_time"), {"date": "2026-03-16"})
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "count-bookings")
+        self.assertContains(response, 'title="Записано">1</span>')
 
     def test_assign_lawyer_attaches_existing_office_booking_to_lawyer(self):
         booking = Booking.objects.create(
