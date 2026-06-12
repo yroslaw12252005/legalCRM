@@ -225,6 +225,8 @@ def can_manage_documents(user):
 def _record_for_user_or_404(request, pk):
     return get_object_or_404(Record, id=pk, companys=request.user.companys)
 
+def _booking_for_user_or_404(request, pk):
+    return get_object_or_404(Booking, id=pk, companys=request.user.companys)
 
 async def can_manage_documents_async(request):
     return await sync_to_async(
@@ -257,7 +259,9 @@ async def record(request, pk):
     current_user = await sync_to_async(lambda: request.user, thread_sensitive=True)()
     # Асинхронное получение объектов из БД
     get_record = sync_to_async(_record_for_user_or_404, thread_sensitive=True)
+    #get_booking = sync_to_async(_booking_for_user_or_404, thread_sensitive=True)
     record = await get_record(request, pk)
+    #booking = await get_booking(request, pk)
     request.can_manage_documents = await can_manage_documents_async(request)
 
     filter_surcharge = sync_to_async(Surcharge.objects.filter, thread_sensitive=True)
@@ -333,7 +337,7 @@ async def record(request, pk):
         await save_form()
         add_message = sync_to_async(messages.success, thread_sensitive=True)
         await add_message(request, "Статус успешно обновлен")
-        return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+        return await sync_to_async(render)(request, "record.html", {"record": record,  "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
                        'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
                        })
@@ -346,7 +350,7 @@ async def record(request, pk):
         save_form = sync_to_async(form_employees_KC.save, thread_sensitive=True)
         await save_form()
         await sync_to_async(messages.success)(request, "Оператор прикреплен")
-        return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+        return await sync_to_async(render)(request, "record.html", {"record": record,  "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
                        'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
                        })
@@ -366,7 +370,7 @@ async def record(request, pk):
                 request,
                 "У выбранного юриста уже есть событие на время офисной записи",
             )
-            return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+            return await sync_to_async(render)(request, "record.html", {"record": record,  "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
                        'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
                        })
@@ -386,7 +390,7 @@ async def record(request, pk):
         save_form = sync_to_async(form_employees_REP.save, thread_sensitive=True)
         await save_form()
         await sync_to_async(messages.success)(request, "Представитель прикреплен")
-        return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+        return await sync_to_async(render)(request, "record.html", {"record": record,  "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
                        'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
                        })
@@ -396,7 +400,7 @@ async def record(request, pk):
         save_form = sync_to_async(cost_form.save, thread_sensitive=True)
         await save_form()
         await sync_to_async(messages.success)(request, "Цена указана")
-        return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
+        return await sync_to_async(render)(request, "record.html", {"record": record,  "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
                        'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
                        })
@@ -455,6 +459,7 @@ async def record(request, pk):
                    "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
                    'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
                    })
+
 
 @login_required
 def delete_record(request, pk):
