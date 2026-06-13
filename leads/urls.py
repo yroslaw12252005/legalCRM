@@ -2,6 +2,7 @@ from django.urls import path, include
 from leads import views
 urlpatterns = [
     path("tilda_lead/", views.get_tilda_lead),
+    path("novofon/webhook/", views.novofon_incoming_call_webhook, name="novofon_incoming_call_webhook"),
     path("logout/", views.logout_user, name='logout'),
     path("record/<int:pk>/", views.record, name='record'),
     path("delete_record/<int:pk>/", views.delete_record, name='delete_record'),

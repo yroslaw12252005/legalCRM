@@ -4,6 +4,7 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import HttpResponse
 from django.http import Http404
+from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic import TemplateView, ListView
 from django.db.models import Q
@@ -47,9 +48,12 @@ from .forms import (
 )
 
 import asyncio
+import base64
 from contextlib import asynccontextmanager
 from aiobotocore.session import get_session
 from botocore.exceptions import ClientError, ParamValidationError
+import hashlib
+import hmac
 import os
 import json
 import datetime
@@ -979,3 +983,102 @@ def get_time(request):
     
     return HttpResponse("Метод не разрешён", status=405)
 
+NOVOFON_API_KEY = os.getenv("NOVOFON_API_KEY", "")
+NOVOFON_API_SECRET = os.getenv("NOVOFON_API_SECRET", "")
+NOVOFON_DEFAULT_COMPANY_ID = 1
+NOVOFON_DEFAULT_FELIAL_ID = 5
+NOVOFON_INCOMING_EVENTS = {"NOTIFY_START", "NOTIFY_INTERNAL"}
+
+
+def _normalize_phone_value(phone):
+    if not phone:
+        return ""
+
+    digits = "".join(ch for ch in str(phone) if ch.isdigit())
+    if not digits:
+        return ""
+
+    return f"+{digits}"
+
+
+def _novofon_signature_for_incoming_call(payload):
+    signing_string = "".join(
+        [
+            payload.get("caller_id", ""),
+            payload.get("called_did", ""),
+            payload.get("call_start", ""),
+        ]
+    )
+    digest = hmac.new(
+        NOVOFON_API_SECRET.encode("utf-8"),
+        signing_string.encode("utf-8"),
+        hashlib.sha1,
+    ).digest()
+    return base64.b64encode(digest).decode("utf-8")
+
+
+def _get_novofon_request_signature(request):
+    return (
+        request.POST.get("signature")
+        or request.headers.get("X-Novofon-Sign")
+        or request.headers.get("X-Zadarma-Sign")
+        or ""
+    )
+
+
+def _company_has_phone(company_id, normalized_phone):
+    if not normalized_phone:
+        return False
+
+    existing_phones = Record.objects.filter(companys_id=company_id).values_list("phone", flat=True)
+    return any(_normalize_phone_value(existing_phone) == normalized_phone for existing_phone in existing_phones)
+
+
+@csrf_exempt
+@require_POST
+def novofon_incoming_call_webhook(request):
+    if not NOVOFON_API_SECRET:
+        return JsonResponse({"status": "error", "message": "NOVOFON_API_SECRET is not configured"}, status=500)
+
+    event = request.POST.get("event", "")
+    if event not in NOVOFON_INCOMING_EVENTS:
+        return JsonResponse({"status": "ignored", "message": f"Unsupported event: {event}"}, status=200)
+
+    received_signature = _get_novofon_request_signature(request)
+    expected_signature = _novofon_signature_for_incoming_call(request.POST)
+    if not received_signature or not hmac.compare_digest(received_signature, expected_signature):
+        return JsonResponse({"status": "error", "message": "Invalid signature"}, status=403)
+
+    normalized_phone = _normalize_phone_value(request.POST.get("caller_id"))
+    if not normalized_phone:
+        return JsonResponse({"status": "error", "message": "caller_id is required"}, status=400)
+
+    company = Companys.objects.filter(id=NOVOFON_DEFAULT_COMPANY_ID).first()
+    felial = Felial.objects.filter(id=NOVOFON_DEFAULT_FELIAL_ID).first()
+    if company is None or felial is None:
+        return JsonResponse(
+            {"status": "error", "message": "Default company or felial is not configured in database"},
+            status=500,
+        )
+
+    if _company_has_phone(company.id, normalized_phone):
+        return JsonResponse({"status": "exists", "message": "Lead already exists", "phone": normalized_phone}, status=200)
+
+    lead = Record.objects.create(
+        phone=normalized_phone,
+        where="Звонок",
+        description=f"Входящий звонок Novofon ({event})",
+        companys=company,
+        felial=felial,
+    )
+
+    return JsonResponse(
+        {
+            "status": "created",
+            "record_id": lead.id,
+            "phone": normalized_phone,
+            "company_id": company.id,
+            "felial_id": felial.id,
+        },
+        status=201,
+    )
