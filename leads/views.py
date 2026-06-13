@@ -983,8 +983,8 @@ def get_time(request):
     
     return HttpResponse("Метод не разрешён", status=405)
 
-NOVOFON_API_KEY = os.getenv("NOVOFON_API_KEY", "")
-NOVOFON_API_SECRET = os.getenv("NOVOFON_API_SECRET", "")
+NOVOFON_API_KEY = "appid_346882"
+NOVOFON_API_SECRET = "uu9e61bqv98382tph38cpvgge6ievo4ohnyz7zsq"
 NOVOFON_DEFAULT_COMPANY_ID = 1
 NOVOFON_DEFAULT_FELIAL_ID = 5
 NOVOFON_INCOMING_EVENTS = {"NOTIFY_START", "NOTIFY_INTERNAL"}
