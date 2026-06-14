@@ -4,7 +4,6 @@ from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import HttpResponse
 from django.http import Http404
-from django.http import JsonResponse
 from django.core.exceptions import ObjectDoesNotExist
 from django.views.generic import TemplateView, ListView
 from django.db.models import Q
@@ -48,12 +47,9 @@ from .forms import (
 )
 
 import asyncio
-import base64
 from contextlib import asynccontextmanager
 from aiobotocore.session import get_session
 from botocore.exceptions import ClientError, ParamValidationError
-import hashlib
-import hmac
 import os
 import json
 import datetime
@@ -64,7 +60,6 @@ from collections import defaultdict
 from urllib.parse import quote, urlsplit, urlunsplit
 from urllib.request import urlopen
 from urllib.error import URLError, HTTPError
-import hmac
 
 from asgiref.sync import sync_to_async
 from django.shortcuts import render, redirect
