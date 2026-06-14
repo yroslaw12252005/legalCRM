@@ -88,10 +88,14 @@ def save_monitor_state(state, state_path=NOVOFON_STATE_FILE):
 
 
 def build_monitor_window(state, lookback_seconds=NOVOFON_INITIAL_LOOKBACK_SECONDS):
-    now = timezone.localtime()
+    if settings.USE_TZ:
+        now = timezone.localtime()
+    else:
+        now = datetime.now()
+
     if state.get("last_end"):
         start = datetime.fromisoformat(state["last_end"])
-        if timezone.is_naive(start):
+        if settings.USE_TZ and timezone.is_naive(start):
             start = timezone.make_aware(start, timezone.get_current_timezone())
         start = start - timedelta(seconds=30)
     else:
