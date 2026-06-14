@@ -121,6 +121,8 @@ def smart_calendar(request):
     can_view_all_call_bookings = _status_matches(request.user.status, "Администратор", "Директор ЮПП", "Менеджер")
 
     unassigned_bookings = Booking.objects.none()
+    office_day_bookings = Booking.objects.none()
+    use_office_booking_list = _status_matches(request.user.status, "Директор КЦ", "Оператор")
 
     if can_view_all_office_bookings:
         base_office_bookings = Booking.objects.filter(
@@ -128,6 +130,8 @@ def smart_calendar(request):
             companys=request.user.companys,
             felial=request.user.felial,
         ).order_by("time")
+        if use_office_booking_list:
+            office_day_bookings = base_office_bookings.select_related("client")
         bookings = base_office_bookings.filter(employees__isnull=False)
         unassigned_bookings = base_office_bookings.filter(employees__isnull=True).select_related("client")
         if can_view_all_call_bookings:
@@ -159,6 +163,7 @@ def smart_calendar(request):
             felial=request.user.felial,
             client__employees_KC=request.user.username,
         ).order_by("time")
+        office_day_bookings = base_office_bookings.select_related("client")
         bookings = base_office_bookings.filter(employees__isnull=False)
         unassigned_bookings = base_office_bookings.filter(employees__isnull=True).select_related("client")
         call_bookings = CallBooking.objects.none()
@@ -197,6 +202,8 @@ def smart_calendar(request):
         "users": get_all_employees,
         "lawyers": lawyers,
         "unassigned_bookings": unassigned_bookings,
+        "office_day_bookings": office_day_bookings,
+        "use_office_booking_list": use_office_booking_list,
     }
     return render(request, "calendar.html", context)
 

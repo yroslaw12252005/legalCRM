@@ -46,6 +46,17 @@ STATUS_REPRESENTATIVE = "Представитель"
 
 LEAD_STATUS_NEW = "Новая"
 LEAD_STATUS_OFFICE = "Запись в офис"
+LEAD_STATUS_CHOICES = (
+    ("Новая", "Новая"),
+    ("Брак", "Брак"),
+    ("Недозвон", "Недозвон"),
+    ("Перезвон", "Перезвон"),
+    ("Запись в офис", "Запись в офис"),
+    ("Отказ", "Отказ"),
+    ("Онлайн", "Онлайн"),
+    ("Акт", "Акт"),
+    ("Договор", "Договор"),
+)
 
 
 DEFAULT_RECORDS_PER_PAGE = 100
@@ -430,6 +441,7 @@ def all_leads(request):
             "can_send_to_representative": _can_send_to_representative(request.user),
 
             "can_assign_rep": _can_assign_rep(request.user),
+            "bulk_status_choices": LEAD_STATUS_CHOICES,
 
         },
 
@@ -504,6 +516,15 @@ def brak(request):
     records = Record.objects.filter(status="Брак", companys=request.user.companys)
 
     return render(request, "all_leads.html", {"records": records})
+
+
+def lead_exchange(request):
+
+    if not request.user.is_authenticated or request.user.status != STATUS_ADMIN:
+        messages.warning(request, "Доступ ограничен")
+        return redirect("all_leads")
+
+    return render(request, "lead_exchange_placeholder.html")
 
 
 
@@ -642,6 +663,25 @@ def bulk_in_work(request):
         updated_count = records_for_user.update(employees_KC=operator.username)
 
         messages.success(request, f"Оператор прикреплен: {updated_count}")
+
+        return redirect("all_leads")
+
+
+    if action == "change_status":
+
+        new_status = request.POST.get("bulk_status", "").strip()
+        allowed_statuses = {value for value, _label in LEAD_STATUS_CHOICES}
+
+        if not new_status or new_status not in allowed_statuses:
+
+            messages.warning(request, "Статус не выбран")
+
+            return redirect("all_leads")
+
+
+        updated_count = records_for_user.update(status=new_status)
+
+        messages.success(request, f"Статус обновлен у заявок: {updated_count}")
 
         return redirect("all_leads")
 

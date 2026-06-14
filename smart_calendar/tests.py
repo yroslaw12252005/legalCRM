@@ -183,3 +183,59 @@ class CallBookingTests(TestCase):
         lawyers = list(response.context["lawyers"])
         self.assertEqual(len(lawyers), 1)
         self.assertEqual(lawyers[0].id, self.lawyer_1.id)
+
+    def test_director_kc_calendar_shows_office_booking_list(self):
+        Booking.objects.create(
+            client=self.record,
+            date="2026-03-16",
+            time="11:15",
+            companys=self.company,
+            felial=self.felial,
+            registrar=self.operator,
+        )
+        self.client.force_login(self.director_kc)
+
+        response = self.client.get(reverse("calendar"), {"date": "2026-03-16"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["use_office_booking_list"])
+        self.assertContains(response, "Lead 1")
+        self.assertContains(response, "11:15")
+
+    def test_operator_calendar_shows_only_own_office_booking_list(self):
+        own_record = self.record
+        own_record.employees_KC = self.operator.username
+        own_record.save(update_fields=["employees_KC"])
+        other_record = Record.objects.create(
+            name="Other Client",
+            phone="+70000000002",
+            description="other",
+            companys=self.company,
+            felial=self.felial,
+            status="Новая",
+            employees_KC="someone_else",
+        )
+        Booking.objects.create(
+            client=own_record,
+            date="2026-03-16",
+            time="10:00",
+            companys=self.company,
+            felial=self.felial,
+            registrar=self.operator,
+        )
+        Booking.objects.create(
+            client=other_record,
+            date="2026-03-16",
+            time="12:00",
+            companys=self.company,
+            felial=self.felial,
+            registrar=self.manager,
+        )
+        self.client.force_login(self.operator)
+
+        response = self.client.get(reverse("calendar"), {"date": "2026-03-16"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["use_office_booking_list"])
+        self.assertContains(response, "Lead 1")
+        self.assertNotContains(response, "Other Client")

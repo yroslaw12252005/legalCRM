@@ -87,7 +87,7 @@ $(document).ready(function() {
             </li>
 
             <li>
-                <span><a style="color:#fff; text-decoration:none;" href="{% url 'current_applications' %}"> Актуальные заявки</a></span>
+                <span><a style="color:#fff; text-decoration:none;" href="{% url 'current_applications' %}"> Пирвичка</a></span>
             </li>
 
             {% if user.status == "Директор КЦ" %}
@@ -116,7 +116,7 @@ $(document).ready(function() {
 
             {% if user.status == "Директор ЮПП" %}
                 <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
+                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все клиенты</a></span>
                 </li>
                 <li>
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
@@ -134,7 +134,7 @@ $(document).ready(function() {
 
             {% if user.status == "Юрист пирвичник" %}
                 <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
+                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все клиенты</a></span>
                 </li>
                 <li>
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
@@ -143,7 +143,7 @@ $(document).ready(function() {
 
             {% if user.status == "ОП" %}
                 <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
+                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все клиенты</a></span>
                 </li>
                 <li>
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
@@ -152,7 +152,7 @@ $(document).ready(function() {
 
             {% if user.status == "Директор представителей" %}
                 <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
+                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все клиенты</a></span>
                 </li>
                 <li>
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
@@ -162,7 +162,7 @@ $(document).ready(function() {
 
             {% if user.status == "Представитель" %}
                 <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
+                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все клиенты</a></span>
                 </li>
                 <li>
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
@@ -199,6 +199,9 @@ $(document).ready(function() {
                 </li>
                 <li>
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'felials' %}"><img src="{% static 'img/branch.png' %}" alt=""> Ваши филиалы</a></span>
+                </li>
+                <li>
+                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'lead_exchange' %}">Биржа заявок</a></span>
                 </li>
             {% endif %}
 

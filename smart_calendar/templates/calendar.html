@@ -56,6 +56,39 @@
     border-color: #e53935;
   }
   .event-surcharge .event-time { color: #b71c1c; }
+  .office-list {
+    display: grid;
+    gap: 12px;
+  }
+  .office-list-card {
+    background: #fff;
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    padding: 14px 16px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+  }
+  .office-list-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 8px;
+  }
+  .office-list-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #0f172a;
+  }
+  .office-list-time {
+    color: var(--primary-color);
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .office-list-phone,
+  .office-list-description {
+    color: #475569;
+    margin: 4px 0 0;
+  }
 </style>
 
 <div class="calendar-page">
@@ -68,6 +101,26 @@
     
   </div>
 
+  {% if use_office_booking_list %}
+    <div class="office-list">
+      {% for booking in office_day_bookings %}
+        <a href="{% url 'record' booking.client.id %}" style="text-decoration:none;">
+          <div class="office-list-card">
+            <div class="office-list-top">
+              <div class="office-list-name">{{ booking.client.name|default:"Без имени" }}</div>
+              <div class="office-list-time">{{ booking.time|default:"Время не указано" }}</div>
+            </div>
+            <p class="office-list-phone">{{ booking.client.phone|default:"Телефон не указан" }}</p>
+            <p class="office-list-description">{{ booking.client.description|default:"Описание не указано" }}</p>
+          </div>
+        </a>
+      {% empty %}
+        <div class="office-list-card">
+          <div class="office-list-name">На этот день записей в офис нет</div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
   {% if unassigned_bookings %}
     <div style="margin-bottom:20px; padding:14px 16px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px;">
       <h5 style="margin:0 0 10px; color:#1d4ed8;">Не распределены по юристу</h5>
@@ -153,5 +206,6 @@
       {% endfor %}
     </div>
   </div>
+  {% endif %}
 </div>
 {% endblock content %}

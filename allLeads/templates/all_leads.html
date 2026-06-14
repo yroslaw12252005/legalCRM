@@ -347,11 +347,19 @@
 
     {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep %}
       <div class="bulk-action-bar" id="bulkActionBar">
-        <span id="selectedCounter">Selected: 0</span>
+        <span id="selectedCounter">Выбрано: 0</span>
 
         {% if can_bulk_send_to_work %}
           <button type="submit" name="action" value="in_work" class="crm-btn">В работу</button>
         {% endif %}
+
+        <select name="bulk_status" class="bulk-select">
+          <option value="">Статус</option>
+          {% for status_value, status_label in bulk_status_choices %}
+            <option value="{{ status_value }}">{{ status_label }}</option>
+          {% endfor %}
+        </select>
+        <button type="submit" name="action" value="change_status" class="crm-btn">Изменить статус</button>
 
         {% if can_assign_kc %}
           <select name="operator_id" class="bulk-select">
@@ -406,7 +414,7 @@
 
     function updateSelectionState() {
       const selected = checkboxes.filter((item) => item.checked).length;
-      counter.textContent = 'Selected: ' + selected;
+      counter.textContent = 'Выбрано: ' + selected;
       actionBar.classList.toggle('is-visible', selected > 0);
       if (selectAll) {
         selectAll.checked = selected > 0 && selected === checkboxes.length;
