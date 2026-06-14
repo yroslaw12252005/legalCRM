@@ -2,7 +2,11 @@ import base64
 import hashlib
 import hmac
 import json
+import logging
 import os
+import sys
+import threading
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 from urllib.parse import urlencode
@@ -21,10 +25,19 @@ NOVOFON_PBX_STATS_METHOD = "/v1/statistics/pbx/"
 NOVOFON_STATE_FILE = Path(settings.BASE_DIR) / ".novofon_monitor_state.json"
 NOVOFON_DEFAULT_COMPANY_ID = int(os.getenv("NOVOFON_DEFAULT_COMPANY_ID", "1"))
 NOVOFON_DEFAULT_FELIAL_ID = int(os.getenv("NOVOFON_DEFAULT_FELIAL_ID", "5"))
+NOVOFON_API_KEY = os.getenv("NOVOFON_API_KEY", "appid_346882")
+NOVOFON_API_SECRET = os.getenv("NOVOFON_API_SECRET", "uu9e61bqv98382tph38cpvgge6ievo4ohnyz7zsq")
 NOVOFON_POLL_SECONDS = int(os.getenv("NOVOFON_POLL_SECONDS", "15"))
 NOVOFON_INITIAL_LOOKBACK_SECONDS = int(os.getenv("NOVOFON_INITIAL_LOOKBACK_SECONDS", "120"))
 NOVOFON_RECENT_IDS_LIMIT = 500
 NOVOFON_TIME_FORMAT = "%Y-%m-%d %H:%M:%S"
+NOVOFON_LOCK_FILE = Path(settings.BASE_DIR) / ".novofon_monitor.lock"
+NOVOFON_LOCK_STALE_SECONDS = int(os.getenv("NOVOFON_LOCK_STALE_SECONDS", "120"))
+NOVOFON_AUTO_MONITOR = os.getenv("NOVOFON_AUTO_MONITOR", "true").lower() in {"1", "true", "yes", "on"}
+
+logger = logging.getLogger(__name__)
+_monitor_start_lock = threading.Lock()
+_monitor_thread = None
 
 
 def normalize_phone_value(phone):
@@ -165,3 +178,108 @@ def run_monitor_iteration(api_key, api_secret, state_path=NOVOFON_STATE_FILE, se
     state["recent_ids"] = recent_ids[-NOVOFON_RECENT_IDS_LIMIT:]
     save_monitor_state(state, state_path=state_path)
     return result
+
+
+def should_start_auto_monitor(argv=None):
+    if not NOVOFON_AUTO_MONITOR:
+        return False
+
+    argv = argv or sys.argv
+    management_commands_to_skip = {
+        "check",
+        "collectstatic",
+        "createsuperuser",
+        "dbshell",
+        "dumpdata",
+        "flush",
+        "loaddata",
+        "makemigrations",
+        "migrate",
+        "monitor_novofon_calls",
+        "shell",
+        "showmigrations",
+        "test",
+    }
+    current_command = argv[1] if len(argv) > 1 else ""
+
+    if current_command in management_commands_to_skip:
+        return False
+
+    if current_command == "runserver" and os.environ.get("RUN_MAIN") != "true":
+        return False
+
+    return True
+
+
+def acquire_monitor_lock(lock_path=NOVOFON_LOCK_FILE):
+    stale_seconds = max(NOVOFON_LOCK_STALE_SECONDS, NOVOFON_POLL_SECONDS * 4)
+    lock_payload = {"pid": os.getpid(), "started_at": time.time()}
+
+    try:
+        fd = os.open(lock_path, os.O_CREAT | os.O_EXCL | os.O_WRONLY)
+        with os.fdopen(fd, "w", encoding="utf-8") as lock_file:
+            json.dump(lock_payload, lock_file)
+        return True
+    except FileExistsError:
+        try:
+            lock_age_seconds = time.time() - lock_path.stat().st_mtime
+            if lock_age_seconds > stale_seconds:
+                lock_path.unlink(missing_ok=True)
+                return acquire_monitor_lock(lock_path=lock_path)
+        except OSError:
+            logger.exception("Failed to inspect Novofon monitor lock file")
+        return False
+
+
+def release_monitor_lock(lock_path=NOVOFON_LOCK_FILE):
+    try:
+        lock_path.unlink(missing_ok=True)
+    except OSError:
+        logger.exception("Failed to release Novofon monitor lock file")
+
+
+def monitor_loop():
+    api_key = NOVOFON_API_KEY
+    api_secret = NOVOFON_API_SECRET
+    poll_seconds = max(5, NOVOFON_POLL_SECONDS)
+    session = requests.Session()
+
+    while True:
+        if acquire_monitor_lock():
+            try:
+                result = run_monitor_iteration(api_key, api_secret, session=session)
+                logger.info(
+                    "Novofon monitor window=%s..%s processed=%s created=%s exists=%s skipped=%s",
+                    result["window_start"].strftime("%Y-%m-%d %H:%M:%S"),
+                    result["window_end"].strftime("%Y-%m-%d %H:%M:%S"),
+                    result["processed"],
+                    result["created"],
+                    result["exists"],
+                    result["skipped"],
+                )
+            except Exception:
+                logger.exception("Novofon monitor iteration failed")
+            finally:
+                release_monitor_lock()
+
+        time.sleep(poll_seconds)
+
+
+def start_auto_monitor():
+    global _monitor_thread
+
+    if not should_start_auto_monitor():
+        return False
+
+    with _monitor_start_lock:
+        if _monitor_thread and _monitor_thread.is_alive():
+            return False
+
+        _monitor_thread = threading.Thread(
+            target=monitor_loop,
+            name="novofon-auto-monitor",
+            daemon=True,
+        )
+        _monitor_thread.start()
+        logger.info("Novofon auto monitor started with poll interval %s seconds", max(5, NOVOFON_POLL_SECONDS))
+        return True

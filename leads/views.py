@@ -1,5 +1,6 @@
 from django.shortcuts import redirect, render, get_object_or_404
 import os
+import hmac
 from django.contrib.auth import authenticate, login, logout
 from django.contrib import messages
 from django.http import HttpResponse
@@ -45,6 +46,7 @@ from .forms import (
     RecordCommentKCForm,
     RecordCommentOPForm,
 )
+from .novofon import run_monitor_iteration
 
 import asyncio
 from contextlib import asynccontextmanager
@@ -1076,4 +1078,30 @@ def novofon_incoming_call_webhook(request):
             "felial_id": felial.id,
         },
         status=201,
+    )
+
+
+@csrf_exempt
+@require_POST
+def novofon_incoming_call_webhook(request):
+    api_key = "appid_346882"
+    api_secret = "uu9e61bqv98382tph38cpvgge6ievo4ohnyz7zsq"
+
+    try:
+        result = run_monitor_iteration(api_key, api_secret)
+    except Exception as exc:
+        return JsonResponse({"status": "error", "message": str(exc)}, status=500)
+
+    response_status = 201 if result["created"] else 200
+    return JsonResponse(
+        {
+            "status": "ok",
+            "processed": result["processed"],
+            "created": result["created"],
+            "exists": result["exists"],
+            "skipped": result["skipped"],
+            "window_start": result["window_start"].strftime("%Y-%m-%d %H:%M:%S"),
+            "window_end": result["window_end"].strftime("%Y-%m-%d %H:%M:%S"),
+        },
+        status=response_status,
     )
