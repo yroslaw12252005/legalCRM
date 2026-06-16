@@ -61,7 +61,6 @@ class AddEmployeesForm(UserCreationForm):
             self.fields["felial"].queryset = Felial.objects.filter(companys=self.user.companys)
             if self.user.status == "Директор ЮПП":
                 self.fields["status"].choices = (
-                    ("Менеджер", "Менеджер"),
                     ("Юрист пирвичник", "Юрист пирвичник"),
                 )
             elif self.user.status == "Директор КЦ":
