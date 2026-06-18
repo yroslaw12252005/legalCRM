@@ -271,7 +271,10 @@ async def record(request, pk):
     documents = await get_documents()
 
     # Асинхронная инициализация форм
-    init_form = sync_to_async(lambda: StatusForm(request.POST or None, instance=record), thread_sensitive=True)
+    init_form = sync_to_async(
+        lambda: StatusForm(request.POST or None, instance=record, user=current_user),
+        thread_sensitive=True,
+    )
     form_status = await init_form()
 
     init_employees_KC = sync_to_async(

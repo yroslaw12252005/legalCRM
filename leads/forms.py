@@ -5,6 +5,7 @@ from accounts.models import User
 from felial.models import Felial
 
 from .models import Record
+from .status_utils import get_status_choices_for_user
 
 
 def _status_variants(value):
@@ -32,17 +33,7 @@ class AddRecordForm(forms.ModelForm):
     status = forms.ChoiceField(
         widget=forms.Select(attrs={"class": "form-select"}),
         label="Статус заявки",
-        choices=(
-            ("Новая", "Новая"),
-            ("Брак", "Брак"),
-            ("Недозвон", "Недозвон"),
-            ("Перезвон", "Перезвон"),
-            ("Запись в офис", "Запись в офис"),
-            ("Отказ", "Отказ"),
-            ("Онлайн", "Онлайн"),
-            ("Акт", "Акт"),
-            ("Договор", "Договор"),
-        ),
+        choices=(),
     )
 
     type = forms.ChoiceField(
@@ -67,6 +58,7 @@ class AddRecordForm(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         self.user = kwargs.pop("user", None)
         super().__init__(*args, **kwargs)
+        self.fields["status"].choices = get_status_choices_for_user(self.user)
         if self.user and self.user.companys_id:
             self.fields["felial"].queryset = Felial.objects.filter(companys=self.user.companys_id)
 
@@ -99,20 +91,12 @@ class AddRecordForm(forms.ModelForm):
 
 
 class StatusForm(forms.ModelForm):
-    status = forms.ChoiceField(
-        label="Статус заявки",
-        choices=(
-            ("Новая", "Новая"),
-            ("Брак", "Брак"),
-            ("Недозвон", "Недозвон"),
-            ("Перезвон", "Перезвон"),
-            ("Запись в офис", "Запись в офис"),
-            ("Отказ", "Отказ"),
-            ("Онлайн", "Онлайн"),
-            ("Акт", "Акт"),
-            ("Договор", "Договор"),
-        ),
-    )
+    status = forms.ChoiceField(label="Статус заявки", choices=())
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+        self.fields["status"].choices = get_status_choices_for_user(user)
 
     class Meta:
         model = Record
@@ -215,10 +199,9 @@ class FileUploadForm(forms.Form):
 class RecordEditForm(forms.ModelForm):
     class Meta:
         model = Record
-        fields = ["name", "description", "phone", "email", "birth_date", "social_links"]
+        fields = ["name", "phone", "email", "birth_date", "social_links"]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
-            "description": forms.Textarea(attrs={"class": "form-control", "rows": 5}),
             "phone": forms.TextInput(attrs={"class": "form-control"}),
             "email": forms.EmailInput(attrs={"class": "form-control"}),
             "birth_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
@@ -226,12 +209,24 @@ class RecordEditForm(forms.ModelForm):
         }
         labels = {
             "name": "Имя",
-            "description": "Описание",
             "phone": "Телефон",
             "email": "Почта",
             "birth_date": "Дата рождения",
             "social_links": "Соц. сети",
         }
+
+
+class BulkSmsForm(forms.Form):
+    message = forms.CharField(
+        label="Текст сообщения",
+        widget=forms.Textarea(
+            attrs={
+                "class": "form-control",
+                "rows": 4,
+                "placeholder": "Введите текст SMS для выбранных клиентов",
+            }
+        ),
+    )
 
 
 class RecordCommentForm(forms.ModelForm):

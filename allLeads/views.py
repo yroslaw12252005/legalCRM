@@ -19,7 +19,10 @@ from django.views.generic import ListView
 
 from accounts.models import User
 
+from leads.forms import BulkSmsForm
 from leads.models import Record
+from leads.sms import send_bulk_sms
+from leads.status_utils import get_allowed_status_values_for_user, get_status_choices_for_user
 from smart_calendar.models import Booking
 
 from todolist.models import ToDoList
@@ -46,19 +49,6 @@ STATUS_REPRESENTATIVE = "Представитель"
 
 LEAD_STATUS_NEW = "Новая"
 LEAD_STATUS_OFFICE = "Запись в офис"
-LEAD_STATUS_CHOICES = (
-    ("Новая", "Новая"),
-    ("Брак", "Брак"),
-    ("Недозвон", "Недозвон"),
-    ("Перезвон", "Перезвон"),
-    ("Запись в офис", "Запись в офис"),
-    ("Отказ", "Отказ"),
-    ("Онлайн", "Онлайн"),
-    ("Акт", "Акт"),
-    ("Договор", "Договор"),
-)
-
-
 DEFAULT_RECORDS_PER_PAGE = 100
 
 
@@ -183,6 +173,11 @@ def _can_send_to_representative(user):
 def _can_assign_rep(user):
 
     return user.status in {STATUS_DIRECTOR_REP, STATUS_ADMIN}
+
+
+def _can_send_sms(user):
+
+    return user.status == STATUS_ADMIN
 
 
 
@@ -373,6 +368,10 @@ def all_leads(request):
         .distinct()
 
     )
+    available_statuses = {value for value in statuses}
+    filtered_status_choices = [
+        choice for choice in get_status_choices_for_user(request.user) if choice[0] in available_statuses
+    ]
 
 
 
@@ -441,7 +440,10 @@ def all_leads(request):
             "can_send_to_representative": _can_send_to_representative(request.user),
 
             "can_assign_rep": _can_assign_rep(request.user),
-            "bulk_status_choices": LEAD_STATUS_CHOICES,
+            "can_send_sms": _can_send_sms(request.user),
+            "bulk_status_choices": get_status_choices_for_user(request.user),
+            "filter_status_choices": filtered_status_choices,
+            "bulk_sms_form": BulkSmsForm(),
 
         },
 
@@ -507,15 +509,6 @@ def filter_by_type(request, type):
 
     return render(request, "all_leads.html", {"records": records})
 
-
-
-
-
-def brak(request):
-
-    records = Record.objects.filter(status="Брак", companys=request.user.companys)
-
-    return render(request, "all_leads.html", {"records": records})
 
 
 def lead_exchange(request):
@@ -670,7 +663,7 @@ def bulk_in_work(request):
     if action == "change_status":
 
         new_status = request.POST.get("bulk_status", "").strip()
-        allowed_statuses = {value for value, _label in LEAD_STATUS_CHOICES}
+        allowed_statuses = get_allowed_status_values_for_user(request.user)
 
         if not new_status or new_status not in allowed_statuses:
 
@@ -683,6 +676,34 @@ def bulk_in_work(request):
 
         messages.success(request, f"Статус обновлен у заявок: {updated_count}")
 
+        return redirect("all_leads")
+
+    if action == "send_sms":
+
+        if not _can_send_sms(request.user):
+
+            messages.warning(request, "Недостаточно прав")
+
+            return redirect("all_leads")
+
+        sms_form = BulkSmsForm(request.POST)
+
+        if not sms_form.is_valid():
+
+            messages.warning(request, "Введите текст сообщения")
+
+            return redirect("all_leads")
+
+        records_to_notify = list(records_for_user.exclude(phone__isnull=True).exclude(phone__exact=""))
+
+        if not records_to_notify:
+
+            messages.warning(request, "У выбранных заявок нет телефонов")
+
+            return redirect("all_leads")
+
+        sent_count = send_bulk_sms(records_to_notify, sms_form.cleaned_data["message"])
+        messages.success(request, f"Тестовая SMS-рассылка выполнена: {sent_count}")
         return redirect("all_leads")
 
 

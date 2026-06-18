@@ -199,6 +199,8 @@
               <td class="crm-status">
                 {% if record.status == "Новая" %}
                   <span class="status-badge" style="color:#fff; background-color: #077EC2;">Новая</span>
+                {% elif record.status == "БК" %}
+                  <span class="status-badge" style="color:#fff; background-color: #C51010;">БК</span>
                 {% elif record.status == "Брак" %}
                   <span class="status-badge" style="color:#fff; background-color: #C51010;">Брак</span>
                 {% elif record.status == "Недозвон" %}

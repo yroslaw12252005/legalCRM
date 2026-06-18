@@ -8,7 +8,7 @@ from .models import User
 
 @login_required
 def employees(request):
-    if request.user.status not in {"Администратор", "Директор КЦ", "Директор ЮПП"}:
+    if request.user.status != "Администратор":
         messages.error(request, "Недостаточно прав")
         return redirect("all_leads")
     get_employees = User.objects.filter(companys=request.user.companys, felial=request.user.felial)
@@ -17,7 +17,7 @@ def employees(request):
 
 @login_required
 def delete_employee(request, pk):
-    if request.user.status not in {"Администратор", "Директор КЦ", "Директор ЮПП"}:
+    if request.user.status != "Администратор":
         messages.error(request, "Недостаточно прав")
         return redirect("all_leads")
 
@@ -50,7 +50,7 @@ def register_employees(request):
 
 @login_required
 def update_employees(request, pk):
-    if request.user.status not in {"Администратор", "Директор КЦ", "Директор ЮПП"}:
+    if request.user.status != "Администратор":
         messages.error(request, "Недостаточно прав")
         return redirect("all_leads")
 

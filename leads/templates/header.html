@@ -82,7 +82,7 @@
           value="{{ search_query }}"
           placeholder="Поиск по имени, телефону, описанию, ID"
         >
-        {% if user.status == "Директор ЮПП" or user.status == "Администратор" %}
+        {% if user.status == "Администратор" %}
         <select class="desktop-toolbar-select" name="employee">
           <option value="">Все сотрудники</option>
           {% for employee in filter_employees %}
@@ -100,15 +100,9 @@
         </select>
         <select class="desktop-toolbar-select" name="status">
           <option value="">Статус заявки</option>
-          <option value="Новая" {% if selected_status == "Новая" %}selected{% endif %}>Новая</option>
-          <option value="Брак" {% if selected_status == "Брак" %}selected{% endif %}>Брак</option>
-          <option value="Недозвон" {% if selected_status == "Недозвон" %}selected{% endif %}>Недозвон</option>
-          <option value="Перезвон" {% if selected_status == "Перезвон" %}selected{% endif %}>Перезвон</option>
-          <option value="Запись в офис" {% if selected_status == "Запись в офис" %}selected{% endif %}>Запись в офис</option>
-          <option value="Отказ" {% if selected_status == "Отказ" %}selected{% endif %}>Отказ</option>
-          <option value="Онлайн" {% if selected_status == "Онлайн" %}selected{% endif %}>Онлайн</option>
-          <option value="Акт" {% if selected_status == "Акт" %}selected{% endif %}>Акт</option>
-          <option value="Договор" {% if selected_status == "Договор" %}selected{% endif %}>Договор</option>
+          {% for status_value, status_label in filter_status_choices %}
+            <option value="{{ status_value }}" {% if selected_status == status_value %}selected{% endif %}>{{ status_label }}</option>
+          {% endfor %}
         </select>
         <button type="submit" class="crm-btn crm-btn-primary">Применить</button>
         <a href="{% url 'all_leads' %}" class="crm-btn" style="text-decoration: none;">Сбросить</a>

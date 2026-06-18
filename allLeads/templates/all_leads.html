@@ -216,7 +216,7 @@
       <table class="crm-table">
         <thead>
           <tr>
-            {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep %}
+            {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep or can_send_sms %}
               <th><input type="checkbox" id="selectAllRecords"></th>
             {% else %}
               <th></th>
@@ -246,7 +246,7 @@
           {% if records %}
             {% for record in records %}
                 <tr class="{% if record.paid_online == 1 and record.status == 'Онлайн' %}crm-row-paid-online{% endif %}{% if record.booking_come == 0 %} crm-row-not-came{% elif record.booking_come == 1 %} crm-row-came{% endif %}">
-                  {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep %}
+                  {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep or can_send_sms %}
                     <td>
                       <input type="checkbox" class="record-checkbox" name="selected_records" value="{{ record.id }}">
                     </td>
@@ -280,6 +280,8 @@
                   <td class="crm-status">
                     {% if record.status == "Новая" %}
                       <span class="status-badge" style="color:#fff; background-color: #077EC2;">Новая</span>
+                    {% elif record.status == "БК" %}
+                      <span class="status-badge" style="color:#fff; background-color: #C51010;">БК</span>
                     {% elif record.status == "Брак" %}
                       <span class="status-badge" style="color:#fff; background-color: #C51010;">Брак</span>
                     {% elif record.status == "Недозвон" %}
@@ -345,7 +347,7 @@
       </div>
     {% endif %}
 
-    {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep %}
+    {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep or can_send_sms %}
       <div class="bulk-action-bar" id="bulkActionBar">
         <span id="selectedCounter">Выбрано: 0</span>
 
@@ -360,6 +362,10 @@
           {% endfor %}
         </select>
         <button type="submit" name="action" value="change_status" class="crm-btn">Изменить статус</button>
+
+        {% if can_send_sms %}
+          <button type="button" class="crm-btn" id="toggleSmsForm">Рассылка</button>
+        {% endif %}
 
         {% if can_assign_kc %}
           <select name="operator_id" class="bulk-select">
@@ -394,12 +400,19 @@
           </select>
           <button type="submit" name="action" value="assign_representative" class="crm-btn">Прикрепить представителя</button>
         {% endif %}
+
+        {% if can_send_sms %}
+          <div id="bulkSmsPanel" style="display:none; width:100%; margin-top:8px;">
+            {{ bulk_sms_form.message }}
+            <button type="submit" name="action" value="send_sms" class="crm-btn crm-btn-primary" style="margin-top:8px;">Отправить</button>
+          </div>
+        {% endif %}
       </div>
     {% endif %}
   </form>
 </div>
 
-{% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep %}
+{% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep or can_send_sms %}
 <script>
   (function () {
     const checkboxes = Array.from(document.querySelectorAll('.record-checkbox'));
@@ -407,6 +420,8 @@
     const actionBar = document.getElementById('bulkActionBar');
     const counter = document.getElementById('selectedCounter');
     const form = document.getElementById('bulkInWorkForm');
+    const smsToggle = document.getElementById('toggleSmsForm');
+    const smsPanel = document.getElementById('bulkSmsPanel');
 
     if (!checkboxes.length || !actionBar || !counter || !form) {
       return;
@@ -442,6 +457,13 @@
         event.preventDefault();
       }
     });
+
+    if (smsToggle && smsPanel) {
+      smsToggle.addEventListener('click', function () {
+        const isVisible = smsPanel.style.display === 'block';
+        smsPanel.style.display = isVisible ? 'none' : 'block';
+      });
+    }
   })();
 </script>
 {% endif %}
