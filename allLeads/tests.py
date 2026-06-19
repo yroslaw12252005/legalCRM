@@ -102,7 +102,7 @@ class AllLeadsPhoneVisibilityTests(TestCase):
 
         self.assertContains(response, "+70000000001")
 
-    def test_director_upp_sees_phone_only_for_online_and_came(self):
+    def test_director_upp_sees_phone_for_online_status(self):
         director = User.objects.create_user(
             username="upp_director",
             password="test-pass-123",
@@ -110,6 +110,21 @@ class AllLeadsPhoneVisibilityTests(TestCase):
             companys=self.company,
             felial=self.felial,
         )
+        self.client.force_login(director)
+
+        response = self.client.get(reverse("all_leads"))
+        self.assertContains(response, "+70000000001")
+
+    def test_director_upp_sees_phone_after_client_came(self):
+        director = User.objects.create_user(
+            username="upp_director",
+            password="test-pass-123",
+            status="Директор ЮПП",
+            companys=self.company,
+            felial=self.felial,
+        )
+        self.record.status = "Запись в офис"
+        self.record.save(update_fields=["status"])
         self.client.force_login(director)
 
         response = self.client.get(reverse("all_leads"))
