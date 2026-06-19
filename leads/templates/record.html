@@ -441,9 +441,10 @@
                     <a href="{% url 'paid_online' record.id %}" class="btn btn-success" style="margin-top: 0.8rem;">Оплачено</a>
                 {% endif %}
             </div>
-            {% if user.status == "Администратор" or user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Менеджер" %}
+            {% if can_edit_status %}
             <form method="post">
                 {% csrf_token %}
+                <input type="hidden" name="action" value="update_status">
                 {{form_status.as_p}}
                 <button type="submit" class="btn btn-success">Изменить статус</button>
             </form>
@@ -463,6 +464,14 @@
                     {% endif %}
                 </div>
             </div>
+            {% if can_edit_topic %}
+            <form method="post">
+                {% csrf_token %}
+                <input type="hidden" name="action" value="update_topic">
+                {{ form_topic.as_p }}
+                <button type="submit" class="btn btn-success">Изменить тематику</button>
+            </form>
+            {% endif %}
 
              {% if record.doc and can_manage_documents %}
             <div class="stat-item">

@@ -105,6 +105,18 @@ class StatusForm(forms.ModelForm):
         labels = {"status": "Статус заявки"}
 
 
+class TopicForm(forms.ModelForm):
+    type = forms.ChoiceField(
+        label="Тематика заявки",
+        choices=tuple((topic, topic) for topic in LEAD_TOPICS),
+    )
+
+    class Meta:
+        model = Record
+        fields = ["type"]
+        labels = {"type": "Тематика заявки"}
+
+
 class Employees_KCForm(forms.ModelForm):
     employees_KC = forms.ModelChoiceField(
         queryset=User.objects.none(),

@@ -180,6 +180,11 @@ def _can_send_sms(user):
     return user.status == STATUS_ADMIN
 
 
+def _can_change_status(user):
+
+    return bool(get_allowed_status_values_for_user(user))
+
+
 
 
 
@@ -437,6 +442,7 @@ def all_leads(request):
 
             "can_assign_rep": _can_assign_rep(request.user),
             "can_send_sms": _can_send_sms(request.user),
+            "can_change_status": _can_change_status(request.user),
             "bulk_status_choices": get_status_choices_for_user(request.user),
             "filter_status_choices": filtered_status_choices,
             "bulk_sms_form": BulkSmsForm(),

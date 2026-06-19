@@ -157,3 +157,66 @@ class AllLeadsPhoneVisibilityTests(TestCase):
 
         self.assertContains(list_response, "+70000000001")
         self.assertContains(record_response, "Передать представителям")
+
+
+class StatusPermissionsTests(TestCase):
+    def setUp(self):
+        self.company = Companys.objects.create(title="Company")
+        self.felial = Felial.objects.create(title="Main", cites="Moscow", companys=self.company)
+        self.record = Record.objects.create(
+            name="Client",
+            phone="+70000000001",
+            description="desc",
+            companys=self.company,
+            felial=self.felial,
+            in_work=True,
+            status="Новая",
+        )
+
+    def test_lawyer_primary_cannot_set_contract_in_bulk(self):
+        lawyer = User.objects.create_user(
+            username="lawyer",
+            password="test-pass-123",
+            status="Юрист пирвичник",
+            companys=self.company,
+            felial=self.felial,
+        )
+        self.record.employees_UPP = lawyer.username
+        self.record.save(update_fields=["employees_UPP"])
+        self.client.force_login(lawyer)
+
+        response = self.client.post(
+            reverse("all_leads_bulk_in_work"),
+            data={
+                "action": "change_status",
+                "bulk_status": "Договор",
+                "selected_records": [self.record.id],
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.record.refresh_from_db()
+        self.assertEqual(self.record.status, "Новая")
+
+    def test_manager_can_set_contract_in_bulk(self):
+        manager = User.objects.create_user(
+            username="manager",
+            password="test-pass-123",
+            status="Менеджер",
+            companys=self.company,
+            felial=self.felial,
+        )
+        self.client.force_login(manager)
+
+        response = self.client.post(
+            reverse("all_leads_bulk_in_work"),
+            data={
+                "action": "change_status",
+                "bulk_status": "Договор",
+                "selected_records": [self.record.id],
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.record.refresh_from_db()
+        self.assertEqual(self.record.status, "Договор")
