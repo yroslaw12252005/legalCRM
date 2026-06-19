@@ -1,5 +1,6 @@
 {% extends "base.html" %}
 {% load static %}
+{% load lead_access %}
 {% block content %}
 
 <style>
@@ -97,14 +98,15 @@
       border-bottom-right-radius: 8px;
     }
     table.crm-table th:nth-child(1), table.crm-table td:nth-child(1) { width: 4%; }
-    table.crm-table th:nth-child(2), table.crm-table td:nth-child(2) { width: 18%; }
-    table.crm-table th:nth-child(3), table.crm-table td:nth-child(3) { width: 12%; }
-    table.crm-table th:nth-child(4), table.crm-table td:nth-child(4) { width: 25%; }
-    table.crm-table th:nth-child(5), table.crm-table td:nth-child(5) { width: 10%; }
-    table.crm-table th:nth-child(6), table.crm-table td:nth-child(6) { width: 12%; }
-    table.crm-table th:nth-child(7), table.crm-table td:nth-child(7) { width: 8%; }
-    table.crm-table th:nth-child(8), table.crm-table td:nth-child(8) { width: 8%; }
+    table.crm-table th:nth-child(2), table.crm-table td:nth-child(2) { width: 12%; }
+    table.crm-table th:nth-child(3), table.crm-table td:nth-child(3) { width: 16%; }
+    table.crm-table th:nth-child(4), table.crm-table td:nth-child(4) { width: 12%; }
+    table.crm-table th:nth-child(5), table.crm-table td:nth-child(5) { width: 21%; }
+    table.crm-table th:nth-child(6), table.crm-table td:nth-child(6) { width: 9%; }
+    table.crm-table th:nth-child(7), table.crm-table td:nth-child(7) { width: 10%; }
+    table.crm-table th:nth-child(8), table.crm-table td:nth-child(8) { width: 7%; }
     table.crm-table th:nth-child(9), table.crm-table td:nth-child(9) { width: 7%; }
+    table.crm-table th:nth-child(10), table.crm-table td:nth-child(10) { width: 6%; }
     .crm-status {
       color: #2563eb;
       font-weight: 600;
@@ -138,40 +140,43 @@
 
 {% if user.is_authenticated %}
 <div class="crm-container">
-  <h2 class="crm-section-title">Актуальные заявки</h2>
-  <p class="crm-section-note">Заявки за {{ selected_date|date:"d.m.Y" }}</p>
+  <h2 class="crm-section-title">РђРєС‚СѓР°Р»СЊРЅС‹Рµ Р·Р°СЏРІРєРё</h2>
+  <p class="crm-section-note">Р—Р°СЏРІРєРё Р·Р° {{ selected_date|date:"d.m.Y" }}</p>
 
   <div class="crm-table-wrapper">
     <table class="crm-table">
       <thead>
         <tr>
           <th></th>
-          <th>Имя</th>
-          <th>Телефон</th>
-          <th>Описание</th>
-          {% if user.status == "Администратор" %}
-            <th>Источник</th>
+          <th>Дата поступления</th>
+          <th>РРјСЏ</th>
+          <th>РўРµР»РµС„РѕРЅ</th>
+          <th>РћРїРёСЃР°РЅРёРµ</th>
+          {% if user.status == "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ" %}
+            <th>РСЃС‚РѕС‡РЅРёРє</th>
           {% endif %}
-          <th>Статус</th>
-          {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор" %}
-            <th>В работе</th>
+          <th>РЎС‚Р°С‚СѓСЃ</th>
+          {% if user.status == "Р”РёСЂРµРєС‚РѕСЂ РљР¦" or user.status == "РћРїРµСЂР°С‚РѕСЂ" or user.status == "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ" %}
+            <th>Р’ СЂР°Р±РѕС‚Рµ</th>
           {% endif %}
-          {% if user.status == "Директор КЦ" or user.status == "Администратор" or user.status == "Менеджер" %}
-            <th>Оператор</th>
+          {% if user.status == "Р”РёСЂРµРєС‚РѕСЂ РљР¦" or user.status == "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ" or user.status == "РњРµРЅРµРґР¶РµСЂ" %}
+            <th>РћРїРµСЂР°С‚РѕСЂ</th>
           {% endif %}
-          {% if user.status == "Директор ЮПП" or user.status == "Администратор" or user.status == "Менеджер" %}
-            <th>Юрист</th>
+          {% if user.status == "Р”РёСЂРµРєС‚РѕСЂ Р®РџРџ" or user.status == "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ" or user.status == "РњРµРЅРµРґР¶РµСЂ" %}
+            <th>Р®СЂРёСЃС‚</th>
           {% endif %}
-          {% if user.status == "Директор представителей" or user.status == "Администратор" or user.status == "Менеджер" or user.status == "Директор ЮПП" %}
-            <th>Представитель</th>
+          {% if user.status == "Р”РёСЂРµРєС‚РѕСЂ РїСЂРµРґСЃС‚Р°РІРёС‚РµР»РµР№" or user.status == "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ" or user.status == "РњРµРЅРµРґР¶РµСЂ" or user.status == "Р”РёСЂРµРєС‚РѕСЂ Р®РџРџ" %}
+            <th>РџСЂРµРґСЃС‚Р°РІРёС‚РµР»СЊ</th>
           {% endif %}
         </tr>
       </thead>
       <tbody>
         {% if records %}
           {% for record in records %}
-            <tr class="{% if record.paid_online == 1 and record.status == 'Онлайн' %}crm-row-paid-online{% endif %}{% if record.booking_come == 0 %} crm-row-not-came{% elif record.booking_come == 1 %} crm-row-came{% endif %}">
+            {% get_record_phone user record record.booking_come as record_phone %}
+            <tr class="{% if record.paid_online == 1 and record.status == 'РћРЅР»Р°Р№РЅ' %}crm-row-paid-online{% endif %}{% if record.booking_come == 0 %} crm-row-not-came{% elif record.booking_come == 1 %} crm-row-came{% endif %}">
               <td></td>
+              <td>{{ record.created_at|date:"d.m.Y H:i" }}</td>
               <td title="{{ record.name }}">
                 {% if record.name != None %}
                   <a href="{% url 'record' record.id %}" style="text-decoration: none; color:#595959;">
@@ -179,17 +184,13 @@
                   </a>
                 {% endif %}
               </td>
-              <td>
-                {% if record.name != None %}
-                  {{ record.phone }}
-                {% endif %}
-              </td>
+              <td>{{ record_phone }}</td>
               <td title="{{ record.description }}">
                 {% if record.name != None %}
                   {{ record.description|truncatechars:40 }}
                 {% endif %}
               </td>
-              {% if user.status == "Администратор" %}
+              {% if user.status == "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ" %}
                 <td title="{{ record.where }}">
                   {% if record.name != None %}
                     {{ record.where|truncatechars:15 }}
@@ -197,51 +198,51 @@
                 </td>
               {% endif %}
               <td class="crm-status">
-                {% if record.status == "Новая" %}
-                  <span class="status-badge" style="color:#fff; background-color: #077EC2;">Новая</span>
-                {% elif record.status == "БК" %}
-                  <span class="status-badge" style="color:#fff; background-color: #C51010;">БК</span>
-                {% elif record.status == "Брак" %}
-                  <span class="status-badge" style="color:#fff; background-color: #C51010;">Брак</span>
-                {% elif record.status == "Недозвон" %}
-                  <span class="status-badge" style="color:#fff; background-color: #595959;">Недозвон</span>
-                {% elif record.status == "Перезвон" %}
-                  <span class="status-badge" style="color:#fff; background-color: #595959;">Перезвон</span>
-                {% elif record.status == "Запись в офис" %}
-                  <span class="status-badge" style="color:#fff; background-color: #22C061;">Запись</span>
-                {% elif record.status == "Отказ" %}
-                  <span class="status-badge" style="color:#fff; background-color: #C51010;">Отказ</span>
-                {% elif record.status == "Онлайн" %}
-                  <span class="status-badge" style="color:#fff; background-color: #E1C645;">Онлайн</span>
-                {% elif record.status == "Акт" %}
-                  <span class="status-badge" style="color:#fff; background-color: #22C061;">Акт</span>
-                {% elif record.status == "Договор" %}
-                  <span class="status-badge" style="color:#fff; background-color: #CCCCFF;">Договор</span>
+                {% if record.status == "РќРѕРІР°СЏ" %}
+                  <span class="status-badge" style="color:#fff; background-color: #077EC2;">РќРѕРІР°СЏ</span>
+                {% elif record.status == "Р‘Рљ" %}
+                  <span class="status-badge" style="color:#fff; background-color: #C51010;">Р‘Рљ</span>
+                {% elif record.status == "Р‘СЂР°Рє" %}
+                  <span class="status-badge" style="color:#fff; background-color: #C51010;">Р‘СЂР°Рє</span>
+                {% elif record.status == "РќРµРґРѕР·РІРѕРЅ" %}
+                  <span class="status-badge" style="color:#fff; background-color: #595959;">РќРµРґРѕР·РІРѕРЅ</span>
+                {% elif record.status == "РџРµСЂРµР·РІРѕРЅ" %}
+                  <span class="status-badge" style="color:#fff; background-color: #595959;">РџРµСЂРµР·РІРѕРЅ</span>
+                {% elif record.status == "Р—Р°РїРёСЃСЊ РІ РѕС„РёСЃ" %}
+                  <span class="status-badge" style="color:#fff; background-color: #22C061;">Р—Р°РїРёСЃСЊ</span>
+                {% elif record.status == "РћС‚РєР°Р·" %}
+                  <span class="status-badge" style="color:#fff; background-color: #C51010;">РћС‚РєР°Р·</span>
+                {% elif record.status == "РћРЅР»Р°Р№РЅ" %}
+                  <span class="status-badge" style="color:#fff; background-color: #E1C645;">РћРЅР»Р°Р№РЅ</span>
+                {% elif record.status == "РђРєС‚" %}
+                  <span class="status-badge" style="color:#fff; background-color: #22C061;">РђРєС‚</span>
+                {% elif record.status == "Р”РѕРіРѕРІРѕСЂ" %}
+                  <span class="status-badge" style="color:#fff; background-color: #CCCCFF;">Р”РѕРіРѕРІРѕСЂ</span>
                 {% endif %}
               </td>
-              {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор" %}
+              {% if user.status == "Р”РёСЂРµРєС‚РѕСЂ РљР¦" or user.status == "РћРїРµСЂР°С‚РѕСЂ" or user.status == "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ" %}
                 <td>
                   {% if record.in_work == 1 %}
-                    <span class="status-badge" style="color:#fff; background-color: #22C061;">Да</span>
+                    <span class="status-badge" style="color:#fff; background-color: #22C061;">Р”Р°</span>
                   {% else %}
-                    <span class="status-badge" style="color:#fff; background-color: #C51010;">Нет</span>
+                    <span class="status-badge" style="color:#fff; background-color: #C51010;">РќРµС‚</span>
                   {% endif %}
                 </td>
               {% endif %}
-              {% if user.status == "Директор КЦ" or user.status == "Администратор" or user.status == "Менеджер" %}
+              {% if user.status == "Р”РёСЂРµРєС‚РѕСЂ РљР¦" or user.status == "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ" or user.status == "РњРµРЅРµРґР¶РµСЂ" %}
                 <td title="{{ record.employees_KC }}">{{ record.employees_KC|truncatechars:8 }}</td>
               {% endif %}
-              {% if user.status == "Директор ЮПП" or user.status == "Администратор" or user.status == "Менеджер" %}
+              {% if user.status == "Р”РёСЂРµРєС‚РѕСЂ Р®РџРџ" or user.status == "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ" or user.status == "РњРµРЅРµРґР¶РµСЂ" %}
                 <td title="{{ record.employees_UPP }}">{{ record.employees_UPP|truncatechars:8 }}</td>
               {% endif %}
-              {% if user.status == "Директор представителей" or user.status == "Администратор" or user.status == "Менеджер" or user.status == "Директор ЮПП" %}
+              {% if user.status == "Р”РёСЂРµРєС‚РѕСЂ РїСЂРµРґСЃС‚Р°РІРёС‚РµР»РµР№" or user.status == "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ" or user.status == "РњРµРЅРµРґР¶РµСЂ" or user.status == "Р”РёСЂРµРєС‚РѕСЂ Р®РџРџ" %}
                 <td title="{{ record.employees_REP }}">{{ record.employees_REP|truncatechars:8 }}</td>
               {% endif %}
             </tr>
           {% endfor %}
         {% else %}
           <tr>
-            <td class="crm-empty" colspan="9">На сегодня заявок не найдено.</td>
+            <td class="crm-empty" colspan="10">РќР° СЃРµРіРѕРґРЅСЏ Р·Р°СЏРІРѕРє РЅРµ РЅР°Р№РґРµРЅРѕ.</td>
           </tr>
         {% endif %}
       </tbody>

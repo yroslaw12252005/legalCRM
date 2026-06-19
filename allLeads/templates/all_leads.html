@@ -1,5 +1,6 @@
 ﻿{% extends "base.html" %}
 {% load static %}
+{% load lead_access %}
 {% block content %}
 
 <style>
@@ -97,14 +98,15 @@
       border-bottom-right-radius: 8px;
     }
     table.crm-table th:nth-child(1), table.crm-table td:nth-child(1) { width: 4%; }
-    table.crm-table th:nth-child(2), table.crm-table td:nth-child(2) { width: 18%; }
-    table.crm-table th:nth-child(3), table.crm-table td:nth-child(3) { width: 12%; }
-    table.crm-table th:nth-child(4), table.crm-table td:nth-child(4) { width: 25%; }
-    table.crm-table th:nth-child(5), table.crm-table td:nth-child(5) { width: 10%; }
-    table.crm-table th:nth-child(6), table.crm-table td:nth-child(6) { width: 12%; }
-    table.crm-table th:nth-child(7), table.crm-table td:nth-child(7) { width: 8%; }
-    table.crm-table th:nth-child(8), table.crm-table td:nth-child(8) { width: 8%; }
+    table.crm-table th:nth-child(2), table.crm-table td:nth-child(2) { width: 12%; }
+    table.crm-table th:nth-child(3), table.crm-table td:nth-child(3) { width: 16%; }
+    table.crm-table th:nth-child(4), table.crm-table td:nth-child(4) { width: 12%; }
+    table.crm-table th:nth-child(5), table.crm-table td:nth-child(5) { width: 21%; }
+    table.crm-table th:nth-child(6), table.crm-table td:nth-child(6) { width: 9%; }
+    table.crm-table th:nth-child(7), table.crm-table td:nth-child(7) { width: 10%; }
+    table.crm-table th:nth-child(8), table.crm-table td:nth-child(8) { width: 7%; }
     table.crm-table th:nth-child(9), table.crm-table td:nth-child(9) { width: 7%; }
+    table.crm-table th:nth-child(10), table.crm-table td:nth-child(10) { width: 6%; }
     .crm-status {
       color: #2563eb;
       font-weight: 600;
@@ -221,6 +223,7 @@
             {% else %}
               <th></th>
             {% endif %}
+            <th>Дата поступления</th>
             <th>Имя</th>
             <th>Телефон</th>
             <th>Описание</th>
@@ -245,6 +248,7 @@
         <tbody>
           {% if records %}
             {% for record in records %}
+                {% get_record_phone user record record.booking_come as record_phone %}
                 <tr class="{% if record.paid_online == 1 and record.status == 'Онлайн' %}crm-row-paid-online{% endif %}{% if record.booking_come == 0 %} crm-row-not-came{% elif record.booking_come == 1 %} crm-row-came{% endif %}">
                   {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep or can_send_sms %}
                     <td>
@@ -253,6 +257,7 @@
                   {% else %}
                     <td></td>
                   {% endif %}
+                  <td>{{ record.created_at|date:"d.m.Y H:i" }}</td>
                   <td title="{{ record.name }}">
                     {% if record.name != None %}
                       <a href="{% url 'record' record.id %}" style="text-decoration: none; color:#595959;">
@@ -260,11 +265,7 @@
                       </a>
                     {% endif %}
                   </td>
-                  <td>
-                    {% if record.name != None %}
-                      {{ record.phone }}
-                    {% endif %}
-                  </td>
+                  <td>{{ record_phone }}</td>
                   <td title="{{ record.description }}">
                     {% if record.name != None %}
                       {{ record.description|truncatechars:40 }}
@@ -322,7 +323,7 @@
             {% endfor %}
           {% else %}
             <tr>
-              <td colspan="10" class="crm-empty">Заявки не найдены</td>
+              <td colspan="11" class="crm-empty">Заявки не найдены</td>
             </tr>
           {% endif %}
         </tbody>

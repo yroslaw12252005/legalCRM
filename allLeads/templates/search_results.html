@@ -1,9 +1,9 @@
 {% extends "base.html" %}
 {% load static %}
+{% load lead_access %}
 {% block content %}
 
 <style>
-    /* --- CRM TABLE STYLES FROM test.html --- */
     body {
       font-family: 'Segoe UI', Arial, sans-serif;
       background: #f7f8fa;
@@ -22,7 +22,6 @@
       margin: 0 24px;
       overflow-x: auto;
     }
-    /* Стили для скроллбара */
     .crm-table-wrapper::-webkit-scrollbar {
       height: 8px;
       background-color: #f1f1f1;
@@ -109,62 +108,8 @@
       color: #2563eb;
       font-weight: 600;
     }
-    .crm-btn {
-      background: #f3f4f6;
-      border: 1px solid #e5e7eb;
-      border-radius: 14px;
-      padding: 6px 16px;
-      font-size: 14px;
-      font-weight: 600;
-      cursor: pointer;
-      color: #111827;
-      transition: background 0.2s, border 0.2s;
-    }
-    .crm-btn:hover {
-      background: #e5e7eb;
-    }
-    .crm-trash {
-      color: #d14343;
-      cursor: pointer;
-      font-size: 18px;
-      border: none;
-      background: none;
-      padding: 0 8px;
-      transition: color 0.2s;
-    }
-    .crm-trash:hover {
-      color: #b91c1c;
-    }
     table.crm-table tbody tr:hover {
       background: #f8fafc;
-    }
-    .crm-pagination {
-      display: flex;
-      align-items: center;
-      margin: 20px 24px 0 24px;
-    }
-    .crm-pagination-btn {
-      border: 1px solid #d1d5db;
-      background: #fff;
-      color: #2563eb;
-      border-radius: 6px;
-      padding: 2px 10px;
-      margin: 0 2px;
-      font-size: 15px;
-      cursor: pointer;
-      min-width: 32px;
-      transition: background 0.2s, border 0.2s;
-    }
-    .crm-pagination-btn.active {
-      background: #2563eb;
-      color: #fff;
-      border-color: #2563eb;
-    }
-    .crm-pagination-btn:disabled {
-      color: #9ca3af;
-      border-color: #e5e7eb;
-      background: #f3f4f6;
-      cursor: not-allowed;
     }
 </style>
 
@@ -173,6 +118,7 @@
     <table class="crm-table">
       <thead>
         <tr>
+          <th>Дата поступления</th>
           <th>Имя</th>
           <th>Телефон</th>
           <th>Описание</th>
@@ -187,13 +133,15 @@
         {% for record in object_list %}
           {% if user.companys.id == record.companys.id %}
             {% if user.status == "Директор КЦ" and record.in_work == 0 or user.status == "Директор КЦ" and record.in_work == 1 or user.status == "Директор ЮПП" and record.in_work == 1 or user.status == "Юрист пирвичник" and record.employees_UPP == user.username or user.status == "ОП" and record.employees_UPP == user.username or user.status == "Директор представителей" and record.representative == 1 or user.status == "Представитель" and record.employees_REP == user.username and record.representative == 1 or user.status == "Оператор" and record.employees_KC == user.username or user.status == "Менеджер" or user.status == "Администратор"%}
-              <tr class="{% if record.paid_online == 1 and (record.status == 'Онлайн' or record.status == 'РћРЅР»Р°Р№РЅ') %}crm-row-paid-online{% endif %}{% if record.booking_come == 0 %} crm-row-not-came{% elif record.booking_come == 1 %} crm-row-came{% endif %}">
+              {% get_record_phone user record record.booking_come as record_phone %}
+              <tr class="{% if record.paid_online == 1 and record.status == 'Онлайн' or record.paid_online == 1 and record.status == 'РћРЅР»Р°Р№РЅ' %}crm-row-paid-online{% endif %}{% if record.booking_come == 0 %} crm-row-not-came{% elif record.booking_come == 1 %} crm-row-came{% endif %}">
+                <td>{{ record.created_at|date:"d.m.Y H:i" }}</td>
                 <td>
-                  <a href="{% url 'leads:record' record.id %}" style="text-decoration: none; color:#595959;">
+                  <a href="{% url 'record' record.id %}" style="text-decoration: none; color:#595959;">
                     {{ record.name }}
                   </a>
                 </td>
-                <td>{{ record.phone }}</td>
+                <td>{{ record_phone }}</td>
                 <td>{{ record.description|slice:"100" }}</td>
                 <td>{{ record.where }}</td>
                 <td class="crm-status">
@@ -215,6 +163,8 @@
                     <span style="color:#fff; background-color: #E1C645; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
                   {% elif record.status == "Акт" %}
                     <span style="color:#fff; background-color: #22C061; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
+                  {% elif record.status == "Договор" %}
+                    <span style="color:#fff; background-color: #CCCCFF; padding: 4px 8px; border-radius: 4px;">{{ record.status }}</span>
                   {% endif %}
                 </td>
                 {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
@@ -235,6 +185,4 @@
   </div>
 </div>
 
-{% endblock content %} 
-
-
+{% endblock content %}

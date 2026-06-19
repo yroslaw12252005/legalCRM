@@ -1,5 +1,6 @@
 ﻿{% extends "base.html" %}
 {% load static %}
+{% load lead_access %}
 {% block content %}
 <style>
         :root {
@@ -327,6 +328,8 @@
 
             </style>
     <div class="card">
+        {% get_record_phone user record booking_come as record_phone %}
+        {% can_show_transfer_button user record as can_show_transfer_button %}
         <h2>{{ record.name }}</h2>
         <a href="{% url 'client_inform' record.id %}"  style="color: black;     margin-bottom: 10px;">https://yblochko.rosscrm.ru/{% url 'client_inform' record.id %}</a>
         <div class="stat-item" style="margin-bottom: 1.5rem;">
@@ -371,7 +374,7 @@
             </div>
             <div class="stat-item">
                 <div class="stat-label">Телефон</div>
-                <div class="stat-value">{{ record.phone }}</div>
+                <div class="stat-value">{{ record_phone }}</div>
             </div>
             <div class="stat-item">
                 <div class="stat-label">Почта</div>
@@ -622,7 +625,7 @@
     {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Администратор"%}
       <a href="{% url 'in_work' record.id %}" class="btn btn-primary">В работу</a>
     {% endif %}
-    {% if user.status == "Директор ЮПП" or user.status == "Администратор"%}
+    {% if can_show_transfer_button %}
       <a href="{% url 'to_representative' record.id %}" class="btn btn-primary">Передать представителям</a>
     {% endif %}
     {% if record.status == "Запись в офис" and user.status == "Юрист пирвичник" or record.status == "Запись в офис" and user.status == "Директор ЮПП" or record.status == "Запись в офис" and user.status == "Директор КЦ" or record.status == "Запись в офис" and user.status == "Оператор" or record.status == "Запись в офис" and user.status == "Менеджер" or record.status == "Запись в офис" and user.status == "Администратор" %}

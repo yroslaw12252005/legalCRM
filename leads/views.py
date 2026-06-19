@@ -46,6 +46,7 @@ from .forms import (
     RecordCommentKCForm,
     RecordCommentOPForm,
 )
+from .access import can_transfer_to_representative
 from .novofon import run_monitor_iteration
 
 import asyncio
@@ -343,7 +344,7 @@ async def record(request, pk):
         await add_message(request, "Статус успешно обновлен")
         return await sync_to_async(render)(request, "record.html", {"record": record,  "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "booking_come": getattr(get_status_com, "come", None), "documents": documents, "can_manage_documents": request.can_manage_documents
                        })
 
 
@@ -356,7 +357,7 @@ async def record(request, pk):
         await sync_to_async(messages.success)(request, "Оператор прикреплен")
         return await sync_to_async(render)(request, "record.html", {"record": record,  "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "booking_come": getattr(get_status_com, "come", None), "documents": documents, "can_manage_documents": request.can_manage_documents
                        })
 
 
@@ -376,7 +377,7 @@ async def record(request, pk):
             )
             return await sync_to_async(render)(request, "record.html", {"record": record,  "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "booking_come": getattr(get_status_com, "come", None), "documents": documents, "can_manage_documents": request.can_manage_documents
                        })
         save_form = sync_to_async(form_employees_UPP.save, thread_sensitive=True)
         record = await save_form()
@@ -384,7 +385,7 @@ async def record(request, pk):
         await sync_to_async(messages.success)(request, "Юрист прикреплен")
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "booking_come": getattr(get_status_com, "come", None), "documents": documents, "can_manage_documents": request.can_manage_documents
                        })
 
     elif form_employees_REP_valid:
@@ -396,7 +397,7 @@ async def record(request, pk):
         await sync_to_async(messages.success)(request, "Представитель прикреплен")
         return await sync_to_async(render)(request, "record.html", {"record": record,  "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "booking_come": getattr(get_status_com, "come", None), "documents": documents, "can_manage_documents": request.can_manage_documents
                        })
 
 
@@ -406,7 +407,7 @@ async def record(request, pk):
         await sync_to_async(messages.success)(request, "Цена указана")
         return await sync_to_async(render)(request, "record.html", {"record": record,  "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "booking_come": getattr(get_status_com, "come", None), "documents": documents, "can_manage_documents": request.can_manage_documents
                        })
 
 
@@ -454,14 +455,14 @@ async def record(request, pk):
 
         return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                        "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
-                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
+                       'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "booking_come": getattr(get_status_com, "come", None), "documents": documents, "can_manage_documents": request.can_manage_documents
                        })
 
     # Удаляю topic_form из контекста рендера
     # Рендер страницы, если нет валидных форм
     return await sync_to_async(render)(request, "record.html", {"record": record, "form_status": form_status, "form_employees_KC": form_employees_KC,
                    "form_employees_UPP": form_employees_UPP, "form_employees_REP": form_employees_REP, "cost": cost_form, "surcharge": surcharge,
-                   'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "documents": documents, "can_manage_documents": request.can_manage_documents
+                   'upload_file_form': upload_file_form, 'get_status_com':get_status_com, "booking_come": getattr(get_status_com, "come", None), "documents": documents, "can_manage_documents": request.can_manage_documents
                    })
 
 
@@ -610,6 +611,9 @@ def to_representative(request, pk):
         messages.warning(request, "Нет прав для передачи в представителей")
         return redirect("record", pk=pk)
     record = _record_for_user_or_404(request, pk)
+    if not can_transfer_to_representative(request.user, record):
+        messages.warning(request, "Передавать представителю можно только заявки со статусом Договор")
+        return redirect("record", pk=pk)
     record.representative = 1
     record.save()
     messages.success(request, "Заявка передана представителям")

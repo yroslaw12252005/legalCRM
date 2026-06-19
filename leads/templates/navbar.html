@@ -8,7 +8,7 @@
         <div class="user-header">
             <span class="company-id">ID компании: {{ user.companys.id }}</span>
             <div style="display:flex; justify-content:space-between;">
-                <h2 class="username">{{ user.username }}</h2>
+                <h2 class="username">{{ user.status }}</h2>
                 <a class="nav-link" href="{% url 'logout' %}"><img src="/static/img/logout.png" alt=""></a>
             </div>
         </div>

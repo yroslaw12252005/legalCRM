@@ -18,7 +18,7 @@ from django.views.generic import ListView
 
 
 from accounts.models import User
-
+from leads.access import build_topic_choices, status_variants
 from leads.forms import BulkSmsForm
 from leads.models import Record
 from leads.sms import send_bulk_sms
@@ -343,17 +343,12 @@ def all_leads(request):
 
     ).order_by("username")
 
-    topics = (
+    topics = build_topic_choices(
         base_records
-
         .exclude(type__isnull=True)
-
         .exclude(type__exact="")
-
         .values_list("type", flat=True)
-
         .distinct()
-
     )
 
     statuses = (
@@ -379,6 +374,7 @@ def all_leads(request):
         "id",
         "name",
         "phone",
+        "created_at",
         "description",
         "where",
         "status",
@@ -758,7 +754,8 @@ def bulk_in_work(request):
 
 
 
-        updated_count = records_for_user.update(representative=1)
+        eligible_records = records_for_user.filter(status__in=list(status_variants("Договор")))
+        updated_count = eligible_records.update(representative=1)
 
         if updated_count:
 
@@ -766,7 +763,7 @@ def bulk_in_work(request):
 
         else:
 
-            messages.warning(request, "Нет заявок для передачи")
+            messages.warning(request, "Для передачи представителям нужны заявки со статусом Договор")
 
         return redirect("all_leads")
 
