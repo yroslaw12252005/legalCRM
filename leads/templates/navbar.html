@@ -203,6 +203,12 @@ $(document).ready(function() {
                 <span><a style="color:#fff; text-decoration:none;" href="{% url 'education_list' %}"><img src="{% static 'img/doc.png' %}" alt=""> База знаний</a></span>
             </li>
 
+            {% if user.status == "Директор КЦ" or user.status == "Директор ЮПП" or user.status == "Администратор" %}
+                <li class="active">
+                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'get_calls' %}"><img src="{% static 'img/doc.png' %}" alt=""> Записи разговоров</a></span>
+                </li>
+            {% endif %}
+
         {% endif %}
         </ul>
     </div>

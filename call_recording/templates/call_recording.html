@@ -1,3 +1,65 @@
-{% for call in calls %}
-<h1>{{ call }}</h1>
-{% endfor %}
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container py-4">
+  <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
+    <div>
+      <h3 class="mb-1">Записи разговоров</h3>
+      <p class="text-muted mb-0">Файлы автоматически подтягиваются из Beeline и сохраняются в S3 по папкам компаний.</p>
+    </div>
+  </div>
+
+  <form class="row g-2 mb-4" method="get">
+    <div class="col-12 col-md-4 col-lg-3">
+      <input
+        type="text"
+        name="phone"
+        class="form-control form-control-sm"
+        placeholder="Поиск по номеру"
+        value="{{ query }}"
+      >
+    </div>
+    <div class="col-12 col-md-auto">
+      <button class="btn btn-outline-primary btn-sm" type="submit">Найти</button>
+    </div>
+  </form>
+
+  {% if recordings %}
+    <div class="table-responsive">
+      <table class="table table-striped align-middle">
+        <thead>
+          <tr>
+            <th>Номер телефона</th>
+            <th>Оператор</th>
+            <th>Дата звонка</th>
+            <th>Файл</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          {% for recording in recordings %}
+            <tr>
+              <td>{{ recording.phone }}</td>
+              <td>{{ recording.operator_phone|default:"-" }}</td>
+              <td>
+                {% if recording.call_started_at %}
+                  {{ recording.call_started_at|date:"d.m.Y H:i:s" }}
+                {% else %}
+                  -
+                {% endif %}
+              </td>
+              <td>{{ recording.file_name }}</td>
+              <td class="text-end">
+                <a class="btn btn-sm btn-primary" href="{% url 'download_call' recording.id %}">Скачать</a>
+              </td>
+            </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+  {% else %}
+    <div class="alert alert-info mb-0">Записи пока не найдены.</div>
+  {% endif %}
+</div>
+{% endblock content %}
+

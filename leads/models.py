@@ -8,7 +8,7 @@ class Record(models.Model):
     email = models.EmailField(max_length=254, null=True, blank=True)
     birth_date = models.DateField(null=True, blank=True)
     social_links = models.TextField(default="", blank=True)
-    description  = models.CharField(max_length=500, default=None, null=True)
+    description  = models.CharField(max_length=1000, default=None, null=True)
     work_comment_kc = models.TextField(default="", blank=True)
     work_comment = models.TextField(default="", blank=True)
     work_comment_op = models.TextField(default="", blank=True)

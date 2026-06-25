@@ -68,7 +68,9 @@ class AddRecordForm(forms.ModelForm):
         fields = ["name", "description", "phone", "email", "birth_date", "social_links", "status", "type", "where", "felial"]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control", "label": "Your name"}),
-            "description": forms.Textarea(attrs={"class": "form-control", "cols": "40", "rows": "5"}),
+            "description": forms.Textarea(
+                attrs={"class": "form-control", "cols": "40", "rows": "5", "maxlength": "1000"}
+            ),
             "phone": forms.TextInput(attrs={"class": "form-control"}),
             "email": forms.EmailInput(attrs={"class": "form-control"}),
             "birth_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
@@ -212,9 +214,10 @@ class FileUploadForm(forms.Form):
 class RecordEditForm(forms.ModelForm):
     class Meta:
         model = Record
-        fields = ["name", "phone", "email", "birth_date", "social_links"]
+        fields = ["name", "description", "phone", "email", "birth_date", "social_links"]
         widgets = {
             "name": forms.TextInput(attrs={"class": "form-control"}),
+            "description": forms.Textarea(attrs={"class": "form-control", "rows": 5, "maxlength": "1000"}),
             "phone": forms.TextInput(attrs={"class": "form-control"}),
             "email": forms.EmailInput(attrs={"class": "form-control"}),
             "birth_date": forms.DateInput(attrs={"class": "form-control", "type": "date"}),
@@ -222,6 +225,7 @@ class RecordEditForm(forms.ModelForm):
         }
         labels = {
             "name": "Имя",
+            "description": "Описание",
             "phone": "Телефон",
             "email": "Почта",
             "birth_date": "Дата рождения",

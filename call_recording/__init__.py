@@ -1,1 +1,1 @@
-default_app_config = 'legalCRM.call_recording.apps.CallRecordingConfig'
+default_app_config = "call_recording.apps.CallRecordingConfig"
