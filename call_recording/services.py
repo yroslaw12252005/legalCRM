@@ -24,22 +24,17 @@ from .models import CallRecording
 
 MPBX_TOKEN = "d3ee5369-1e28-4039-999d-d92018c8988a"
 BEELINE_RECORDING_POLL_SECONDS = 60
-BEELINE_RECORDING_LOOKBACK_DAYS = 1
 BEELINE_RECORDING_STATE_FILE = Path(settings.BASE_DIR) / ".beeline_recording_monitor_state.json"
 BEELINE_RECORDING_LOCK_FILE = Path(settings.BASE_DIR) / ".beeline_recording_monitor.lock"
 BEELINE_RECORDING_LOCK_STALE_SECONDS = 240
 BEELINE_RECORDING_AUTO_MONITOR = True
-# Add one entry per CRM company: company_id is from Companys.id, operators are Beeline userId values.
+# Add one entry per CRM company: company_id is from Companys.id.
+# If all_operators is True, the monitor requests today's full Beeline abonent list every minute.
 BEELINE_COMPANY_CONFIGS = [
     {
         "company_id": 1,
-        "operators": [
-            "9030277264@ip.beeline.ru",
-            "9030277583@ip.beeline.ru",
-            "9030277988@ip.beeline.ru",
-            "9030278035@ip.beeline.ru",
-            "9606984760@ip.beeline.ru",
-        ],
+        "all_operators": True,
+        "operators": [],
     },
 ]
 
@@ -129,11 +124,11 @@ def parse_call_started_at(value):
 
 def load_monitor_state():
     if not BEELINE_RECORDING_STATE_FILE.exists():
-        return {"processed_ids": []}
+        return {"processed_ids": [], "monitor_date": ""}
     try:
         return json.loads(BEELINE_RECORDING_STATE_FILE.read_text(encoding="utf-8"))
     except (OSError, json.JSONDecodeError):
-        return {"processed_ids": []}
+        return {"processed_ids": [], "monitor_date": ""}
 
 
 def save_monitor_state(state):
@@ -150,6 +145,31 @@ def build_recording_key(company, phone, call_started_at, external_id):
     timestamp = started_at.strftime("%Y%m%d_%H%M%S")
     filename = f"{phone_for_filename(phone)}_{timestamp}_{external_id}.mp3"
     return f"{build_company_folder(company)}/{filename}"
+
+
+def fetch_abonents(session, headers):
+    response = session.get("https://cloudpbx.beeline.ru/apis/portal/abonents", headers=headers, timeout=30)
+    response.raise_for_status()
+    payload = response.json()
+    if isinstance(payload, list):
+        abonents = payload
+    elif isinstance(payload, dict):
+        abonents = payload.get("data") or payload.get("abonents") or []
+    else:
+        abonents = []
+
+    user_ids = []
+    for abonent in abonents:
+        user_id = str(abonent.get("userId") or "").strip()
+        if user_id:
+            user_ids.append(user_id)
+    return user_ids
+
+
+def resolve_operator_ids(config, session, headers):
+    if config.get("all_operators"):
+        return fetch_abonents(session, headers)
+    return [operator for operator in config.get("operators", []) if operator]
 
 
 def fetch_records_for_operator(session, operator, headers, date_from, date_to):
@@ -218,11 +238,14 @@ def run_monitor_iteration(session=None):
     client = session or requests.Session()
     headers = {"X-MPBX-API-AUTH-TOKEN": MPBX_TOKEN}
     state = load_monitor_state()
+    today = timezone.localdate() if settings.USE_TZ else datetime.now().date()
+    today_key = today.isoformat()
+    if state.get("monitor_date") != today_key:
+        state = {"processed_ids": [], "monitor_date": today_key}
     processed_ids = set(state.get("processed_ids", []))
 
-    now = timezone.now() if settings.USE_TZ else datetime.now()
-    date_from = (now - timedelta(days=BEELINE_RECORDING_LOOKBACK_DAYS)).date()
-    date_to = (now + timedelta(days=1)).date()
+    date_from = today
+    date_to = today
 
     result = {"processed": 0, "created": 0, "exists": 0, "skipped": 0, "failed": 0}
 
@@ -231,7 +254,8 @@ def run_monitor_iteration(session=None):
         if company is None:
             continue
 
-        for operator in config.get("operators", []):
+        operator_ids = resolve_operator_ids(config, client, headers)
+        for operator in operator_ids:
             records = fetch_records_for_operator(client, operator, headers, date_from, date_to)
             for raw_record in records:
                 external_id = str(raw_record.get("recordId") or raw_record.get("id") or "").strip()
@@ -248,6 +272,7 @@ def run_monitor_iteration(session=None):
                     processed_ids.add(external_id)
 
     state["processed_ids"] = list(processed_ids)[-3000:]
+    state["monitor_date"] = today_key
     save_monitor_state(state)
     return result
 
