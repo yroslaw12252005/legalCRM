@@ -2,12 +2,11 @@ import asyncio
 import json
 import logging
 import os
-import re
 import sys
 import threading
 import time
 from contextlib import asynccontextmanager
-from datetime import date, datetime, timedelta
+from datetime import datetime, timedelta
 from pathlib import Path
 from urllib.parse import quote
 
@@ -24,7 +23,6 @@ from .models import CallRecording
 
 MPBX_TOKEN = "d3ee5369-1e28-4039-999d-d92018c8988a"
 BEELINE_RECORDING_POLL_SECONDS = 60
-BEELINE_RECORDING_MONITOR_DATE = date(2026, 6, 25)
 BEELINE_S3_ACCESS_KEY = "EEFJDEUXC1CROO48RUGL"
 BEELINE_S3_SECRET_KEY = "bOWBlZckIVapgodQAZ4X9cMeAWwQ1i9nZ8rBVppE"
 BEELINE_S3_ENDPOINT_URL = "https://s3.twcstorage.ru"
@@ -33,8 +31,6 @@ BEELINE_RECORDING_STATE_FILE = Path(settings.BASE_DIR) / ".beeline_recording_mon
 BEELINE_RECORDING_LOCK_FILE = Path(settings.BASE_DIR) / ".beeline_recording_monitor.lock"
 BEELINE_RECORDING_LOCK_STALE_SECONDS = 240
 BEELINE_RECORDING_AUTO_MONITOR = True
-# Add one entry per CRM company: company_id is from Companys.id.
-# If all_operators is True, the monitor requests today's full Beeline abonent list every minute.
 BEELINE_COMPANY_CONFIGS = [
     {
         "company_id": 1,
@@ -110,12 +106,6 @@ def phone_for_filename(phone):
     return normalized.replace("+", "") or "unknown_phone"
 
 
-def sanitize_path_part(value):
-    cleaned = re.sub(r'[\\/:*?"<>|]+', "_", str(value or "").strip())
-    cleaned = re.sub(r"\s+", "_", cleaned)
-    return cleaned or "unknown"
-
-
 def parse_call_started_at(value):
     if not value:
         return None
@@ -147,12 +137,10 @@ def load_monitor_state():
 
 
 def save_monitor_state(state):
-    BEELINE_RECORDING_STATE_FILE.write_text(json.dumps(state, ensure_ascii=False, indent=2), encoding="utf-8")
-
-
-def build_company_folder(company):
-    company_part = f"{company.id}_{sanitize_path_part(company.title)}"
-    return f"{company_part}/Записи"
+    BEELINE_RECORDING_STATE_FILE.write_text(
+        json.dumps(state, ensure_ascii=False, indent=2),
+        encoding="utf-8",
+    )
 
 
 def build_recording_key(company, phone, call_started_at, external_id):
@@ -164,7 +152,9 @@ def build_recording_key(company, phone, call_started_at, external_id):
 
 
 def current_monitor_date():
-    return BEELINE_RECORDING_MONITOR_DATE
+    if settings.USE_TZ:
+        return timezone.localdate()
+    return datetime.now().date()
 
 
 def fetch_abonents(session, headers):
@@ -237,7 +227,6 @@ def create_recording_entry(company, external_id, call_info, audio_bytes):
     uploaded = asyncio.run(s3_client.upload_bytes(audio_bytes, s3_key))
     if not uploaded:
         return "failed"
-    file_url = s3_public_url(s3_key)
 
     CallRecording.objects.create(
         companys=company,
@@ -245,7 +234,7 @@ def create_recording_entry(company, external_id, call_info, audio_bytes):
         operator_phone=operator_phone,
         external_id=external_id,
         file_name=s3_key.rsplit("/", 1)[-1],
-        file_url=file_url,
+        file_url=s3_public_url(s3_key),
         s3_key=s3_key,
         call_started_at=call_started_at,
     )
@@ -265,7 +254,6 @@ def run_monitor_iteration(session=None):
         state = {"processed_ids": [], "monitor_date": monitor_date_key}
     processed_ids = set(state.get("processed_ids", []))
 
-    # Beeline records API works more reliably with an exclusive upper bound.
     date_from = monitor_date
     date_to = monitor_date + timedelta(days=1)
 

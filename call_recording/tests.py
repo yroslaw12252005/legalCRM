@@ -1,3 +1,6 @@
+from urllib.error import HTTPError
+from unittest.mock import MagicMock, patch
+
 from django.contrib.auth import get_user_model
 from django.test import TestCase
 from django.urls import reverse
@@ -35,7 +38,7 @@ class CallRecordingViewTests(TestCase):
             external_id="abc123",
             file_name="79001234567_20260625_120000_abc123.mp3",
             file_url="https://example.com/file.mp3",
-            s3_key="1_Company_1/Записи/79001234567_20260625_120000_abc123.mp3",
+            s3_key="call_recordings/1/2026/06/25/79001234567_20260625_120000_abc123.mp3",
         )
         CallRecording.objects.create(
             companys=self.company_2,
@@ -44,7 +47,7 @@ class CallRecordingViewTests(TestCase):
             external_id="def456",
             file_name="79990000000_20260625_120500_def456.mp3",
             file_url="https://example.com/file2.mp3",
-            s3_key="2_Company_2/Записи/79990000000_20260625_120500_def456.mp3",
+            s3_key="call_recordings/2/2026/06/25/79990000000_20260625_120500_def456.mp3",
         )
 
     def test_allowed_role_sees_company_recordings(self):
@@ -71,11 +74,33 @@ class CallRecordingViewTests(TestCase):
 
         self.assertEqual(response.status_code, 302)
 
-    def test_download_redirects_to_file_url(self):
+    @patch("call_recording.views.urlopen")
+    def test_download_returns_attachment_response(self, mock_urlopen):
         self.client.force_login(self.allowed_user)
+        remote_file = MagicMock()
+        remote_file.read.return_value = b"fake-audio"
+        mock_urlopen.return_value.__enter__.return_value = remote_file
 
         response = self.client.get(reverse("download_call", args=[self.recording.id]))
 
-        self.assertEqual(response.status_code, 302)
-        self.assertEqual(response["Location"], "https://example.com/file.mp3")
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"fake-audio")
+        self.assertEqual(response["Content-Type"], "audio/mpeg")
+        self.assertIn("attachment;", response["Content-Disposition"])
+        self.assertIn(self.recording.file_name, response["Content-Disposition"])
 
+    @patch("call_recording.views.urlopen")
+    def test_download_falls_back_to_s3_key_when_file_url_is_missing(self, mock_urlopen):
+        self.client.force_login(self.allowed_user)
+
+        remote_file = MagicMock()
+        remote_file.read.return_value = b"fallback-audio"
+        mock_urlopen.side_effect = [
+            HTTPError(self.recording.file_url, 404, "Not Found", hdrs=None, fp=None),
+            MagicMock(__enter__=MagicMock(return_value=remote_file), __exit__=MagicMock(return_value=None)),
+        ]
+
+        response = self.client.get(reverse("download_call", args=[self.recording.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(response.content, b"fallback-audio")
