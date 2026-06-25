@@ -7,7 +7,7 @@ import sys
 import threading
 import time
 from contextlib import asynccontextmanager
-from datetime import datetime, timedelta
+from datetime import date, datetime, timedelta
 from pathlib import Path
 from urllib.parse import quote
 
@@ -24,6 +24,7 @@ from .models import CallRecording
 
 MPBX_TOKEN = "d3ee5369-1e28-4039-999d-d92018c8988a"
 BEELINE_RECORDING_POLL_SECONDS = 60
+BEELINE_RECORDING_MONITOR_DATE = date(2026, 6, 25)
 BEELINE_RECORDING_STATE_FILE = Path(settings.BASE_DIR) / ".beeline_recording_monitor_state.json"
 BEELINE_RECORDING_LOCK_FILE = Path(settings.BASE_DIR) / ".beeline_recording_monitor.lock"
 BEELINE_RECORDING_LOCK_STALE_SECONDS = 240
@@ -175,7 +176,7 @@ def resolve_operator_ids(config, session, headers):
 def fetch_records_for_operator(session, operator, headers, date_from, date_to):
     url = (
         "https://cloudpbx.beeline.ru/apis/portal/records"
-        f"?id=1&userId={operator}&dateFrom={date_from}&dateTo={date_to}"
+        f"?id=1&userId={operator}&dateFrom={date_from.isoformat()}&dateTo={date_to.isoformat()}"
     )
     response = session.get(url, headers=headers, timeout=30)
     response.raise_for_status()
@@ -238,14 +239,15 @@ def run_monitor_iteration(session=None):
     client = session or requests.Session()
     headers = {"X-MPBX-API-AUTH-TOKEN": MPBX_TOKEN}
     state = load_monitor_state()
-    today = timezone.localdate() if settings.USE_TZ else datetime.now().date()
-    today_key = today.isoformat()
-    if state.get("monitor_date") != today_key:
-        state = {"processed_ids": [], "monitor_date": today_key}
+    monitor_date = BEELINE_RECORDING_MONITOR_DATE
+    monitor_date_key = monitor_date.isoformat()
+    if state.get("monitor_date") != monitor_date_key:
+        state = {"processed_ids": [], "monitor_date": monitor_date_key}
     processed_ids = set(state.get("processed_ids", []))
 
-    date_from = today
-    date_to = today
+    # Beeline records API works more reliably with an exclusive upper bound.
+    date_from = monitor_date
+    date_to = monitor_date + timedelta(days=1)
 
     result = {"processed": 0, "created": 0, "exists": 0, "skipped": 0, "failed": 0}
 
@@ -272,7 +274,7 @@ def run_monitor_iteration(session=None):
                     processed_ids.add(external_id)
 
     state["processed_ids"] = list(processed_ids)[-3000:]
-    state["monitor_date"] = today_key
+    state["monitor_date"] = monitor_date_key
     save_monitor_state(state)
     return result
 
