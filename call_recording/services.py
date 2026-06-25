@@ -25,6 +25,10 @@ from .models import CallRecording
 MPBX_TOKEN = "d3ee5369-1e28-4039-999d-d92018c8988a"
 BEELINE_RECORDING_POLL_SECONDS = 60
 BEELINE_RECORDING_MONITOR_DATE = date(2026, 6, 25)
+BEELINE_S3_ACCESS_KEY = "EEFJDEUXC1CROO48RUGL"
+BEELINE_S3_SECRET_KEY = "bOWBlZckIVapgodQAZ4X9cMeAWwQ1i9nZ8rBVppE"
+BEELINE_S3_ENDPOINT_URL = "https://s3.twcstorage.ru"
+BEELINE_S3_BUCKET_NAME = "e5ce452e-71ce-493b-ad29-ff9ea3f60cb4"
 BEELINE_RECORDING_STATE_FILE = Path(settings.BASE_DIR) / ".beeline_recording_monitor_state.json"
 BEELINE_RECORDING_LOCK_FILE = Path(settings.BASE_DIR) / ".beeline_recording_monitor.lock"
 BEELINE_RECORDING_LOCK_STALE_SECONDS = 240
@@ -79,15 +83,15 @@ class S3Client:
 
 
 s3_client = S3Client(
-    access_key=settings.S3_ACCESS_KEY,
-    secret_key=settings.S3_SECRET_KEY,
-    endpoint_url=settings.S3_ENDPOINT_URL,
-    bucket_name=settings.S3_BUCKET_NAME,
+    access_key=BEELINE_S3_ACCESS_KEY,
+    secret_key=BEELINE_S3_SECRET_KEY,
+    endpoint_url=BEELINE_S3_ENDPOINT_URL,
+    bucket_name=BEELINE_S3_BUCKET_NAME,
 )
 
 
 def s3_public_url(key):
-    return f"{settings.S3_ENDPOINT_URL.rstrip('/')}/{settings.S3_BUCKET_NAME}/{quote(key, safe='/')}"
+    return f"{BEELINE_S3_ENDPOINT_URL.rstrip('/')}/{BEELINE_S3_BUCKET_NAME}/{quote(key, safe='/')}"
 
 
 def normalize_phone(phone):
@@ -155,7 +159,12 @@ def build_recording_key(company, phone, call_started_at, external_id):
     started_at = call_started_at or timezone.now()
     timestamp = started_at.strftime("%Y%m%d_%H%M%S")
     filename = f"{phone_for_filename(phone)}_{timestamp}_{external_id}.mp3"
-    return f"{build_company_folder(company)}/{filename}"
+    date_path = started_at.strftime("%Y/%m/%d")
+    return f"call_recordings/{company.id}/{date_path}/{filename}"
+
+
+def current_monitor_date():
+    return BEELINE_RECORDING_MONITOR_DATE
 
 
 def fetch_abonents(session, headers):
@@ -228,6 +237,7 @@ def create_recording_entry(company, external_id, call_info, audio_bytes):
     uploaded = asyncio.run(s3_client.upload_bytes(audio_bytes, s3_key))
     if not uploaded:
         return "failed"
+    file_url = s3_public_url(s3_key)
 
     CallRecording.objects.create(
         companys=company,
@@ -235,7 +245,7 @@ def create_recording_entry(company, external_id, call_info, audio_bytes):
         operator_phone=operator_phone,
         external_id=external_id,
         file_name=s3_key.rsplit("/", 1)[-1],
-        file_url=s3_public_url(s3_key),
+        file_url=file_url,
         s3_key=s3_key,
         call_started_at=call_started_at,
     )
@@ -249,7 +259,7 @@ def run_monitor_iteration(session=None):
     client = session or requests.Session()
     headers = {"X-MPBX-API-AUTH-TOKEN": MPBX_TOKEN}
     state = load_monitor_state()
-    monitor_date = BEELINE_RECORDING_MONITOR_DATE
+    monitor_date = current_monitor_date()
     monitor_date_key = monitor_date.isoformat()
     if state.get("monitor_date") != monitor_date_key:
         state = {"processed_ids": [], "monitor_date": monitor_date_key}
