@@ -62,6 +62,7 @@ import json
 import datetime
 import calendar
 import uuid
+import re
 from datetime import date, datetime, timedelta
 from collections import defaultdict
 from urllib.parse import quote, urlsplit, urlunsplit
@@ -869,6 +870,142 @@ def is_text_field(key, value):
         return True
     
     return False
+TILDA_IGNORED_FIELDS = {"csrfmiddlewaretoken", "test", "token"}
+TILDA_INTERNAL_IDS = {"id_company", "id_felial", "felial_id"}
+
+
+def _normalize_tilda_key(key):
+    return re.sub(r"[^0-9a-zа-я]+", "", key.casefold())
+
+
+def _key_contains_any(key, keywords):
+    normalized_key = _normalize_tilda_key(key)
+    return any(keyword in normalized_key for keyword in keywords)
+
+
+def _is_phone_value(value):
+    return len(re.sub(r"\D", "", value)) >= 7
+
+
+def _is_email_value(value):
+    return bool(re.match(r"^[^@\s]+@[^@\s]+\.[^@\s]+$", value))
+
+
+def _iter_tilda_fields(query_dict):
+    for key, values in query_dict.lists():
+        if key in TILDA_IGNORED_FIELDS:
+            continue
+        cleaned_values = [value.strip() for value in values if value and value.strip()]
+        if cleaned_values:
+            yield key, cleaned_values
+
+
+def _build_tilda_payload(fields):
+    payload_lines = []
+    for key, values in fields:
+        if key in TILDA_INTERNAL_IDS:
+            continue
+        payload_lines.append(f"{key}: {', '.join(values)}")
+    return "\n".join(payload_lines)[:5000]
+
+
+def _extract_company(query_dict):
+    company_id = query_dict.get("id_company")
+    if not company_id:
+        return None
+    try:
+        company_id = int(company_id)
+    except (TypeError, ValueError):
+        return None
+    return Companys.objects.filter(id=company_id).first()
+
+
+def _extract_felial(query_dict, company):
+    if company is None:
+        return None
+
+    felial_id = query_dict.get("id_felial") or query_dict.get("felial_id")
+    if felial_id:
+        try:
+            felial_id = int(felial_id)
+        except (TypeError, ValueError):
+            felial_id = None
+        if felial_id is not None:
+            felial = Felial.objects.filter(id=felial_id, companys=company).first()
+            if felial is not None:
+                return felial
+
+    return Felial.objects.filter(companys=company).order_by("id").first()
+
+
+def _extract_tilda_contact_data(fields):
+    phone = None
+    name = None
+    email = None
+    fallback_name = None
+
+    phone_keywords = ("phone", "tel", "telefon", "mobile", "whatsapp", "номер", "телефон", "тел")
+    name_keywords = ("name", "fullname", "fio", "contact", "client", "имя", "фио", "контакт", "клиент")
+    email_keywords = ("email", "mail", "почта")
+    meta_keywords = ("tranid", "formid", "cookies")
+
+    for key, values in fields:
+        for value in values:
+            if email is None and (_key_contains_any(key, email_keywords) or _is_email_value(value)):
+                email = value
+                continue
+
+            if phone is None and (_key_contains_any(key, phone_keywords) or _is_phone_value(value)):
+                phone = value
+                continue
+
+            if name is None and _key_contains_any(key, name_keywords):
+                name = value
+                continue
+
+            if fallback_name is None and not _is_email_value(value) and not _is_phone_value(value):
+                if len(value) <= 50 and not _key_contains_any(key, meta_keywords):
+                    fallback_name = value
+
+    return phone, (name or fallback_name), email
+
+
+@csrf_exempt
+@require_POST
+def get_tilda_lead(request):
+    webhook_token = os.getenv("TILDA_WEBHOOK_TOKEN", "")
+    if webhook_token:
+        supplied_token = request.headers.get("X-Tilda-Token", "") or request.POST.get("token", "")
+        if not hmac.compare_digest(supplied_token, webhook_token):
+            return HttpResponse("Forbidden", status=403)
+
+    if request.POST.get("test"):
+        return HttpResponse("ok")
+
+    company = _extract_company(request.POST)
+    if company is None:
+        return HttpResponse("Invalid company id", status=400)
+
+    fields = list(_iter_tilda_fields(request.POST))
+    payload = _build_tilda_payload(fields)
+    if not payload:
+        return HttpResponse("No valid data", status=400)
+
+    phone, name, email = _extract_tilda_contact_data(fields)
+    felial = _extract_felial(request.POST, company)
+
+    Record.objects.create(
+        phone=phone,
+        name=name or phone or email or "Tilda lead",
+        email=email,
+        description=payload,
+        where="Tilda",
+        companys=company,
+        felial=felial,
+    )
+    return HttpResponse("ok")
+
+
 class SearchView(ListView):
     model = Record
     template_name = 'search_results.html'

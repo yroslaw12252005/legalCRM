@@ -244,3 +244,55 @@ class TenantIsolationTests(TestCase):
         self.assertContains(response, "match-2.mp3")
         self.assertNotContains(response, "other-phone.mp3")
         self.assertNotContains(response, "other-company.mp3")
+
+
+class TildaWebhookTests(TestCase):
+    def setUp(self):
+        self.company = Companys.objects.create(title="Webhook Company")
+        self.felial = Felial.objects.create(title="Main", cites="Moscow", companys=self.company)
+
+    def test_tilda_webhook_saves_all_fields_and_maps_contacts(self):
+        response = self.client.post(
+            "/all-leads/tilda_lead/",
+            data={
+                "id_company": str(self.company.id),
+                "your_name": "Мария",
+                "custom_phone": "+7 (999) 111-22-33",
+                "Email": "maria@example.com",
+                "Textarea": "Нужна консультация по договору",
+                "tranid": "123456",
+                "formid": "form789",
+                "COOKIES": "utm_source=yandex",
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        lead = Record.objects.get(companys=self.company)
+        self.assertEqual(lead.name, "Мария")
+        self.assertEqual(lead.phone, "+7 (999) 111-22-33")
+        self.assertEqual(lead.email, "maria@example.com")
+        self.assertEqual(lead.felial, self.felial)
+        self.assertIn("your_name: Мария", lead.description)
+        self.assertIn("custom_phone: +7 (999) 111-22-33", lead.description)
+        self.assertIn("Email: maria@example.com", lead.description)
+        self.assertIn("Textarea: Нужна консультация по договору", lead.description)
+        self.assertIn("tranid: 123456", lead.description)
+        self.assertIn("formid: form789", lead.description)
+        self.assertIn("COOKIES: utm_source=yandex", lead.description)
+
+    def test_tilda_webhook_preserves_multi_value_fields(self):
+        response = self.client.post(
+            "/all-leads/tilda_lead/",
+            data={
+                "id_company": str(self.company.id),
+                "name": "Алексей",
+                "phone": "+79990000000",
+                "service": ["Банкротство", "Семейный спор"],
+            },
+        )
+
+        self.assertEqual(response.status_code, 200)
+
+        lead = Record.objects.get(companys=self.company)
+        self.assertIn("service: Банкротство, Семейный спор", lead.description)

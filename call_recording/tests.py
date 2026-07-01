@@ -1,3 +1,4 @@
+from urllib.error import HTTPError
 from unittest.mock import MagicMock, patch
 
 from django.contrib.auth import get_user_model
@@ -89,16 +90,25 @@ class CallRecordingViewTests(TestCase):
         self.assertIn(self.recording.file_name, response["Content-Disposition"])
 
     @patch("call_recording.views.urlopen")
-    def test_download_uses_file_url_when_s3_key_does_not_match(self, mock_urlopen):
+    def test_download_falls_back_to_file_url_when_s3_returns_404(self, mock_urlopen):
         self.client.force_login(self.allowed_user)
+
+        s3_error = HTTPError(
+            url="https://example.com/missing.mp3",
+            code=404,
+            msg="Not Found",
+            hdrs=None,
+            fp=None,
+        )
         remote_file = MagicMock()
         remote_file.read.return_value = b"audio-from-file-url"
-        mock_urlopen.return_value.__enter__.return_value = remote_file
-        self.recording.s3_key = "other/path/file.mp3"
-        self.recording.save(update_fields=["s3_key"])
+        fallback_response = MagicMock()
+        fallback_response.__enter__.return_value = remote_file
+        mock_urlopen.side_effect = [s3_error, fallback_response]
 
         response = self.client.get(reverse("download_call", args=[self.recording.id]))
 
         self.assertEqual(response.status_code, 200)
         self.assertEqual(response.content, b"audio-from-file-url")
-        mock_urlopen.assert_called_once_with("https://example.com/file.mp3")
+        self.assertEqual(mock_urlopen.call_count, 2)
+        self.assertEqual(mock_urlopen.call_args_list[-1].args[0], "https://example.com/file.mp3")

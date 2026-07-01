@@ -140,6 +140,7 @@
       box-shadow: 0 10px 24px rgba(0,0,0,0.25);
       z-index: 10000;
       flex-wrap: wrap;
+      pointer-events: auto;
     }
     .bulk-action-bar.is-visible {
       display: flex !important;
@@ -348,72 +349,73 @@
       </div>
     {% endif %}
 
-    {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep or can_send_sms or can_change_status %}
-      <div class="bulk-action-bar" id="bulkActionBar">
-        <span id="selectedCounter">Выбрано: 0</span>
-
-        {% if can_bulk_send_to_work %}
-          <button type="submit" name="action" value="in_work" class="crm-btn">В работу</button>
-        {% endif %}
-
-        {% if can_change_status %}
-          <select name="bulk_status" class="bulk-select">
-            <option value="">Статус</option>
-            {% for status_value, status_label in bulk_status_choices %}
-              <option value="{{ status_value }}">{{ status_label }}</option>
-            {% endfor %}
-          </select>
-          <button type="submit" name="action" value="change_status" class="crm-btn">Изменить статус</button>
-        {% endif %}
-
-        {% if can_send_sms %}
-          <button type="button" class="crm-btn" id="toggleSmsForm">Рассылка</button>
-        {% endif %}
-
-        {% if can_assign_kc %}
-          <select name="operator_id" class="bulk-select">
-            <option value="">Операторы</option>
-            {% for operator in operators %}
-              <option value="{{ operator.id }}">{{ operator.username }}</option>
-            {% endfor %}
-          </select>
-          <button type="submit" name="action" value="assign_operator" class="crm-btn">Прикрепить оператора</button>
-        {% endif %}
-
-        {% if can_assign_upp %}
-          <select name="lawyer_id" class="bulk-select">
-            <option value="">Юристы</option>
-            {% for lawyer in lawyers %}
-              <option value="{{ lawyer.id }}">{{ lawyer.username }}</option>
-            {% endfor %}
-          </select>
-          <button type="submit" name="action" value="assign_lawyer" class="crm-btn">Прикрепить юриста</button>
-        {% endif %}
-
-        {% if can_send_to_representative %}
-          <button type="submit" name="action" value="to_representative" class="crm-btn">Передать представителям</button>
-        {% endif %}
-
-        {% if can_assign_rep %}
-          <select name="representative_id" class="bulk-select">
-            <option value="">Представители</option>
-            {% for representative in representatives %}
-              <option value="{{ representative.id }}">{{ representative.username }}</option>
-            {% endfor %}
-          </select>
-          <button type="submit" name="action" value="assign_representative" class="crm-btn">Прикрепить представителя</button>
-        {% endif %}
-
-        {% if can_send_sms %}
-          <div id="bulkSmsPanel" style="display:none; width:100%; margin-top:8px;">
-            {{ bulk_sms_form.message }}
-            <button type="submit" name="action" value="send_sms" class="crm-btn crm-btn-primary" style="margin-top:8px;">Отправить</button>
-          </div>
-        {% endif %}
-      </div>
-    {% endif %}
   </form>
 </div>
+
+{% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep or can_send_sms or can_change_status %}
+  <div class="bulk-action-bar" id="bulkActionBar">
+    <span id="selectedCounter">Выбрано: 0</span>
+
+    {% if can_bulk_send_to_work %}
+      <button type="submit" name="action" value="in_work" class="crm-btn" form="bulkInWorkForm">В работу</button>
+    {% endif %}
+
+    {% if can_change_status %}
+      <select name="bulk_status" class="bulk-select" form="bulkInWorkForm">
+        <option value="">Статус</option>
+        {% for status_value, status_label in bulk_status_choices %}
+          <option value="{{ status_value }}">{{ status_label }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" name="action" value="change_status" class="crm-btn" form="bulkInWorkForm">Изменить статус</button>
+    {% endif %}
+
+    {% if can_send_sms %}
+      <button type="button" class="crm-btn" id="toggleSmsForm">Рассылка</button>
+    {% endif %}
+
+    {% if can_assign_kc %}
+      <select name="operator_id" class="bulk-select" form="bulkInWorkForm">
+        <option value="">Операторы</option>
+        {% for operator in operators %}
+          <option value="{{ operator.id }}">{{ operator.username }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" name="action" value="assign_operator" class="crm-btn" form="bulkInWorkForm">Прикрепить оператора</button>
+    {% endif %}
+
+    {% if can_assign_upp %}
+      <select name="lawyer_id" class="bulk-select" form="bulkInWorkForm">
+        <option value="">Юристы</option>
+        {% for lawyer in lawyers %}
+          <option value="{{ lawyer.id }}">{{ lawyer.username }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" name="action" value="assign_lawyer" class="crm-btn" form="bulkInWorkForm">Прикрепить юриста</button>
+    {% endif %}
+
+    {% if can_send_to_representative %}
+      <button type="submit" name="action" value="to_representative" class="crm-btn" form="bulkInWorkForm">Передать представителям</button>
+    {% endif %}
+
+    {% if can_assign_rep %}
+      <select name="representative_id" class="bulk-select" form="bulkInWorkForm">
+        <option value="">Представители</option>
+        {% for representative in representatives %}
+          <option value="{{ representative.id }}">{{ representative.username }}</option>
+        {% endfor %}
+      </select>
+      <button type="submit" name="action" value="assign_representative" class="crm-btn" form="bulkInWorkForm">Прикрепить представителя</button>
+    {% endif %}
+
+    {% if can_send_sms %}
+      <div id="bulkSmsPanel" style="display:none; width:100%; margin-top:8px;">
+        {{ bulk_sms_form.message }}
+        <button type="submit" name="action" value="send_sms" class="crm-btn crm-btn-primary" style="margin-top:8px;" form="bulkInWorkForm">Отправить</button>
+      </div>
+    {% endif %}
+  </div>
+{% endif %}
 
 {% if can_bulk_send_to_work or can_assign_kc or can_assign_upp or can_send_to_representative or can_assign_rep or can_send_sms or can_change_status %}
 <script>
