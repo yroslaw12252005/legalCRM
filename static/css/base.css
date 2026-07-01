@@ -50,6 +50,10 @@ body {
   background: var(--bg-page);
 }
 
+body.crm-nav-open {
+  overflow: hidden;
+}
+
 h1,
 h2,
 h3,
@@ -246,6 +250,59 @@ table,
   border: 1px solid var(--border-soft);
   border-radius: var(--radius-lg);
   box-shadow: var(--shadow-sm);
+}
+
+@media (max-width: 991.98px) {
+  main.crm-main-content {
+    margin-left: 0;
+    width: 100%;
+    margin-top: 88px;
+    padding: 0 12px var(--space-4);
+  }
+
+  header.crm-header-offset {
+    margin-left: 0 !important;
+    width: 100%;
+    margin-top: 0;
+    padding: 0 12px !important;
+  }
+
+  .crm-container {
+    border-radius: 14px;
+  }
+
+  section,
+  .card,
+  .crm-container,
+  .table,
+  .calendar-grid,
+  .desktop-toolbar {
+    margin-bottom: var(--space-3);
+  }
+}
+
+@media (max-width: 575.98px) {
+  main.crm-main-content {
+    margin-top: 80px;
+    padding-left: 10px;
+    padding-right: 10px;
+  }
+
+  header.crm-header-offset {
+    padding-left: 10px !important;
+    padding-right: 10px !important;
+  }
+
+  .crm-container {
+    border-radius: 12px;
+  }
+
+  .table th,
+  .table td,
+  .crm-table th,
+  .crm-table td {
+    padding: 10px !important;
+  }
 }
 
 .modal-content {

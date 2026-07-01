@@ -70,6 +70,32 @@
     background: #1d4ed8;
     border-color: #1d4ed8;
   }
+  @media (max-width: 1199.98px) {
+    .desktop-toolbar-form {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+  }
+  @media (max-width: 767.98px) {
+    .desktop-toolbar-wrap {
+      padding: 0;
+    }
+    .desktop-toolbar {
+      padding: 14px;
+      border-radius: 14px;
+    }
+    .desktop-toolbar-form {
+      grid-template-columns: 1fr;
+    }
+    .desktop-toolbar-input,
+    .desktop-toolbar-select,
+    .crm-btn {
+      min-height: 42px;
+    }
+    .desktop-toolbar-note {
+      font-size: 11px;
+      margin-top: 10px;
+    }
+  }
 </style>
 <header class="crm-header-offset">
   <div class="desktop-toolbar-wrap">

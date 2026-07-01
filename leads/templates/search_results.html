@@ -137,6 +137,31 @@
       background: #f3f4f6;
       cursor: not-allowed;
     }
+    @media (max-width: 991.98px) {
+      .crm-table-wrapper {
+        margin: 0 12px;
+      }
+      table.crm-table {
+        min-width: 860px;
+      }
+      .crm-pagination {
+        margin: 16px 12px 0;
+        flex-wrap: wrap;
+      }
+    }
+    @media (max-width: 575.98px) {
+      .crm-table-wrapper {
+        margin: 0 8px;
+      }
+      table.crm-table th,
+      table.crm-table td {
+        font-size: 13px;
+        padding: 10px 8px;
+      }
+      .crm-pagination {
+        justify-content: center;
+      }
+    }
 </style>
 
 <div class="crm-container">

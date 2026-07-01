@@ -209,6 +209,53 @@
       color: #6b7280;
       padding: 24px 12px !important;
     }
+    @media (max-width: 991.98px) {
+      .crm-container {
+        padding-top: 12px;
+      }
+      .crm-table-wrapper {
+        margin: 0 12px;
+      }
+      table.crm-table {
+        min-width: 980px;
+      }
+      .crm-pagination-wrap {
+        margin: 14px 12px 0;
+      }
+    }
+    @media (max-width: 575.98px) {
+      .crm-container {
+        padding-bottom: 18px;
+      }
+      .crm-table-wrapper {
+        margin: 0 8px;
+      }
+      table.crm-table th,
+      table.crm-table td {
+        font-size: 13px;
+        padding: 10px 8px;
+      }
+      .bulk-action-bar {
+        left: 10px;
+        right: 10px;
+        bottom: 10px;
+        transform: none;
+        width: auto;
+        justify-content: stretch;
+      }
+      .bulk-select,
+      .bulk-action-bar .crm-btn,
+      .bulk-action-bar button {
+        width: 100%;
+      }
+      .crm-pagination-wrap {
+        flex-direction: column;
+        align-items: stretch;
+      }
+      .crm-pagination {
+        justify-content: center;
+      }
+    }
 </style>
 
 {% if user.is_authenticated %}

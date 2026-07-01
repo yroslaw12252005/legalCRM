@@ -2,6 +2,15 @@
 {% if user.is_authenticated %}
 <link rel="stylesheet" href="{% static 'css/nav.css' %}" />
 <link rel="stylesheet" href="{% static 'css/style.css' %}" />
+<div class="crm-mobile-topbar">
+    <a class="crm-mobile-brand" href="{% url 'all_leads' %}">legalCRM</a>
+    <label for="crm-nav-toggle" class="crm-mobile-toggle" aria-label="Открыть меню">
+        <span></span>
+        <span></span>
+        <span></span>
+    </label>
+</div>
+<input type="checkbox" id="crm-nav-toggle" class="crm-nav-toggle" aria-hidden="true">
 <nav role="main container col">
     <!-- Заголовок и информация пользователя -->
     <div class="user-info">

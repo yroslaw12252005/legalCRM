@@ -31,6 +31,16 @@ nav {
     z-index: 10;
 }
 
+.crm-nav-toggle {
+    position: absolute;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.crm-mobile-topbar {
+    display: none;
+}
+
 .user-header {
     border-bottom: 1px solid rgba(148, 163, 184, 0.24);
     padding-bottom: 16px;
@@ -177,3 +187,101 @@ nav {
 /* Font Awesome icons */
 @import url('https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css');
 /***************************/
+
+@media (max-width: 991.98px) {
+    .crm-mobile-topbar {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        z-index: 30;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 14px 16px;
+        background: #1f2937;
+        box-shadow: 0 8px 24px rgba(15, 23, 42, 0.18);
+    }
+
+    .crm-mobile-brand {
+        color: #fff;
+        font-size: 1.1rem;
+        font-weight: 700;
+        letter-spacing: 0.01em;
+    }
+
+    .crm-mobile-toggle {
+        width: 44px;
+        height: 44px;
+        display: inline-flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        gap: 5px;
+        border: 1px solid rgba(148, 163, 184, 0.32);
+        border-radius: 12px;
+        cursor: pointer;
+        background: rgba(255, 255, 255, 0.05);
+    }
+
+    .crm-mobile-toggle span {
+        width: 18px;
+        height: 2px;
+        border-radius: 999px;
+        background: #fff;
+    }
+
+    nav {
+        width: min(320px, calc(100vw - 32px));
+        transform: translateX(-100%);
+        transition: transform 0.25s ease;
+        z-index: 25;
+        padding-top: 84px;
+        box-shadow: 0 16px 40px rgba(15, 23, 42, 0.22);
+    }
+
+    .crm-nav-toggle:checked + nav {
+        transform: translateX(0);
+    }
+
+    .user-header > div[style] {
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .month-navigation {
+        flex-direction: column;
+    }
+
+    .nav-button {
+        width: 100%;
+    }
+
+    .sidebar-menu li {
+        margin: 6px 0;
+    }
+}
+
+@media (max-width: 575.98px) {
+    nav {
+        width: calc(100vw - 20px);
+        padding: 76px 12px 24px;
+    }
+
+    .crm-mobile-topbar {
+        padding: 12px 10px;
+    }
+
+    .username {
+        font-size: 1.1rem;
+    }
+
+    .sidebar-menu li {
+        padding: 10px 12px;
+    }
+
+    .sidebar-menu a {
+        font-size: 0.95rem;
+    }
+}

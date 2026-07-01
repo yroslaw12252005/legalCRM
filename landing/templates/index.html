@@ -124,8 +124,24 @@
         }
 
         @media (max-width: 768px) {
+            .header {
+                justify-content: stretch;
+                flex-direction: column;
+                padding: 1rem 5%;
+            }
+
+            .nav-button {
+                width: 100%;
+                text-align: center;
+            }
+
+            .hero {
+                padding: 72px 5% 56px;
+            }
+
             .features {
                 grid-template-columns: 1fr;
+                padding: 2.5rem 5%;
             }
 
             h1 {
@@ -138,6 +154,10 @@
 
             .trial {
                 font-size: 1rem;
+            }
+
+            .subtitle {
+                font-size: 1.05rem;
             }
         }
     </style>

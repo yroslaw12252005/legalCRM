@@ -111,6 +111,24 @@
     table.crm-table tbody tr:hover {
       background: #f8fafc;
     }
+    @media (max-width: 991.98px) {
+      .crm-table-wrapper {
+        margin: 0 12px;
+      }
+      table.crm-table {
+        min-width: 860px;
+      }
+    }
+    @media (max-width: 575.98px) {
+      .crm-table-wrapper {
+        margin: 0 8px;
+      }
+      table.crm-table th,
+      table.crm-table td {
+        font-size: 13px;
+        padding: 10px 8px;
+      }
+    }
 </style>
 
 <div class="crm-container">

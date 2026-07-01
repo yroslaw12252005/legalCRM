@@ -136,6 +136,32 @@
       color: #64748b;
       font-size: 14px;
     }
+    @media (max-width: 991.98px) {
+      .crm-container {
+        padding-top: 12px;
+      }
+      .crm-table-wrapper {
+        margin: 0 12px;
+      }
+      table.crm-table {
+        min-width: 980px;
+      }
+      .crm-section-title,
+      .crm-section-note {
+        margin-left: 12px;
+        margin-right: 12px;
+      }
+    }
+    @media (max-width: 575.98px) {
+      .crm-table-wrapper {
+        margin: 0 8px;
+      }
+      table.crm-table th,
+      table.crm-table td {
+        font-size: 13px;
+        padding: 10px 8px;
+      }
+    }
 </style>
 
 {% if user.is_authenticated %}

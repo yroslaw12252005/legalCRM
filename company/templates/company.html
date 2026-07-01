@@ -112,6 +112,36 @@
             background: #e74c3c;
             color: white;
         }
+
+        .graph-container {
+            width: 100%;
+            overflow-x: auto;
+        }
+
+        @media (max-width: 767.98px) {
+            .card {
+                padding: 1rem;
+            }
+
+            h1 {
+                font-size: 1.8rem;
+            }
+
+            .stats-grid {
+                grid-template-columns: 1fr;
+                gap: 1rem;
+            }
+
+            .progress-bars {
+                flex-direction: column;
+            }
+
+            table {
+                display: block;
+                overflow-x: auto;
+                white-space: nowrap;
+            }
+        }
     </style>
     <div class="dashboard">
         <div class="card">
