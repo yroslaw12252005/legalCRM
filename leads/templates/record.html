@@ -101,6 +101,33 @@
             margin-top: 2rem;
         }
 
+        .recordings-list {
+            display: grid;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .recording-item {
+            padding: 1rem;
+            background: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 10px;
+        }
+
+        .recording-meta {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1rem;
+            margin-bottom: 0.75rem;
+            color: #64748b;
+            font-size: 0.95rem;
+        }
+
+        .recording-item audio {
+            width: 100%;
+            margin-bottom: 0.75rem;
+        }
+
         .btn {
             padding: 0.8rem 1.5rem;
             border: none;
@@ -623,6 +650,38 @@
             {% endif %}
         </div>
         </div>
+    {% endif %}
+    {% if can_view_call_recordings %}
+    <div class="card">
+        <h2>Аудиозаписи клиента</h2>
+        {% if call_recordings %}
+        <div class="recordings-list">
+            {% for recording in call_recordings %}
+            <div class="recording-item">
+                <div class="recording-meta">
+                    <span>{{ recording.phone }}</span>
+                    <span>
+                        {% if recording.call_started_at %}
+                            {{ recording.call_started_at|date:"d.m.Y H:i:s" }}
+                        {% else %}
+                            Дата не указана
+                        {% endif %}
+                    </span>
+                    <span>{{ recording.file_name }}</span>
+                </div>
+                <audio controls preload="none">
+                    <source src="{{ recording.source_url }}">
+                </audio>
+                <a href="{% url 'download_call' recording.id %}" class="btn btn-primary">Скачать запись</a>
+            </div>
+            {% endfor %}
+        </div>
+        {% else %}
+        <div class="stat-item">
+            <div class="stat-value">По номеру клиента записи пока не найдены</div>
+        </div>
+        {% endif %}
+    </div>
     {% endif %}
         <div class="action-buttons">
              <a href="{% url 'all_leads' %}" class="btn btn-secondary">Вернуться к списку</a>

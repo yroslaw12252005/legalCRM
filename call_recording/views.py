@@ -1,4 +1,3 @@
-from urllib.error import HTTPError, URLError
 from urllib.parse import quote, urlsplit, urlunsplit
 from urllib.request import urlopen
 
@@ -33,32 +32,27 @@ def build_safe_url(url):
     )
 
 
-def build_s3_url(recording):
+def build_recording_source_url(recording):
+    safe_file_url = build_safe_url(recording.file_url)
+    if not recording.s3_key:
+        return safe_file_url
+
     parsed = urlsplit(recording.file_url)
-    return urlunsplit(
-        (
-            parsed.scheme,
-            parsed.netloc,
-            f"/{quote(recording.s3_key, safe='/')}",
-            parsed.query,
-            parsed.fragment,
+    quoted_s3_key = quote(recording.s3_key, safe="/")
+
+    # For old rows, file_url can already point to the real object while s3_key no longer matches it.
+    if parsed.path.endswith(quoted_s3_key):
+        return urlunsplit(
+            (
+                parsed.scheme,
+                parsed.netloc,
+                f"/{quoted_s3_key}",
+                parsed.query,
+                parsed.fragment,
+            )
         )
-    )
 
-
-def read_remote_bytes(urls):
-    last_error = None
-    for url in urls:
-        if not url:
-            continue
-        try:
-            with urlopen(url) as remote_file:
-                return remote_file.read()
-        except (HTTPError, URLError) as exc:
-            last_error = exc
-    if last_error:
-        raise last_error
-    raise Http404("Файл записи не найден")
+    return safe_file_url
 
 
 @login_required
@@ -93,20 +87,14 @@ def download_call(request, pk):
     except CallRecording.DoesNotExist:
         raise Http404("Запись разговора не найдена")
 
-    candidate_urls = [build_safe_url(recording.file_url)]
-    if recording.s3_key:
-        s3_url = build_s3_url(recording)
-        if s3_url not in candidate_urls:
-            candidate_urls.append(s3_url)
-
-    try:
-        content = read_remote_bytes(candidate_urls)
-    except (HTTPError, URLError):
-        messages.error(request, "Не удалось скачать запись разговора.")
-        return redirect("get_calls")
-
+    source_url = build_recording_source_url(recording)
     filename = recording.file_name or "call-recording.mp3"
-    response = HttpResponse(content, content_type="audio/mpeg")
-    response["Content-Disposition"] = f"attachment; filename*=UTF-8''{quote(filename)}"
+
+    with urlopen(source_url) as remote_file:
+        content = remote_file.read()
+
+    encoded_filename = quote(filename)
+    response = HttpResponse(content, content_type="application/octet-stream")
+    response["Content-Disposition"] = f"attachment; filename*=UTF-8''{encoded_filename}"
     response["X-Content-Type-Options"] = "nosniff"
     return response

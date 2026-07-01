@@ -2,6 +2,7 @@ from django.test import TestCase
 from django.urls import reverse
 
 from accounts.models import User
+from call_recording.models import CallRecording
 from company.models import Companys
 from felial.models import Felial
 from leads.forms import Employees_KCForm
@@ -20,28 +21,28 @@ class TenantIsolationTests(TestCase):
         self.director_1 = User.objects.create_user(
             username="director_1",
             password="test-pass-123",
-            status="Директор КЦ",
+            status="Р”РёСЂРµРєС‚РѕСЂ РљР¦",
             companys=self.company_1,
             felial=self.felial_1,
         )
         self.operator_1 = User.objects.create_user(
             username="operator_1",
             password="test-pass-123",
-            status="Оператор",
+            status="РћРїРµСЂР°С‚РѕСЂ",
             companys=self.company_1,
             felial=self.felial_1,
         )
         self.operator_actor = User.objects.create_user(
             username="operator_actor",
             password="test-pass-123",
-            status="Оператор",
+            status="РћРїРµСЂР°С‚РѕСЂ",
             companys=self.company_1,
             felial=self.felial_1,
         )
         self.operator_2 = User.objects.create_user(
             username="operator_2",
             password="test-pass-123",
-            status="Оператор",
+            status="РћРїРµСЂР°С‚РѕСЂ",
             companys=self.company_2,
             felial=self.felial_2,
         )
@@ -126,13 +127,13 @@ class TenantIsolationTests(TestCase):
             reverse("update_record", args=[self.record_1.id]),
             data={
                 "action": "update_comment",
-                "work_comment": "Комментарий оператора",
+                "work_comment": "РљРѕРјРјРµРЅС‚Р°СЂРёР№ РѕРїРµСЂР°С‚РѕСЂР°",
             },
         )
         self.assertEqual(response.status_code, 302)
 
         self.record_1.refresh_from_db()
-        self.assertEqual(self.record_1.work_comment, "Комментарий оператора")
+        self.assertEqual(self.record_1.work_comment, "РљРѕРјРјРµРЅС‚Р°СЂРёР№ РѕРїРµСЂР°С‚РѕСЂР°")
 
     def test_update_record_allows_main_edit_for_kc_director(self):
         self.client.force_login(self.director_1)
@@ -154,30 +155,30 @@ class TenantIsolationTests(TestCase):
         manager = User.objects.create_user(
             username="manager_1",
             password="test-pass-123",
-            status="Менеджер",
+            status="РњРµРЅРµРґР¶РµСЂ",
             companys=self.company_1,
             felial=self.felial_1,
         )
-        self.record_1.status = "Запись в офис"
+        self.record_1.status = "Р—Р°РїРёСЃСЊ РІ РѕС„РёСЃ"
         self.record_1.save(update_fields=["status"])
 
         self.client.force_login(manager)
         response = self.client.get(reverse("record", args=[self.record_1.id]))
 
         self.assertEqual(response.status_code, 200)
-        self.assertNotContains(response, "Статус прихода")
-        self.assertNotContains(response, "Дошел")
-        self.assertNotContains(response, "Не дошел")
+        self.assertNotContains(response, "РЎС‚Р°С‚СѓСЃ РїСЂРёС…РѕРґР°")
+        self.assertNotContains(response, "Р”РѕС€РµР»")
+        self.assertNotContains(response, "РќРµ РґРѕС€РµР»")
 
     def test_record_page_shows_come_buttons_with_booking(self):
         manager = User.objects.create_user(
             username="manager_2",
             password="test-pass-123",
-            status="Менеджер",
+            status="РњРµРЅРµРґР¶РµСЂ",
             companys=self.company_1,
             felial=self.felial_1,
         )
-        self.record_1.status = "Запись в офис"
+        self.record_1.status = "Р—Р°РїРёСЃСЊ РІ РѕС„РёСЃ"
         self.record_1.save(update_fields=["status"])
         Booking.objects.create(
             client=self.record_1,
@@ -192,6 +193,54 @@ class TenantIsolationTests(TestCase):
         response = self.client.get(reverse("record", args=[self.record_1.id]))
 
         self.assertEqual(response.status_code, 200)
-        self.assertContains(response, "Статус прихода")
-        self.assertContains(response, "Дошел")
-        self.assertContains(response, "Не дошел")
+        self.assertContains(response, "РЎС‚Р°С‚СѓСЃ РїСЂРёС…РѕРґР°")
+        self.assertContains(response, "Р”РѕС€РµР»")
+        self.assertContains(response, "РќРµ РґРѕС€РµР»")
+
+    def test_record_page_shows_call_recordings_matched_without_country_code(self):
+        CallRecording.objects.create(
+            companys=self.company_1,
+            phone="+7 (000) 000-00-01",
+            operator_phone="+79990000000",
+            external_id="match-1",
+            file_name="match-1.mp3",
+            file_url="https://example.com/match-1.mp3",
+            s3_key="call_recordings/1/match-1.mp3",
+        )
+        CallRecording.objects.create(
+            companys=self.company_1,
+            phone="8 000 000 00 01",
+            operator_phone="+79990000000",
+            external_id="match-2",
+            file_name="match-2.mp3",
+            file_url="https://example.com/match-2.mp3",
+            s3_key="call_recordings/1/match-2.mp3",
+        )
+        CallRecording.objects.create(
+            companys=self.company_1,
+            phone="+70000000009",
+            operator_phone="+79990000000",
+            external_id="other-phone",
+            file_name="other-phone.mp3",
+            file_url="https://example.com/other-phone.mp3",
+            s3_key="call_recordings/1/other-phone.mp3",
+        )
+        CallRecording.objects.create(
+            companys=self.company_2,
+            phone="+70000000001",
+            operator_phone="+79990000000",
+            external_id="other-company",
+            file_name="other-company.mp3",
+            file_url="https://example.com/other-company.mp3",
+            s3_key="call_recordings/2/other-company.mp3",
+        )
+
+        self.client.force_login(self.director_1)
+        response = self.client.get(reverse("record", args=[self.record_1.id]))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Аудиозаписи клиента")
+        self.assertContains(response, "match-1.mp3")
+        self.assertContains(response, "match-2.mp3")
+        self.assertNotContains(response, "other-phone.mp3")
+        self.assertNotContains(response, "other-company.mp3")

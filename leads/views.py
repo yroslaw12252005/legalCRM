@@ -17,6 +17,8 @@ from django.contrib.auth.decorators import login_required
 from django import template
 
 from accounts.views import employees
+from call_recording.models import CallRecording
+from call_recording.views import build_recording_source_url, can_view_recordings
 from company.views import companys
 from felial.views import felials
 
@@ -254,6 +256,33 @@ def _can_assign_rep(user):
 def _can_edit_record_main(user):
     return user.status in EDIT_RECORD_ALLOWED_STATUS_VARIANTS
 
+
+def _normalize_phone_for_recording_match(phone):
+    if not phone:
+        return ""
+
+    digits = "".join(ch for ch in str(phone) if ch.isdigit())
+    if not digits:
+        return ""
+
+    return digits[-10:] if len(digits) > 10 else digits
+
+
+def _get_call_recordings_for_record(record):
+    normalized_phone = _normalize_phone_for_recording_match(record.phone)
+    if not normalized_phone:
+        return []
+
+    matched_recordings = []
+    recordings = CallRecording.objects.filter(companys_id=record.companys_id).order_by("-call_started_at", "-created_at")
+    for recording in recordings:
+        if _normalize_phone_for_recording_match(recording.phone) != normalized_phone:
+            continue
+        recording.source_url = build_recording_source_url(recording)
+        matched_recordings.append(recording)
+
+    return matched_recordings
+
 def logout_user(request):
     logout(request)
     return redirect("all_leads")
@@ -272,6 +301,15 @@ async def record(request, pk):
     surcharge = await filter_surcharge(record_id=pk)
     get_documents = sync_to_async(lambda: list(RecordDocument.objects.filter(record=record)), thread_sensitive=True)
     documents = await get_documents()
+    can_view_call_recordings = can_view_recordings(current_user)
+    if can_view_call_recordings:
+        get_call_recordings = sync_to_async(
+            lambda: _get_call_recordings_for_record(record),
+            thread_sensitive=True,
+        )
+        call_recordings = await get_call_recordings()
+    else:
+        call_recordings = []
 
     # Асинхронная инициализация форм
     init_form = sync_to_async(
@@ -361,6 +399,8 @@ async def record(request, pk):
                 "booking_come": getattr(get_status_com, "come", None),
                 "documents": documents,
                 "can_manage_documents": request.can_manage_documents,
+                "call_recordings": call_recordings,
+                "can_view_call_recordings": can_view_call_recordings,
             },
         )
 
