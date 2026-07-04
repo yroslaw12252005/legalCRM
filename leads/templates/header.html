@@ -21,7 +21,7 @@
   }
   .desktop-toolbar-form {
     display: grid;
-    grid-template-columns: minmax(220px, 1.6fr) minmax(170px, 1fr) minmax(170px, 1fr) minmax(170px, 1fr) auto auto;
+    grid-template-columns: minmax(220px, 1.6fr) repeat(5, minmax(170px, 1fr)) auto auto;
     gap: 10px;
     align-items: center;
   }
@@ -130,10 +130,18 @@
             <option value="{{ status_value }}" {% if selected_status == status_value %}selected{% endif %}>{{ status_label }}</option>
           {% endfor %}
         </select>
+        <select class="desktop-toolbar-select" name="operator_state">
+          <option value="">Все операторы</option>
+          <option value="unassigned" {% if selected_operator_state == "unassigned" %}selected{% endif %}>Не прикреплен оператор</option>
+        </select>
+        <select class="desktop-toolbar-select" name="lawyer_state">
+          <option value="">Все юристы</option>
+          <option value="unassigned" {% if selected_lawyer_state == "unassigned" %}selected{% endif %}>Не прикреплен юрист</option>
+        </select>
         <button type="submit" class="crm-btn crm-btn-primary">Применить</button>
         <a href="{% url 'all_leads' %}" class="crm-btn" style="text-decoration: none;">Сбросить</a>
       </form>
-      <p class="desktop-toolbar-note">Фильтры работают вместе: поиск + сотрудник + тематика + статус.</p>
+      <p class="desktop-toolbar-note">Фильтры работают вместе: поиск + сотрудник + тематика + статус + прикрепление оператора/юриста.</p>
     </div>
   </div>
 </header>

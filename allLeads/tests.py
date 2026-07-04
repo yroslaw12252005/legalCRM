@@ -159,6 +159,53 @@ class AllLeadsPhoneVisibilityTests(TestCase):
         self.assertContains(record_response, "Передать представителям")
 
 
+class AllLeadsFiltersTests(TestCase):
+    def setUp(self):
+        self.company = Companys.objects.create(title="Company")
+        self.felial = Felial.objects.create(title="Main", cites="Moscow", companys=self.company)
+        self.admin = User.objects.create_user(
+            username="admin_filter",
+            password="test-pass-123",
+            status="Администратор",
+            companys=self.company,
+            felial=self.felial,
+        )
+        self.unassigned_record = Record.objects.create(
+            name="Unassigned Lead",
+            phone="+70000000001",
+            description="desc",
+            companys=self.company,
+            felial=self.felial,
+            where="Право",
+        )
+        self.assigned_record = Record.objects.create(
+            name="Assigned Lead",
+            phone="+70000000002",
+            description="desc",
+            companys=self.company,
+            felial=self.felial,
+            employees_KC="operator_1",
+            employees_UPP="lawyer_1",
+            where="Марина",
+        )
+
+    def test_admin_can_filter_unassigned_operators(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("all_leads"), {"operator_state": "unassigned"})
+
+        self.assertContains(response, "Unassigned Lead")
+        self.assertNotContains(response, "Assigned Lead")
+
+    def test_admin_can_filter_unassigned_lawyers(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("all_leads"), {"lawyer_state": "unassigned"})
+
+        self.assertContains(response, "Unassigned Lead")
+        self.assertNotContains(response, "Assigned Lead")
+
+
 class StatusPermissionsTests(TestCase):
     def setUp(self):
         self.company = Companys.objects.create(title="Company")

@@ -50,6 +50,13 @@ STATUS_REPRESENTATIVE = "Представитель"
 LEAD_STATUS_NEW = "Новая"
 LEAD_STATUS_OFFICE = "Запись в офис"
 DEFAULT_RECORDS_PER_PAGE = 100
+UNASSIGNED_FILTER_VALUE = "unassigned"
+UNASSIGNED_EMPLOYEE_VALUES = {
+    "",
+    "Не прикреплен",
+    "Не прикреплён",
+    "Не прикреплённ",
+}
 
 
 def _with_booking_come(queryset):
@@ -193,6 +200,8 @@ def _parse_filters(request):
     selected_employee = request.GET.get("employee", "").strip()
     selected_topic = request.GET.get("topic", "").strip()
     selected_status = request.GET.get("status", "").strip()
+    selected_operator_state = request.GET.get("operator_state", "").strip()
+    selected_lawyer_state = request.GET.get("lawyer_state", "").strip()
 
 
     if (
@@ -235,7 +244,22 @@ def _parse_filters(request):
 
 
 
-    return search_query, selected_employee, selected_topic, selected_status
+    return (
+        search_query,
+        selected_employee,
+        selected_topic,
+        selected_status,
+        selected_operator_state,
+        selected_lawyer_state,
+    )
+
+
+def _build_unassigned_employee_filter(field_name):
+    query = Q(**{f"{field_name}__isnull": True}) | Q(**{field_name: ""})
+    for value in UNASSIGNED_EMPLOYEE_VALUES:
+        if value:
+            query |= Q(**{field_name: value})
+    return query
 
 
 
@@ -278,7 +302,14 @@ def all_leads(request):
 
 
 
-    search_query, selected_employee, selected_topic, selected_status = _parse_filters(request)
+    (
+        search_query,
+        selected_employee,
+        selected_topic,
+        selected_status,
+        selected_operator_state,
+        selected_lawyer_state,
+    ) = _parse_filters(request)
 
     base_records = _with_booking_come(_visible_records_for_user(_base_records_for_user(request.user), request.user))
 
@@ -329,6 +360,14 @@ def all_leads(request):
     if selected_status:
 
         get_records = get_records.filter(status=selected_status)
+
+    if selected_operator_state == UNASSIGNED_FILTER_VALUE:
+
+        get_records = get_records.filter(_build_unassigned_employee_filter("employees_KC"))
+
+    if selected_lawyer_state == UNASSIGNED_FILTER_VALUE:
+
+        get_records = get_records.filter(_build_unassigned_employee_filter("employees_UPP"))
 
 
 
@@ -432,6 +471,8 @@ def all_leads(request):
             "selected_topic": selected_topic,
 
             "selected_status": selected_status,
+            "selected_operator_state": selected_operator_state,
+            "selected_lawyer_state": selected_lawyer_state,
             "can_bulk_send_to_work": _can_send_to_work(request.user),
 
             "can_assign_kc": _can_assign_kc(request.user),

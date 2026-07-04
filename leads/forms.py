@@ -4,7 +4,7 @@ from django.core.validators import FileExtensionValidator
 from accounts.models import User
 from felial.models import Felial
 
-from .access import LEAD_TOPICS
+from .access import LEAD_SOURCES, LEAD_TOPICS
 from .models import Record
 from .status_utils import get_status_choices_for_user
 
@@ -46,7 +46,7 @@ class AddRecordForm(forms.ModelForm):
     where = forms.ChoiceField(
         widget=forms.Select(attrs={"class": "form-select"}),
         label="Источник",
-        choices=(("VK", "VK"), ("Tilda", "Tilda"), ("РЕ", "РЕ"), ("Звонок", "Звонок")),
+        choices=tuple((source, source) for source in LEAD_SOURCES),
     )
 
     felial = forms.ModelChoiceField(
