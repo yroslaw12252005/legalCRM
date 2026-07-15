@@ -1,25 +1,25 @@
 LEAD_TOPICS = [
-    "Р—РџРџ",
-    "РЈРіРѕР»РѕРІРєР°",
-    "РЎРµРјРµР№РєР°",
-    "Р‘РѕРЅРєСЂРѕРґСЃС‚РІРѕ",
-    "РќР°Р»РѕРіРё",
-    "Р“СЂР°Р¶РґР°РЅСЃС‚РІРѕ",
-    "Р‘Р°РЅРєРё",
-    "Р—РµРјР»СЏ",
-    "Р–РёР»СЊС‰РєР°",
-    "Р’РѕРµРЅРєР°",
-    "РќР°СЃР»РµРґРєР°",
-    "РђРґРјРёРЅРёСЃСЃС‚СЂР°",
-    "РЎС‚СЂР°С…РѕРІРєР°",
-    "РћРћРћ/РћРђРћ",
-    "РўСЂСѓРґС‹",
-    "РђСЂР±РёС‚СЂР°Р¶",
-    "РЎРќРў/РР–РЎ",
-    "РђРІС‚Рѕ",
-    "Р”СЂСѓРіРѕРµ",
-    "РњРёРіСЂР°С†РёСЏ",
-    "РЎРѕС†РёР°Р»РєР°",
+    "ЗПП",
+    "Уголовка",
+    "Семейка",
+    "Банкротство",
+    "Налоги",
+    "Гражданство",
+    "Банки",
+    "Земля",
+    "Жилищка",
+    "Военка",
+    "Наследка",
+    "Административка",
+    "Страховка",
+    "ООО/ОАО",
+    "Труды",
+    "Арбитраж",
+    "СНТ/ИЖС",
+    "Авто",
+    "Другое",
+    "Миграция",
+    "Социалка",
 ]
 
 LEAD_SOURCES = [
@@ -33,14 +33,43 @@ LEAD_SOURCES = [
 ]
 
 
+def normalize_text(value):
+    if not isinstance(value, str):
+        return value
+
+    normalized = value.strip()
+    if not normalized:
+        return normalized
+
+    for _ in range(2):
+        if "Р" not in normalized and "\x98" not in normalized:
+            break
+        try:
+            raw = bytearray()
+            for char in normalized:
+                if char == "\x98":
+                    raw.append(0x98)
+                else:
+                    raw.extend(char.encode("cp1251"))
+            fixed = raw.decode("utf-8")
+        except (UnicodeDecodeError, UnicodeEncodeError):
+            break
+        if fixed == normalized:
+            break
+        normalized = fixed.strip()
+
+    return normalized
+
+
 def status_variants(value):
-    variants = {value}
+    normalized = normalize_text(value)
+    variants = {normalized}
     try:
-        variants.add(value.encode("utf-8").decode("cp1251"))
+        variants.add(normalized.encode("utf-8").decode("cp1251"))
     except Exception:
         pass
     try:
-        variants.add(value.encode("cp1251").decode("utf-8"))
+        variants.add(normalized.encode("cp1251").decode("utf-8"))
     except Exception:
         pass
     return variants
@@ -58,7 +87,7 @@ def build_topic_choices(existing_topics=()):
     seen = set()
 
     for topic in [*LEAD_TOPICS, *existing_topics]:
-        normalized = (topic or "").strip()
+        normalized = normalize_text(topic or "")
         if not normalized or normalized in seen:
             continue
         seen.add(normalized)
@@ -72,7 +101,7 @@ def build_source_choices(existing_sources=()):
     seen = set()
 
     for source in [*LEAD_SOURCES, *existing_sources]:
-        normalized = (source or "").strip()
+        normalized = normalize_text(source or "")
         if not normalized or normalized in seen:
             continue
         seen.add(normalized)
@@ -86,14 +115,14 @@ def can_view_phone(user, record, booking_come=None):
     if not phone:
         return False
 
-    if status_matches(getattr(record, "status", None), "Р”РѕРіРѕРІРѕСЂ"):
+    if status_matches(getattr(record, "status", None), "Договор"):
         return True
 
     user_status = getattr(user, "status", None)
-    if status_matches(user_status, "Р”РёСЂРµРєС‚РѕСЂ Р®РџРџ", "Р®СЂРёСЃС‚ РїРёСЂРІРёС‡РЅРёРє"):
-        return booking_come is True or status_matches(getattr(record, "status", None), "РћРЅР»Р°Р№РЅ", "Р”РѕРіРѕРІРѕСЂ")
+    if status_matches(user_status, "Директор ЮПП", "Юрист пирвичник"):
+        return booking_come is True or status_matches(getattr(record, "status", None), "Онлайн", "Договор")
 
-    if status_matches(user_status, "РњРµРЅРµРґР¶РµСЂ"):
+    if status_matches(user_status, "Менеджер"):
         return booking_come is True
 
     return True
@@ -106,6 +135,6 @@ def get_phone_display(user, record, booking_come=None):
 
 
 def can_transfer_to_representative(user, record):
-    return status_matches(getattr(user, "status", None), "Р”РёСЂРµРєС‚РѕСЂ Р®РџРџ", "РђРґРјРёРЅРёСЃС‚СЂР°С‚РѕСЂ") and status_matches(
-        getattr(record, "status", None), "Р”РѕРіРѕРІРѕСЂ"
+    return status_matches(getattr(user, "status", None), "Директор ЮПП", "Администратор") and status_matches(
+        getattr(record, "status", None), "Договор"
     )
