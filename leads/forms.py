@@ -211,6 +211,14 @@ class FileUploadForm(forms.Form):
     file = MultipleFileField(label="", widget=MultipleFileInput(attrs={"class": "file"}))
 
 
+class ExcelUploadForm(forms.Form):
+    file = forms.FileField(
+        label="Excel-файл",
+        validators=[FileExtensionValidator(allowed_extensions=["xlsx"])],
+        widget=forms.ClearableFileInput(attrs={"class": "form-control", "accept": ".xlsx"}),
+    )
+
+
 class RecordEditForm(forms.ModelForm):
     class Meta:
         model = Record

@@ -1,14 +1,22 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <title>Title</title>
-</head>
-<body>
-<form method="post" enctype="multipart/form-data">
-    {% csrf_token %}
-    {{ form.as_p }}
-    <button type="submit">Загрузить</button>
-</form>
-</body>
-</html>
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<div class="row" style="justify-content: center;">
+    <div class="pole" style="max-width: 640px;">
+        <h3 class="add_lead_title">Загрузка заявок через Excel</h3>
+        <p style="margin-bottom: 16px; color: #4b5563;">
+            Шаблон должен содержать столбцы <strong>Имя</strong> и <strong>Телефон</strong>.
+            Остальные поля останутся базовыми, а статус каждой заявки автоматически станет <strong>Новая</strong>.
+        </p>
+        <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px;">
+            <a href="{% url 'download_excel_template' %}" class="btn btn-outline-primary">Скачать шаблон Excel</a>
+            <a href="{% url 'add_record' %}" class="btn btn-outline-secondary">Вернуться к созданию заявки</a>
+        </div>
+        <form method="post" enctype="multipart/form-data">
+            {% csrf_token %}
+            {{ form.as_p }}
+            <button type="submit" class="btn btn-success">Загрузить заявки</button>
+        </form>
+    </div>
+</div>
+{% endblock content %}

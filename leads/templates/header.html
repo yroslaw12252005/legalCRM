@@ -1,8 +1,7 @@
-﻿{% load static %}
+{% load static %}
 {% block content %}
 {% if user.is_authenticated %}
 <link rel="stylesheet" href="{% static 'css/header.css' %}" />
-
 
 <style>
   .desktop-toolbar-wrap {
@@ -21,9 +20,9 @@
   }
   .desktop-toolbar-form {
     display: grid;
-    grid-template-columns: minmax(220px, 1.6fr) repeat(5, minmax(170px, 1fr)) auto auto;
+    grid-template-columns: repeat(auto-fit, minmax(170px, 1fr));
     gap: 10px;
-    align-items: center;
+    align-items: stretch;
   }
   .desktop-toolbar-input,
   .desktop-toolbar-select {
@@ -38,10 +37,19 @@
     min-height: 44px;
     box-sizing: border-box;
   }
+  .desktop-toolbar-input {
+    grid-column: span 2;
+  }
   .desktop-toolbar-note {
     margin: 8px 2px 0 2px;
     font-size: 12px;
     color: #4b5563;
+  }
+  .desktop-toolbar-actions {
+    margin-top: 12px;
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
   }
   .crm-btn {
     background: #f8fafc;
@@ -56,6 +64,7 @@
     align-items: center;
     justify-content: center;
     box-sizing: border-box;
+    text-decoration: none;
   }
   .crm-btn-primary {
     background: #2563eb;
@@ -70,11 +79,6 @@
     background: #1d4ed8;
     border-color: #1d4ed8;
   }
-  @media (max-width: 1199.98px) {
-    .desktop-toolbar-form {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
-    }
-  }
   @media (max-width: 767.98px) {
     .desktop-toolbar-wrap {
       padding: 0;
@@ -86,6 +90,9 @@
     .desktop-toolbar-form {
       grid-template-columns: 1fr;
     }
+    .desktop-toolbar-input {
+      grid-column: span 1;
+    }
     .desktop-toolbar-input,
     .desktop-toolbar-select,
     .crm-btn {
@@ -95,8 +102,12 @@
       font-size: 11px;
       margin-top: 10px;
     }
+    .desktop-toolbar-actions {
+      flex-direction: column;
+    }
   }
 </style>
+
 <header class="crm-header-offset">
   <div class="desktop-toolbar-wrap">
     <div class="desktop-toolbar">
@@ -130,6 +141,12 @@
             <option value="{{ status_value }}" {% if selected_status == status_value %}selected{% endif %}>{{ status_label }}</option>
           {% endfor %}
         </select>
+        <select class="desktop-toolbar-select" name="source">
+          <option value="">Все источники</option>
+          {% for source in sources %}
+            <option value="{{ source }}" {% if selected_source == source %}selected{% endif %}>{{ source }}</option>
+          {% endfor %}
+        </select>
         <select class="desktop-toolbar-select" name="operator_state">
           <option value="">Все операторы</option>
           <option value="unassigned" {% if selected_operator_state == "unassigned" %}selected{% endif %}>Не прикреплен оператор</option>
@@ -139,13 +156,17 @@
           <option value="unassigned" {% if selected_lawyer_state == "unassigned" %}selected{% endif %}>Не прикреплен юрист</option>
         </select>
         <button type="submit" class="crm-btn crm-btn-primary">Применить</button>
-        <a href="{% url 'all_leads' %}" class="crm-btn" style="text-decoration: none;">Сбросить</a>
+        <a href="{% url 'all_leads' %}" class="crm-btn">Сбросить</a>
       </form>
-      <p class="desktop-toolbar-note">Фильтры работают вместе: поиск + сотрудник + тематика + статус + прикрепление оператора/юриста.</p>
+      <p class="desktop-toolbar-note">Фильтры работают вместе: поиск, сотрудник, тематика, статус, источник и прикрепление оператора или юриста.</p>
+      {% if user.status == "Администратор" %}
+      <div class="desktop-toolbar-actions">
+        <a href="{% url 'import_records_from_excel' %}" class="crm-btn">Загрузить заявки из Excel</a>
+      </div>
+      {% endif %}
     </div>
   </div>
 </header>
-
 
 {% endif %}
 {% endblock content %}

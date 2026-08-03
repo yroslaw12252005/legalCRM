@@ -18,7 +18,7 @@ from django.views.generic import ListView
 
 
 from accounts.models import User
-from leads.access import build_topic_choices, status_variants
+from leads.access import build_source_choices, build_topic_choices, status_variants
 from leads.forms import BulkSmsForm
 from leads.models import Record
 from leads.sms import send_bulk_sms
@@ -200,6 +200,7 @@ def _parse_filters(request):
     selected_employee = request.GET.get("employee", "").strip()
     selected_topic = request.GET.get("topic", "").strip()
     selected_status = request.GET.get("status", "").strip()
+    selected_source = request.GET.get("source", "").strip()
     selected_operator_state = request.GET.get("operator_state", "").strip()
     selected_lawyer_state = request.GET.get("lawyer_state", "").strip()
 
@@ -211,6 +212,8 @@ def _parse_filters(request):
         and not selected_topic
 
         and not selected_status
+
+        and not selected_source
 
         and ("employee=" in search_query or "topic=" in search_query)
 
@@ -249,6 +252,7 @@ def _parse_filters(request):
         selected_employee,
         selected_topic,
         selected_status,
+        selected_source,
         selected_operator_state,
         selected_lawyer_state,
     )
@@ -307,6 +311,7 @@ def all_leads(request):
         selected_employee,
         selected_topic,
         selected_status,
+        selected_source,
         selected_operator_state,
         selected_lawyer_state,
     ) = _parse_filters(request)
@@ -361,6 +366,10 @@ def all_leads(request):
 
         get_records = get_records.filter(status=selected_status)
 
+    if selected_source:
+
+        get_records = get_records.filter(where=selected_source)
+
     if selected_operator_state == UNASSIGNED_FILTER_VALUE:
 
         get_records = get_records.filter(_build_unassigned_employee_filter("employees_KC"))
@@ -392,6 +401,13 @@ def all_leads(request):
         .exclude(type__isnull=True)
         .exclude(type__exact="")
         .values_list("type", flat=True)
+        .distinct()
+    )
+    sources = build_source_choices(
+        base_records
+        .exclude(where__isnull=True)
+        .exclude(where__exact="")
+        .values_list("where", flat=True)
         .distinct()
     )
 
@@ -461,6 +477,7 @@ def all_leads(request):
             "filter_employees": filter_employees,
 
             "topics": topics,
+            "sources": sources,
 
             "statuses": statuses,
 
@@ -471,6 +488,7 @@ def all_leads(request):
             "selected_topic": selected_topic,
 
             "selected_status": selected_status,
+            "selected_source": selected_source,
             "selected_operator_state": selected_operator_state,
             "selected_lawyer_state": selected_lawyer_state,
             "can_bulk_send_to_work": _can_send_to_work(request.user),

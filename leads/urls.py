@@ -12,6 +12,8 @@ urlpatterns = [
     path("to_representative/<int:pk>/", views.to_representative, name='to_representative'),
     path("download_document/<int:doc_id>/", views.download_document, name='download_document'),
     path("add_record/", views.add_record, name='add_record'),
+    path("excel/template/", views.download_excel_template, name="download_excel_template"),
+    path("excel/import/", views.import_records_from_excel, name="import_records_from_excel"),
     path("register/", include('accounts.urls'), name='register'),
     path('get_time/', views.get_time, name='get_time'),
 ]

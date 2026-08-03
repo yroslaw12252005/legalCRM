@@ -1,3 +1,6 @@
+from io import BytesIO
+from zipfile import ZipFile
+
 from django.test import TestCase
 from django.urls import reverse
 
@@ -7,6 +10,7 @@ from company.models import Companys
 from felial.models import Felial
 from leads.forms import Employees_KCForm
 from leads.models import Record
+from leads.views import _build_excel_template_bytes
 from smart_calendar.models import Booking
 
 
