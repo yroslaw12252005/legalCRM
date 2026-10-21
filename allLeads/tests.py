@@ -1,8 +1,11 @@
+from datetime import date
+
 from django.test import TestCase
 from django.urls import reverse
 
 from accounts.models import User
 from company.models import Companys
+from contract.models import Contract
 from felial.models import Felial
 from leads.models import Record
 from smart_calendar.models import Booking
@@ -188,6 +191,29 @@ class AllLeadsFiltersTests(TestCase):
             employees_UPP="lawyer_1",
             where="Марина",
         )
+        self.operator = User.objects.create_user(
+            username="operator_1",
+            password="test-pass-123",
+            status="Оператор",
+            companys=self.company,
+            felial=self.felial,
+        )
+        self.lawyer = User.objects.create_user(
+            username="lawyer_1",
+            password="test-pass-123",
+            status="Юрист пирвичник",
+            companys=self.company,
+            felial=self.felial,
+        )
+        self.representative = User.objects.create_user(
+            username="representative_1",
+            password="test-pass-123",
+            status="Представитель",
+            companys=self.company,
+            felial=self.felial,
+        )
+        self.assigned_record.employees_REP = self.representative.username
+        self.assigned_record.save(update_fields=["employees_REP"])
 
     def test_admin_can_filter_unassigned_operators(self):
         self.client.force_login(self.admin)
@@ -204,6 +230,77 @@ class AllLeadsFiltersTests(TestCase):
 
         self.assertContains(response, "Unassigned Lead")
         self.assertNotContains(response, "Assigned Lead")
+
+    def test_search_finds_lead_by_contract_number(self):
+        Contract.objects.create(
+            record=self.assigned_record,
+            number="987654321",
+            amount="100000.00",
+            initial_payment="10000.00",
+            contract_date=date.today(),
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("all_leads"), {"q": "987654321"})
+
+        self.assertContains(response, "Assigned Lead")
+        self.assertNotContains(response, "Unassigned Lead")
+
+    def test_search_view_finds_lead_by_contract_number(self):
+        Contract.objects.create(
+            record=self.assigned_record,
+            number="123456789",
+            amount="100000.00",
+            initial_payment="10000.00",
+            contract_date=date.today(),
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("search"), {"q": "123456789"})
+
+        self.assertContains(response, "Assigned Lead")
+        self.assertNotContains(response, "Unassigned Lead")
+
+    def test_role_filters_use_their_record_fields(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            reverse("all_leads"),
+            {
+                "operator": self.operator.username,
+                "lawyer_upp": self.lawyer.username,
+                "lawyer_op": self.representative.username,
+            },
+        )
+
+        self.assertContains(response, "Assigned Lead")
+        self.assertNotContains(response, "Unassigned Lead")
+
+    def test_employee_choices_are_split_by_role_and_company(self):
+        other_company = Companys.objects.create(title="Other company")
+        other_branch = Felial.objects.create(title="Other", cites="Tula", companys=other_company)
+        User.objects.create_user(
+            username="foreign_operator",
+            password="test-pass-123",
+            status="Оператор",
+            companys=other_company,
+            felial=other_branch,
+        )
+        secondary_lawyer = User.objects.create_user(
+            username="secondary_lawyer",
+            password="test-pass-123",
+            status="ОП",
+            companys=self.company,
+            felial=self.felial,
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("all_leads"))
+
+        self.assertQuerySetEqual(response.context["operators"], [self.operator])
+        self.assertQuerySetEqual(response.context["lawyers"], [self.lawyer])
+        self.assertQuerySetEqual(response.context["representatives"], [self.representative])
+        self.assertNotIn(secondary_lawyer, response.context["lawyers"])
 
 
 class StatusPermissionsTests(TestCase):

@@ -198,6 +198,9 @@ def _can_change_status(user):
 def _parse_filters(request):
     search_query = request.GET.get("q", "").strip()
     selected_employee = request.GET.get("employee", "").strip()
+    selected_operator = request.GET.get("operator", "").strip()
+    selected_lawyer_upp = request.GET.get("lawyer_upp", "").strip()
+    selected_lawyer_op = request.GET.get("lawyer_op", "").strip()
     selected_topic = request.GET.get("topic", "").strip()
     selected_status = request.GET.get("status", "").strip()
     selected_source = request.GET.get("source", "").strip()
@@ -250,6 +253,9 @@ def _parse_filters(request):
     return (
         search_query,
         selected_employee,
+        selected_operator,
+        selected_lawyer_upp,
+        selected_lawyer_op,
         selected_topic,
         selected_status,
         selected_source,
@@ -309,6 +315,9 @@ def all_leads(request):
     (
         search_query,
         selected_employee,
+        selected_operator,
+        selected_lawyer_upp,
+        selected_lawyer_op,
         selected_topic,
         selected_status,
         selected_source,
@@ -332,6 +341,8 @@ def all_leads(request):
 
             | Q(description__icontains=search_query)
 
+            | Q(contracts__number__icontains=search_query)
+
         )
 
         if search_query.isdigit():
@@ -353,6 +364,24 @@ def all_leads(request):
             | Q(employees_REP=selected_employee)
 
         )
+
+    if selected_operator:
+        if selected_operator == UNASSIGNED_FILTER_VALUE:
+            get_records = get_records.filter(_build_unassigned_employee_filter("employees_KC"))
+        else:
+            get_records = get_records.filter(employees_KC=selected_operator)
+
+    if selected_lawyer_upp:
+        if selected_lawyer_upp == UNASSIGNED_FILTER_VALUE:
+            get_records = get_records.filter(_build_unassigned_employee_filter("employees_UPP"))
+        else:
+            get_records = get_records.filter(employees_UPP=selected_lawyer_upp)
+
+    if selected_lawyer_op:
+        if selected_lawyer_op == UNASSIGNED_FILTER_VALUE:
+            get_records = get_records.filter(_build_unassigned_employee_filter("employees_REP"))
+        else:
+            get_records = get_records.filter(employees_REP=selected_lawyer_op)
 
 
 
@@ -382,11 +411,20 @@ def all_leads(request):
 
     company_id = request.user.companys_id
 
-    operators = User.objects.filter(companys_id=company_id, status=STATUS_OPERATOR).order_by("username")
+    operators = User.objects.filter(
+        companys_id=company_id,
+        status__in=status_variants(STATUS_OPERATOR),
+    ).order_by("username")
 
-    lawyers = User.objects.filter(companys_id=company_id, status__in=[STATUS_LAWYER_PRIMARY, STATUS_OP]).order_by("username")
+    lawyers = User.objects.filter(
+        companys_id=company_id,
+        status__in=status_variants(STATUS_LAWYER_PRIMARY),
+    ).order_by("username")
 
-    representatives = User.objects.filter(companys_id=company_id, status=STATUS_REPRESENTATIVE).order_by("username")
+    representatives = User.objects.filter(
+        companys_id=company_id,
+        status__in=status_variants(STATUS_REPRESENTATIVE),
+    ).order_by("username")
 
     filter_employees = User.objects.filter(
 
@@ -430,7 +468,7 @@ def all_leads(request):
 
 
 
-    get_records = get_records.only(
+    get_records = get_records.distinct().only(
         "id",
         "name",
         "phone",
@@ -484,6 +522,12 @@ def all_leads(request):
             "search_query": search_query,
 
             "selected_employee": selected_employee,
+
+            "selected_operator": selected_operator,
+
+            "selected_lawyer_upp": selected_lawyer_upp,
+
+            "selected_lawyer_op": selected_lawyer_op,
 
             "selected_topic": selected_topic,
 
@@ -610,13 +654,16 @@ class SearchView(ListView):
 
             | Q(description__icontains=query)
 
+            | Q(contracts__number__icontains=query)
+
         )
 
         if query.isdigit():
 
             query_filter |= Q(id=int(query))
 
-        return _with_booking_come(Record.objects.filter(companys=self.request.user.companys).filter(query_filter))
+        records = _visible_records_for_user(_base_records_for_user(self.request.user), self.request.user)
+        return _with_booking_come(records.filter(query_filter).distinct())
 
 
 

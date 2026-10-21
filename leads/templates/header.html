@@ -117,18 +117,35 @@
           type="text"
           name="q"
           value="{{ search_query }}"
-          placeholder="Поиск по имени, телефону, описанию, ID"
+          placeholder="Поиск по имени, телефону, описанию, ID или № договора"
         >
-        {% if user.status == "Администратор" %}
-        <select class="desktop-toolbar-select" name="employee">
-          <option value="">Все сотрудники</option>
-          {% for employee in filter_employees %}
-            <option value="{{ employee.username }}" {% if selected_employee == employee.username %}selected{% endif %}>
-              {{ employee.username }}{% if employee.status %} ({{ employee.status }}){% endif %}
+        <select class="desktop-toolbar-select" name="operator">
+          <option value="">Все операторы</option>
+          <option value="unassigned" {% if selected_operator == "unassigned" %}selected{% endif %}>Не прикреплён оператор</option>
+          {% for operator in operators %}
+            <option value="{{ operator.username }}" {% if selected_operator == operator.username %}selected{% endif %}>
+              {{ operator.username }}
             </option>
           {% endfor %}
         </select>
-        {% endif %}
+        <select class="desktop-toolbar-select" name="lawyer_upp">
+          <option value="">Все юристы ЮПП</option>
+          <option value="unassigned" {% if selected_lawyer_upp == "unassigned" %}selected{% endif %}>Не прикреплён юрист ЮПП</option>
+          {% for lawyer in lawyers %}
+            <option value="{{ lawyer.username }}" {% if selected_lawyer_upp == lawyer.username %}selected{% endif %}>
+              {{ lawyer.username }}
+            </option>
+          {% endfor %}
+        </select>
+        <select class="desktop-toolbar-select" name="lawyer_op">
+          <option value="">Все юристы ОП</option>
+          <option value="unassigned" {% if selected_lawyer_op == "unassigned" %}selected{% endif %}>Не прикреплён юрист ОП</option>
+          {% for representative in representatives %}
+            <option value="{{ representative.username }}" {% if selected_lawyer_op == representative.username %}selected{% endif %}>
+              {{ representative.username }}
+            </option>
+          {% endfor %}
+        </select>
         <select class="desktop-toolbar-select" name="topic">
           <option value="">Все тематики</option>
           {% for topic in topics %}
@@ -147,18 +164,10 @@
             <option value="{{ source }}" {% if selected_source == source %}selected{% endif %}>{{ source }}</option>
           {% endfor %}
         </select>
-        <select class="desktop-toolbar-select" name="operator_state">
-          <option value="">Все операторы</option>
-          <option value="unassigned" {% if selected_operator_state == "unassigned" %}selected{% endif %}>Не прикреплен оператор</option>
-        </select>
-        <select class="desktop-toolbar-select" name="lawyer_state">
-          <option value="">Все юристы</option>
-          <option value="unassigned" {% if selected_lawyer_state == "unassigned" %}selected{% endif %}>Не прикреплен юрист</option>
-        </select>
         <button type="submit" class="crm-btn crm-btn-primary">Применить</button>
         <a href="{% url 'all_leads' %}" class="crm-btn">Сбросить</a>
       </form>
-      <p class="desktop-toolbar-note">Фильтры работают вместе: поиск, сотрудник, тематика, статус, источник и прикрепление оператора или юриста.</p>
+      <p class="desktop-toolbar-note">Фильтры работают вместе: поиск, оператор, юрист ЮПП, юрист ОП, тематика, статус и источник.</p>
       {% if user.status == "Администратор" %}
       <div class="desktop-toolbar-actions">
         <a href="{% url 'import_records_from_excel' %}" class="crm-btn">Загрузить заявки из Excel</a>
