@@ -188,12 +188,12 @@
 
           {% if surcharges %}
             {% for surcharge in surcharges %}
-              {% if surcharge.record.employees_UPP == user.username %}
-                <a href="{% url 'record' surcharge.record.id %}" style="text-decoration:none;">
+              {% if surcharge.contract.record.employees_UPP == user.username %}
+                <a href="{% url 'record' surcharge.contract.record.id %}" style="text-decoration:none;">
                   <div class="event event-surcharge">
                     <div class="event-content">
                       <div class="event-time">{{ surcharge.dat|date:"H:i" }}</div>
-                      Доплата: {{ surcharge.record }} ({{ surcharge.cost }})
+                      Доплата по договору №{{ surcharge.contract.number }}: {{ surcharge.contract.record }} ({{ surcharge.cost }})
                     </div>
                   </div>
                 </a>

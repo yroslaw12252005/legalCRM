@@ -63,11 +63,17 @@
 <body>
     <div class="container">
         <h1>{{info.name}} Добро пожаловать!</h1>
-        <div class="greeting">Сумма договора -
-            {% if info.cost == None %}
-           Не добавлена
-            {% else %}{{info.cost}}
-            {% endif %}</div>
+        {% for contract in contracts %}
+            <div class="greeting">Договор №{{ contract.number }}</div>
+            <p>Сумма договора: {{ contract.amount }} руб.</p>
+            <p>Внесено при заключении: {{ contract.initial_payment }} руб.</p>
+            <p>Дата договора: {{ contract.contract_date|date:"d.m.Y" }}</p>
+            {% for surcharge in contract.surcharges.all %}
+                <p>Доплата: {{ surcharge.cost }} руб. — {{ surcharge.dat|date:"d.m.Y H:i" }}</p>
+            {% endfor %}
+        {% empty %}
+            <div class="greeting">Договоры ещё не добавлены</div>
+        {% endfor %}
 
         <div class="document-section">
             <p class="document-text">

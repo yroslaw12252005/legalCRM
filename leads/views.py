@@ -20,6 +20,7 @@ from accounts.views import employees
 from call_recording.models import CallRecording
 from call_recording.views import build_recording_source_url, can_view_recordings
 from company.views import companys
+from contract.models import Contract
 from felial.views import felials
 
 # from rest_framework import generics
@@ -27,7 +28,6 @@ from felial.views import felials
 from .models import Record, RecordDocument
 from todolist.models import ToDoList
 from django.db.models import Sum
-from cost.models import Surcharge
 from accounts.models import User
 from smart_calendar.models import Booking, RepresentativeBooking, CallBooking
 from smart_calendar.services import record_office_bookings_have_lawyer_conflict, sync_record_office_bookings_to_lawyer
@@ -42,7 +42,6 @@ from .forms import (
     Employees_KCForm,
     Employees_UPPForm,
     Employees_REPForm,
-    CostForm,
     FileUploadForm,
     ExcelUploadForm,
     RecordEditForm,
@@ -499,8 +498,15 @@ async def record(request, pk):
     #booking = await get_booking(request, pk)
     request.can_manage_documents = await can_manage_documents_async(request)
 
-    filter_surcharge = sync_to_async(Surcharge.objects.filter, thread_sensitive=True)
-    surcharge = await filter_surcharge(record_id=pk)
+    get_contracts = sync_to_async(
+        lambda: list(
+            Contract.objects.filter(record=record)
+            .prefetch_related("surcharges")
+            .order_by("-contract_date", "-id")
+        ),
+        thread_sensitive=True,
+    )
+    contracts = await get_contracts()
     get_documents = sync_to_async(lambda: list(RecordDocument.objects.filter(record=record)), thread_sensitive=True)
     documents = await get_documents()
     can_view_call_recordings = can_view_recordings(current_user)
@@ -559,14 +565,15 @@ async def record(request, pk):
     )
     form_employees_REP = await init_employees_REP()
 
-    init_cost_form = sync_to_async(lambda: CostForm(request.POST or None, instance=record), thread_sensitive=True)
-    cost_form = await init_cost_form()
-
     init_upload_form = sync_to_async(lambda: FileUploadForm(request.POST or None, request.FILES or None, use_required_attribute=False), thread_sensitive=True)
     upload_file_form = await init_upload_form()
 
     can_edit_status_flag = can_edit_status(current_user)
     can_edit_topic = status_matches(current_user.status, "Директор КЦ", "Оператор")
+    is_assigned_lawyer = status_matches(current_user.status, "Юрист пирвичник") and record.employees_UPP == current_user.username
+    can_manage_contracts = status_matches(current_user.status, "Менеджер", "Администратор", "Директор ЮПП")
+    can_view_contracts = can_manage_contracts or is_assigned_lawyer
+    can_add_surcharges = can_manage_contracts or is_assigned_lawyer
 
     # Удаляю инициализацию TopicForm
 
@@ -594,8 +601,10 @@ async def record(request, pk):
                 "form_employees_KC": form_employees_KC,
                 "form_employees_UPP": form_employees_UPP,
                 "form_employees_REP": form_employees_REP,
-                "cost": cost_form,
-                "surcharge": surcharge,
+                "contracts": contracts,
+                "can_view_contracts": can_view_contracts,
+                "can_manage_contracts": can_manage_contracts,
+                "can_add_surcharges": can_add_surcharges,
                 "upload_file_form": upload_file_form,
                 "get_status_com": get_status_com,
                 "booking_come": getattr(get_status_com, "come", None),
@@ -610,7 +619,6 @@ async def record(request, pk):
     form_employees_UPP_valid = await sync_to_async(form_employees_UPP.is_valid, thread_sensitive=True)()
     form_employees_REP_valid = await sync_to_async(form_employees_REP.is_valid, thread_sensitive=True)()
     form_topic_valid = await sync_to_async(form_topic.is_valid, thread_sensitive=True)()
-    cost_valid = await sync_to_async(cost_form.is_valid, thread_sensitive=True)()
     upload_valid = request.can_manage_documents and await sync_to_async(upload_file_form.is_valid, thread_sensitive=True)()
     # Удаляю topic_form_valid
     # Обработка форм
@@ -682,13 +690,6 @@ async def record(request, pk):
         save_form = sync_to_async(form_employees_REP.save, thread_sensitive=True)
         await save_form()
         await sync_to_async(messages.success)(request, "Представитель прикреплен")
-        return await render_record_page()
-
-
-    elif cost_valid:
-        save_form = sync_to_async(cost_form.save, thread_sensitive=True)
-        await save_form()
-        await sync_to_async(messages.success)(request, "Цена указана")
         return await render_record_page()
 
 
@@ -1402,12 +1403,12 @@ def get_time(request):
                 base_surcharges = Surcharge.objects.filter(
                     dat__gte=start_date,
                     dat__lt=end_date,
-                    record__companys=request.user.companys,
+                    contract__record__companys=request.user.companys,
                 )
                 if is_lawyer:
                     base_surcharges = base_surcharges.filter(
-                        record__employees_UPP=request.user.username,
-                        record__felial=request.user.felial,
+                        contract__record__employees_UPP=request.user.username,
+                        contract__record__felial=request.user.felial,
                     )
                 for surcharge in base_surcharges:
                     current_day = surcharge.dat.date() if surcharge.dat else None

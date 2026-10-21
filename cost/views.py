@@ -3,9 +3,11 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.views.decorators.http import require_POST
 
 from accounts.models import User
-from leads.models import Record
+from contract.models import Contract
+from leads.access import status_matches
 
 from .forms import Surcharge_form
 from .models import Surcharge
@@ -13,22 +15,32 @@ from .models import Surcharge
 
 @login_required
 def cost(request, pk):
-    get_record_single = get_object_or_404(Record, id=pk, companys=request.user.companys)
-    if request.user.status not in {"Юрист пирвичник", "Менеджер", "Администратор", "Директор ЮПП"}:
+    contract = get_object_or_404(
+        Contract.objects.select_related("record"),
+        id=pk,
+        record__companys=request.user.companys,
+    )
+    record = contract.record
+    if not status_matches(request.user.status, "Юрист пирвичник", "Менеджер", "Администратор", "Директор ЮПП"):
         messages.warning(request, "Нет прав для внесения доплаты")
-        return redirect("record", pk=pk)
-    if request.user.status == "Юрист пирвичник" and get_record_single.employees_UPP != request.user.username:
+        return redirect("record", pk=record.id)
+    if status_matches(request.user.status, "Юрист пирвичник") and record.employees_UPP != request.user.username:
         messages.warning(request, "Нет прав для внесения доплаты")
-        return redirect("record", pk=pk)
+        return redirect("record", pk=record.id)
     get_surcharge_form = Surcharge_form(request.POST or None)
-    if get_surcharge_form.is_valid():
+    if request.method == "POST" and get_surcharge_form.is_valid():
         add_surcharge_form = get_surcharge_form.save(commit=False)
-        add_surcharge_form.record = get_record_single
+        add_surcharge_form.contract = contract
         add_surcharge_form.responsible = request.user
         add_surcharge_form.save()
         messages.success(request, "Доплата добавлена")
+        return redirect("record", pk=record.id)
 
-    return render(request, "surcharge.html", {"surcharge_form": get_surcharge_form})
+    return render(
+        request,
+        "surcharge.html",
+        {"surcharge_form": get_surcharge_form, "contract": contract, "record": record},
+    )
 
 
 @login_required
@@ -46,12 +58,17 @@ def calculating_salaries(request, pk):
 
 
 @login_required
+@require_POST
 def delete_surcharge(request, pk):
-    if request.user.status != "Администратор":
+    if not status_matches(request.user.status, "Администратор"):
         messages.warning(request, "Нет прав для удаления доплаты")
         return redirect("all_leads")
-    surcharge = get_object_or_404(Surcharge, id=pk, record__companys=request.user.companys)
-    record_id = surcharge.record_id
+    surcharge = get_object_or_404(
+        Surcharge.objects.select_related("contract__record"),
+        id=pk,
+        contract__record__companys=request.user.companys,
+    )
+    record_id = surcharge.contract.record_id
     surcharge.delete()
     messages.success(request, "Доплата удалена")
     return redirect("record", pk=record_id)
@@ -59,23 +76,22 @@ def delete_surcharge(request, pk):
 
 @login_required
 def percent(request, get_employee):
-    if get_employee.status == "Юрист пирвичник":
-        get_and_sum_cost_record = Record.objects.filter(
-            employees_UPP=get_employee.username,
-            companys=get_employee.companys,
-        ).aggregate(Sum("cost"))
-    elif get_employee.status == "Оператор":
-        get_and_sum_cost_record = Record.objects.filter(
-            employees_KC=get_employee.username,
-            companys=get_employee.companys,
-        ).aggregate(Sum("cost"))
+    if status_matches(get_employee.status, "Юрист пирвичник"):
+        amount_sum = Contract.objects.filter(
+            record__employees_UPP=get_employee.username,
+            record__companys=get_employee.companys,
+        ).aggregate(Sum("amount"))["amount__sum"]
+    elif status_matches(get_employee.status, "Оператор"):
+        amount_sum = Contract.objects.filter(
+            record__employees_KC=get_employee.username,
+            record__companys=get_employee.companys,
+        ).aggregate(Sum("amount"))["amount__sum"]
     else:
-        get_and_sum_cost_record = {"cost__sum": None}
+        amount_sum = None
 
-    if get_and_sum_cost_record["cost__sum"] is None:
-        get_and_sum_cost_record["cost__sum"] = 0.0
-
-    calculation_salary_user = float(get_and_sum_cost_record["cost__sum"]) * float(get_employee.percent or 0)
+    amount_sum = amount_sum or 0
+    get_and_sum_cost_record = {"cost__sum": amount_sum}
+    calculation_salary_user = float(amount_sum) * float(get_employee.percent or 0)
 
     return render(
         request,
@@ -97,23 +113,22 @@ def bet(request, get_employee):
 
 @login_required
 def percent_and_bet(request, get_employee):
-    if get_employee.status == "Юрист пирвичник":
-        get_and_sum_cost_record = Record.objects.filter(
-            employees_UPP=get_employee.username,
-            companys=get_employee.companys,
-        ).aggregate(Sum("cost"))
-    elif get_employee.status == "Оператор":
-        get_and_sum_cost_record = Record.objects.filter(
-            employees_KC=get_employee.username,
-            companys=get_employee.companys,
-        ).aggregate(Sum("cost"))
+    if status_matches(get_employee.status, "Юрист пирвичник"):
+        amount_sum = Contract.objects.filter(
+            record__employees_UPP=get_employee.username,
+            record__companys=get_employee.companys,
+        ).aggregate(Sum("amount"))["amount__sum"]
+    elif status_matches(get_employee.status, "Оператор"):
+        amount_sum = Contract.objects.filter(
+            record__employees_KC=get_employee.username,
+            record__companys=get_employee.companys,
+        ).aggregate(Sum("amount"))["amount__sum"]
     else:
-        get_and_sum_cost_record = {"cost__sum": None}
+        amount_sum = None
 
-    if get_and_sum_cost_record["cost__sum"] is None:
-        get_and_sum_cost_record["cost__sum"] = 0.0
-
-    calculation_salary_employee = float(get_and_sum_cost_record["cost__sum"]) * float(get_employee.percent or 0) + float(get_employee.bet or 0)
+    amount_sum = amount_sum or 0
+    get_and_sum_cost_record = {"cost__sum": amount_sum}
+    calculation_salary_employee = float(amount_sum) * float(get_employee.percent or 0) + float(get_employee.bet or 0)
     return render(
         request,
         "user_inform.html",

@@ -25,7 +25,7 @@ class Surcharge_form(forms.ModelForm):
         model = Surcharge
         fields = ["cost"]
         widgets = {
-            "cost": forms.TextInput(attrs={"class": "input"}),
+            "cost": forms.NumberInput(attrs={"class": "input", "min": "0", "step": "0.01"}),
         }
         labels = {
             "cost": "Сумма доплаты",

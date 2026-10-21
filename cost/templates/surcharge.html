@@ -37,6 +37,7 @@
     <div class="pole">
  <form method="post" class="form">
      <h3>Доплата</h3>
+                <p>Договор №{{ contract.number }} — {{ record }}</p>
                 {% csrf_token %}
                 {{surcharge_form.as_p}}
                 <button type="submit" class="btn btn-success">Сохранить</button>

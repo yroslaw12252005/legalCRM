@@ -173,18 +173,6 @@ class Employees_REPForm(forms.ModelForm):
         fields = ["employees_REP"]
 
 
-class CostForm(forms.ModelForm):
-    cost = forms.DecimalField(
-        label="Стоимость",
-        widget=forms.TextInput(attrs={"class": "form", "style": "margin-bottom: 12px;"}),
-    )
-
-    class Meta:
-        model = Record
-        fields = ["cost"]
-        labels = {"cost": "Стоимость"}
-
-
 class MultipleFileInput(forms.FileInput):
     allow_multiple_selected = True
 

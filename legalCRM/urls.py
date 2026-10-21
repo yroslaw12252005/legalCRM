@@ -31,6 +31,7 @@ urlpatterns = [
     path('allleads/', RedirectView.as_view(pattern_name='all_leads', permanent=False)),
     path('todolist/', include('todolist.urls')),
     path('cost/', include('cost.urls')),
+    path('contract/', include('contract.urls')),
     path('companys/', include('company.urls')),
     path('felial/', include('felial.urls')),
     path('calendar/', include('smart_calendar.urls')),

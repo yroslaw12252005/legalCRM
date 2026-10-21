@@ -48,6 +48,7 @@ INSTALLED_APPS = [
     'accounts',
     'todolist',
     'cost',
+    'contract',
     'company',
     'felial',
     'smart_calendar',

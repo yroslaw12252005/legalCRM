@@ -182,15 +182,15 @@ def smart_calendar(request):
     if can_view_all_surcharges:
         surcharges = Surcharge.objects.filter(
             dat__range=(start_dat, end_dat),
-            record__companys=request.user.companys,
-        ).select_related("record").order_by("dat")
+            contract__record__companys=request.user.companys,
+        ).select_related("contract__record").order_by("dat")
     elif _status_matches(request.user.status, "Юрист пирвичник"):
         surcharges = Surcharge.objects.filter(
             dat__range=(start_dat, end_dat),
-            record__companys=request.user.companys,
-            record__felial=request.user.felial,
-            record__employees_UPP=request.user.username,
-        ).select_related("record").order_by("dat")
+            contract__record__companys=request.user.companys,
+            contract__record__felial=request.user.felial,
+            contract__record__employees_UPP=request.user.username,
+        ).select_related("contract__record").order_by("dat")
 
     context = {
         "bookings": bookings,
