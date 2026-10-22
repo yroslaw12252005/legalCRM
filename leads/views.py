@@ -52,6 +52,7 @@ from .forms import (
 from .access import can_transfer_to_representative, status_matches
 from .novofon import run_monitor_iteration
 from .status_utils import can_edit_status
+from .document_download import build_document_download_response
 
 import asyncio
 from contextlib import asynccontextmanager
@@ -66,9 +67,7 @@ import re
 from datetime import date, datetime, timedelta
 from collections import defaultdict
 from io import BytesIO
-from urllib.parse import quote, urlsplit, urlunsplit
-from urllib.request import urlopen
-from urllib.error import URLError, HTTPError
+from urllib.parse import quote
 from xml.etree import ElementTree as ET
 from xml.sax.saxutils import escape as xml_escape
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -967,31 +966,7 @@ def download_document(request, doc_id):
         messages.warning(request, "Нет доступа к документу")
         return redirect("all_leads")
 
-    if document.s3_key:
-        source_url = f"{_s3_public_base_url()}/{quote(document.s3_key, safe='/')}"
-    else:
-        parsed = urlsplit(document.file_url)
-        source_url = urlunsplit((
-            parsed.scheme,
-            parsed.netloc,
-            quote(parsed.path, safe="/"),
-            parsed.query,
-            parsed.fragment,
-        ))
-
-    filename = document.file_name or "document"
-    
-    with urlopen(source_url) as remote_file:
-        content = remote_file.read()
-   
-        #Wmessages.error(request, "Не удалось скачать документ")
-        #Wreturn redirect("record", pk=document.record_id)
-
-    encoded_filename = quote(filename)
-    response = HttpResponse(content, content_type="application/octet-stream")
-    response["Content-Disposition"] = f"attachment; filename*=UTF-8''{encoded_filename}"
-    response["X-Content-Type-Options"] = "nosniff"
-    return response
+    return build_document_download_response(document)
 
 #@csrf_exempt
 #@require_POST

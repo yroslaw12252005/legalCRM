@@ -2,6 +2,8 @@
 <html lang="ru">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <meta name="robots" content="noindex,nofollow">
     <style>
         body {
             background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
@@ -123,11 +125,21 @@
                             <strong>{{ document.file_name }}</strong><br>
                             <small>Загружен {{ document.created_at|date:"d.m.Y H:i" }}</small>
                         </div>
-                        <a href="{% url 'download_document' document.id %}" class="download-button">Скачать</a>
+                        <a href="{% url 'client_document_download' info.client_access_token document.id %}" class="download-button">Скачать</a>
                     </div>
-                {% empty %}
-                    <div class="document-item">Документы ещё не загружены</div>
                 {% endfor %}
+                {% if info.doc %}
+                    <div class="document-item">
+                        <svg class="document-icon" viewBox="0 0 24 24" fill="#3498db" aria-hidden="true">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 4h7v5h5v11H6V4zm8 18v-1h4v1h-4z"/>
+                        </svg>
+                        <div class="document-name"><strong>Документ из старой карточки</strong></div>
+                        <a href="{{ info.doc }}" class="download-button" rel="noopener noreferrer">Скачать</a>
+                    </div>
+                {% endif %}
+                {% if not documents and not info.doc %}
+                    <div class="document-item">Документы ещё не загружены</div>
+                {% endif %}
             </div>
         </div>
     </div>

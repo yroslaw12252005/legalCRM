@@ -1,3 +1,5 @@
+import uuid
+
 from django.db import models
 
 from company.models import Companys
@@ -5,6 +7,7 @@ from felial.models import Felial
 
 
 class Record(models.Model):
+    client_access_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(max_length=50, default=None, null=True)
     phone = models.CharField(max_length=50, default=None, null=True)
     email = models.EmailField(max_length=254, null=True, blank=True)

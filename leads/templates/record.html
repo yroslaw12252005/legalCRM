@@ -363,7 +363,9 @@
         {% get_record_phone user record booking_come as record_phone %}
         {% can_show_transfer_button user record as can_show_transfer_button %}
         <h2>{{ record.name }}</h2>
-        <a href="{% url 'client_inform' record.id %}"  style="color: black;     margin-bottom: 10px;">https://yblochko.rosscrm.ru/{% url 'client_inform' record.id %}</a>
+        <a href="{% url 'client_portal' record.client_access_token %}" style="color:black; margin-bottom:10px;">
+            {{ request.scheme }}://{{ request.get_host }}{% url 'client_portal' record.client_access_token %}
+        </a>
         <div class="stat-item" style="margin-bottom: 1.5rem;">
             <div class="stat-label">Описание</div>
             <div class="stat-value">{{ record.description }}</div>
