@@ -3,6 +3,7 @@ from django.contrib.auth.decorators import login_required
 from django.db.models import Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
+from django.utils import timezone
 from django.views.decorators.http import require_POST
 
 from accounts.models import User
@@ -29,12 +30,20 @@ def cost(request, pk):
         return redirect("record", pk=record.id)
     get_surcharge_form = Surcharge_form(request.POST or None)
     if request.method == "POST" and get_surcharge_form.is_valid():
-        add_surcharge_form = get_surcharge_form.save(commit=False)
-        add_surcharge_form.contract = contract
-        add_surcharge_form.responsible = request.user
-        add_surcharge_form.save()
-        messages.success(request, "Доплата добавлена")
-        return redirect("record", pk=record.id)
+        scheduled_total = contract.surcharges.aggregate(total=Sum("cost"))["total"] or 0
+        surcharge_cost = get_surcharge_form.cleaned_data["cost"] or 0
+        if scheduled_total + surcharge_cost > contract.remaining_amount:
+            get_surcharge_form.add_error(
+                "cost",
+                f"Доплата превышает остаток по договору ({contract.remaining_amount - scheduled_total:.2f} руб.)",
+            )
+        else:
+            add_surcharge_form = get_surcharge_form.save(commit=False)
+            add_surcharge_form.contract = contract
+            add_surcharge_form.responsible = request.user
+            add_surcharge_form.save()
+            messages.success(request, "Доплата добавлена")
+            return redirect("record", pk=record.id)
 
     return render(
         request,
@@ -72,6 +81,27 @@ def delete_surcharge(request, pk):
     surcharge.delete()
     messages.success(request, "Доплата удалена")
     return redirect("record", pk=record_id)
+
+
+@login_required
+@require_POST
+def mark_surcharge_paid(request, pk):
+    if not status_matches(request.user.status, "Администратор", "Менеджер"):
+        messages.warning(request, "Подтвердить внесение доплаты может только администратор или менеджер")
+        return redirect("all_leads")
+
+    surcharge = get_object_or_404(
+        Surcharge.objects.select_related("contract__record"),
+        id=pk,
+        contract__record__companys=request.user.companys,
+    )
+    if not surcharge.is_paid:
+        surcharge.is_paid = True
+        surcharge.paid_at = timezone.now()
+        surcharge.paid_by = request.user
+        surcharge.save(update_fields=["is_paid", "paid_at", "paid_by"])
+        messages.success(request, "Доплата отмечена как внесённая")
+    return redirect("record", pk=surcharge.contract.record_id)
 
 
 @login_required

@@ -574,6 +574,7 @@ async def record(request, pk):
     can_manage_contracts = status_matches(current_user.status, "Менеджер", "Администратор", "Директор ЮПП")
     can_view_contracts = can_manage_contracts or is_assigned_lawyer
     can_add_surcharges = can_manage_contracts or is_assigned_lawyer
+    can_confirm_surcharges = status_matches(current_user.status, "Менеджер", "Администратор")
 
     # Удаляю инициализацию TopicForm
 
@@ -605,6 +606,7 @@ async def record(request, pk):
                 "can_view_contracts": can_view_contracts,
                 "can_manage_contracts": can_manage_contracts,
                 "can_add_surcharges": can_add_surcharges,
+                "can_confirm_surcharges": can_confirm_surcharges,
                 "upload_file_form": upload_file_form,
                 "get_status_com": get_status_com,
                 "booking_come": getattr(get_status_com, "come", None),

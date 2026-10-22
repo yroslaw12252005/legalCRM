@@ -56,6 +56,11 @@
     border-color: #e53935;
   }
   .event-surcharge .event-time { color: #b71c1c; }
+  .event-surcharge-paid {
+    background: #d1fae5;
+    border-color: #16a34a;
+  }
+  .event-surcharge-paid .event-time { color: #166534; }
   .office-list {
     display: grid;
     gap: 12px;
@@ -190,7 +195,7 @@
             {% for surcharge in surcharges %}
               {% if surcharge.contract.record.employees_UPP == user.username %}
                 <a href="{% url 'record' surcharge.contract.record.id %}" style="text-decoration:none;">
-                  <div class="event event-surcharge">
+                  <div class="event event-surcharge{% if surcharge.is_paid %} event-surcharge-paid{% endif %}">
                     <div class="event-content">
                       <div class="event-time">{{ surcharge.dat|date:"H:i" }}</div>
                       Доплата по договору №{{ surcharge.contract.number }}: {{ surcharge.contract.record }} ({{ surcharge.cost }})

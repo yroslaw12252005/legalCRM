@@ -47,3 +47,7 @@ class Contract(models.Model):
     def __str__(self):
         return f"Договор №{self.number}"
 
+    @property
+    def remaining_amount(self):
+        return self.amount - self.initial_payment
+

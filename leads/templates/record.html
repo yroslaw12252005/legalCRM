@@ -165,6 +165,11 @@
             color: white;
         }
 
+        .surcharge-paid td {
+            background: #d1fae5 !important;
+            color: #065f46 !important;
+        }
+
         /* Бейдж статуса */
         .status-badge {
             display: inline-block;
@@ -545,6 +550,10 @@
                             <div class="stat-value">{{ contract.initial_payment }} руб.</div>
                         </div>
                         <div>
+                            <div class="stat-label">Осталось внести</div>
+                            <div class="stat-value">{{ contract.remaining_amount }} руб.</div>
+                        </div>
+                        <div>
                             <div class="stat-label">Дата заключения</div>
                             <div class="stat-value">{{ contract.contract_date|date:"d.m.Y" }}</div>
                         </div>
@@ -555,20 +564,34 @@
                             <tr class="table-primary">
                                 <th scope="col">Доплата</th>
                                 <th scope="col">Дата</th>
-                                {% if user.status == "Администратор" %}<th scope="col"></th>{% endif %}
+                                {% if can_confirm_surcharges or user.status == "Администратор" %}<th scope="col">Действия</th>{% endif %}
                             </tr>
                         </thead>
                         <tbody>
                             {% for surcharge in contract.surcharges.all %}
-                                <tr>
+                                <tr{% if surcharge.is_paid %} class="surcharge-paid"{% endif %}>
                                     <td class="table-default">{{ surcharge.cost }} руб.</td>
                                     <td class="table-default">{{ surcharge.dat|date:"d.m.Y H:i" }}</td>
-                                    {% if user.status == "Администратор" %}
+                                    {% if can_confirm_surcharges or user.status == "Администратор" %}
                                         <td class="table-default">
-                                            <form method="post" action="{% url 'delete_surcharge' surcharge.id %}">
-                                                {% csrf_token %}
-                                                <button type="submit" class="btn btn-danger" title="Удалить">Удалить</button>
-                                            </form>
+                                            <div style="display:flex; gap:8px; flex-wrap:wrap;">
+                                                {% if can_confirm_surcharges %}
+                                                    {% if surcharge.is_paid %}
+                                                        <span class="status-badge" style="background:#16a34a; color:#fff; border-color:#16a34a;">Внесено</span>
+                                                    {% else %}
+                                                        <form method="post" action="{% url 'mark_surcharge_paid' surcharge.id %}">
+                                                            {% csrf_token %}
+                                                            <button type="submit" class="btn btn-success">Внесено</button>
+                                                        </form>
+                                                    {% endif %}
+                                                {% endif %}
+                                                {% if user.status == "Администратор" %}
+                                                    <form method="post" action="{% url 'delete_surcharge' surcharge.id %}">
+                                                        {% csrf_token %}
+                                                        <button type="submit" class="btn btn-danger" title="Удалить">Удалить</button>
+                                                    </form>
+                                                {% endif %}
+                                            </div>
                                         </td>
                                     {% endif %}
                                 </tr>

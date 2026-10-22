@@ -1,16 +1,106 @@
 {% extends "base.html" %}
 {% block content %}
+<style>
+  .contract-form-card { width:100%; max-width:760px; }
+  .surcharge-list { display:grid; gap:12px; margin:16px 0; }
+  .surcharge-row { padding:14px; border:1px solid #dbe3ec; border-radius:10px; background:#f8fafc; }
+  .surcharge-fields { display:grid; grid-template-columns:repeat(3, minmax(0, 1fr)); gap:12px; align-items:end; }
+  .surcharge-field label { display:block; margin-bottom:5px; color:#64748b; font-size:13px; }
+  .surcharge-field input, .surcharge-field select { width:100%; }
+  .form-errors { color:#b91c1c; margin:5px 0 0; padding-left:18px; }
+  .schedule-summary { padding:12px 14px; border-radius:10px; background:#eff6ff; color:#1e3a8a; margin:12px 0; }
+  @media (max-width:700px) { .surcharge-fields { grid-template-columns:1fr; } }
+</style>
 <div style="display:flex; justify-content:center; padding:40px 16px;">
-  <div class="pole" style="width:100%; max-width:520px;">
+  <div class="pole contract-form-card">
     <h3>{{ page_title }}</h3>
     <p>Клиент: <strong>{{ record }}</strong></p>
-    <form method="post" class="form">
+    <form method="post" class="form" id="contractForm">
       {% csrf_token %}
       {{ form.as_p }}
-      <button type="submit" class="btn btn-success">Сохранить</button>
-      <a href="{% url 'record' record.id %}" class="btn btn-secondary">Отмена</a>
+
+      <hr>
+      <h4>Доплаты</h4>
+      <p>Первоначальный взнос и все доплаты вместе должны быть равны сумме договора.</p>
+      {{ surcharge_formset.management_form }}
+      {% if surcharge_formset.non_form_errors %}
+        <div class="alert alert-danger">{{ surcharge_formset.non_form_errors }}</div>
+      {% endif %}
+      <div class="schedule-summary">
+        Остаток по договору: <strong id="requiredSurchargeTotal">0.00</strong> руб.<br>
+        Указано доплат: <strong id="enteredSurchargeTotal">0.00</strong> руб.
+      </div>
+      <div id="surchargeForms" class="surcharge-list">
+        {% for surcharge_form in surcharge_formset %}
+          {% include "contract/_surcharge_form.html" with surcharge_form=surcharge_form %}
+        {% endfor %}
+      </div>
+      <template id="emptySurchargeForm">
+        {% include "contract/_surcharge_form.html" with surcharge_form=surcharge_formset.empty_form %}
+      </template>
+      <button type="button" class="btn btn-primary" id="addSurcharge">Добавить доплату</button>
+
+      <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
+        <button type="submit" class="btn btn-success">Сохранить</button>
+        <a href="{% url 'record' record.id %}" class="btn btn-secondary">Отмена</a>
+      </div>
     </form>
   </div>
 </div>
+<script>
+  (function () {
+    const formsContainer = document.getElementById("surchargeForms");
+    const totalForms = document.getElementById("id_surcharges-TOTAL_FORMS");
+    const emptyForm = document.getElementById("emptySurchargeForm");
+    const amountInput = document.getElementById("id_amount");
+    const initialPaymentInput = document.getElementById("id_initial_payment");
+
+    function updateSummary() {
+      const amount = parseFloat(amountInput && amountInput.value) || 0;
+      const initialPayment = parseFloat(initialPaymentInput && initialPaymentInput.value) || 0;
+      let entered = 0;
+      formsContainer.querySelectorAll(".surcharge-row").forEach(function (row) {
+        const deleteInput = row.querySelector('input[name$="-DELETE"]');
+        if (deleteInput && deleteInput.checked) return;
+        const costInput = row.querySelector('input[name$="-cost"]');
+        entered += parseFloat(costInput && costInput.value) || 0;
+      });
+      document.getElementById("requiredSurchargeTotal").textContent = Math.max(amount - initialPayment, 0).toFixed(2);
+      document.getElementById("enteredSurchargeTotal").textContent = entered.toFixed(2);
+    }
+
+    function bindRow(row) {
+      const removeButton = row.querySelector(".remove-surcharge");
+      const costInput = row.querySelector('input[name$="-cost"]');
+      if (costInput) costInput.addEventListener("input", updateSummary);
+      if (!removeButton) return;
+      removeButton.addEventListener("click", function () {
+        const deleteInput = row.querySelector('input[name$="-DELETE"]');
+        if (row.dataset.existing === "true") {
+          if (deleteInput) deleteInput.checked = true;
+          row.style.display = "none";
+        } else {
+          row.remove();
+        }
+        updateSummary();
+      });
+    }
+
+    formsContainer.querySelectorAll(".surcharge-row").forEach(bindRow);
+    document.getElementById("addSurcharge").addEventListener("click", function () {
+      const index = parseInt(totalForms.value, 10);
+      const wrapper = document.createElement("div");
+      wrapper.innerHTML = emptyForm.innerHTML.replace(/__prefix__/g, index).trim();
+      const row = wrapper.firstElementChild;
+      formsContainer.appendChild(row);
+      totalForms.value = index + 1;
+      bindRow(row);
+      updateSummary();
+    });
+    if (amountInput) amountInput.addEventListener("input", updateSummary);
+    if (initialPaymentInput) initialPaymentInput.addEventListener("input", updateSummary);
+    updateSummary();
+  }());
+</script>
 {% endblock content %}
 

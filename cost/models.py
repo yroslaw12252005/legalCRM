@@ -23,6 +23,16 @@ class Surcharge(models.Model):
         on_delete=models.SET_NULL,
         null=True
     )
+    is_paid = models.BooleanField("Внесено", default=False)
+    paid_at = models.DateTimeField("Дата подтверждения", null=True, blank=True)
+    paid_by = models.ForeignKey(
+        User,
+        on_delete=models.SET_NULL,
+        null=True,
+        blank=True,
+        related_name="confirmed_surcharges",
+        verbose_name="Подтвердил оплату",
+    )
 
     class Meta:
         ordering = ["dat", "id"]

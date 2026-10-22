@@ -19,6 +19,14 @@ class Surcharge_form(forms.ModelForm):
     def __init__(self, *args, **kwargs):
         super().__init__(*args, **kwargs)
         time_choices = [(f"{h:02}:{m:02}", f"{h:02}:{m:02}") for h in range(9, 19) for m in (0, 15, 30, 45)]
+        if self.instance.pk and self.instance.dat:
+            existing_time = self.instance.dat.strftime("%H:%M")
+            if existing_time not in dict(time_choices):
+                time_choices.append((existing_time, existing_time))
+                time_choices.sort()
+            if not self.is_bound:
+                self.initial.setdefault("date", self.instance.dat.date())
+                self.initial.setdefault("time", existing_time)
         self.fields["time"].choices = time_choices
 
     class Meta:

@@ -1,0 +1,25 @@
+<div class="surcharge-row" data-existing="{% if surcharge_form.instance.pk %}true{% else %}false{% endif %}">
+  {{ surcharge_form.id }}
+  <div style="display:none;">{{ surcharge_form.DELETE }}</div>
+  {% if surcharge_form.non_field_errors %}<div class="form-errors">{{ surcharge_form.non_field_errors }}</div>{% endif %}
+  <div class="surcharge-fields">
+    <div class="surcharge-field">
+      <label for="{{ surcharge_form.cost.id_for_label }}">{{ surcharge_form.cost.label }}</label>
+      {{ surcharge_form.cost }}
+      {% if surcharge_form.cost.errors %}<div class="form-errors">{{ surcharge_form.cost.errors }}</div>{% endif %}
+    </div>
+    <div class="surcharge-field">
+      <label for="{{ surcharge_form.date.id_for_label }}">{{ surcharge_form.date.label }}</label>
+      {{ surcharge_form.date }}
+      {% if surcharge_form.date.errors %}<div class="form-errors">{{ surcharge_form.date.errors }}</div>{% endif %}
+    </div>
+    <div class="surcharge-field">
+      <label for="{{ surcharge_form.time.id_for_label }}">{{ surcharge_form.time.label }}</label>
+      {{ surcharge_form.time }}
+      {% if surcharge_form.time.errors %}<div class="form-errors">{{ surcharge_form.time.errors }}</div>{% endif %}
+    </div>
+  </div>
+  {% if not surcharge_form.instance.pk or can_delete_existing_surcharges %}
+    <button type="button" class="btn btn-danger remove-surcharge" style="margin-top:10px;">Удалить доплату</button>
+  {% endif %}
+</div>
