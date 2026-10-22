@@ -244,6 +244,7 @@ class ContractFlowTests(TestCase):
             dat=datetime(2026, 10, 25, 10, 30),
             responsible=self.manager,
         )
+        self.assertEqual(contract.remaining_amount, Decimal("80000"))
         self.client.force_login(self.manager)
 
         response = self.client.post(reverse("mark_surcharge_paid", args=[surcharge.id]))
@@ -253,6 +254,7 @@ class ContractFlowTests(TestCase):
         self.assertTrue(surcharge.is_paid)
         self.assertEqual(surcharge.paid_by, self.manager)
         self.assertIsNotNone(surcharge.paid_at)
+        self.assertEqual(contract.remaining_amount, Decimal("0"))
 
         card_response = self.client.get(reverse("record", args=[self.record.id]))
         self.assertContains(card_response, '<tr class="surcharge-paid">')

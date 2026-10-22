@@ -95,7 +95,7 @@ def edit_contract(request, pk):
 
     form = ContractForm(request.POST or None, instance=contract)
     form_valid = request.method == "POST" and form.is_valid()
-    expected_total = contract.remaining_amount
+    expected_total = contract.surcharge_plan_amount
     if form_valid:
         expected_total = form.cleaned_data["amount"] - form.cleaned_data["initial_payment"]
     surcharge_formset = ContractSurchargeFormSet(

@@ -32,10 +32,10 @@ def cost(request, pk):
     if request.method == "POST" and get_surcharge_form.is_valid():
         scheduled_total = contract.surcharges.aggregate(total=Sum("cost"))["total"] or 0
         surcharge_cost = get_surcharge_form.cleaned_data["cost"] or 0
-        if scheduled_total + surcharge_cost > contract.remaining_amount:
+        if scheduled_total + surcharge_cost > contract.surcharge_plan_amount:
             get_surcharge_form.add_error(
                 "cost",
-                f"Доплата превышает остаток по договору ({contract.remaining_amount - scheduled_total:.2f} руб.)",
+                f"Доплата превышает остаток по графику ({contract.surcharge_plan_amount - scheduled_total:.2f} руб.)",
             )
         else:
             add_surcharge_form = get_surcharge_form.save(commit=False)

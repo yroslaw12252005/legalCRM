@@ -1,3 +1,5 @@
+from decimal import Decimal
+
 from django.core.validators import MinValueValidator, RegexValidator
 from django.db import models
 
@@ -48,6 +50,14 @@ class Contract(models.Model):
         return f"Договор №{self.number}"
 
     @property
-    def remaining_amount(self):
+    def surcharge_plan_amount(self):
         return self.amount - self.initial_payment
+
+    @property
+    def remaining_amount(self):
+        paid_surcharges = sum(
+            (surcharge.cost or Decimal("0") for surcharge in self.surcharges.all() if surcharge.is_paid),
+            Decimal("0"),
+        )
+        return max(self.surcharge_plan_amount - paid_surcharges, Decimal("0"))
 
