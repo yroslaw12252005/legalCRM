@@ -58,6 +58,39 @@
             width: 30px;
             height: 30px;
         }
+
+        .document-list {
+            display: grid;
+            gap: 12px;
+            margin-top: 16px;
+        }
+
+        .document-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 12px 14px;
+            background: white;
+            border: 1px solid #dbe3ec;
+            border-radius: 8px;
+            text-align: left;
+        }
+
+        .document-name {
+            flex: 1;
+            min-width: 0;
+            overflow-wrap: anywhere;
+        }
+
+        .download-button {
+            display: inline-block;
+            padding: 8px 14px;
+            border-radius: 7px;
+            background: #3498db;
+            color: white;
+            text-decoration: none;
+            white-space: nowrap;
+        }
     </style>
 </head>
 <body>
@@ -79,14 +112,23 @@
         {% endfor %}
 
         <div class="document-section">
-            <p class="document-text">
-                <a href="{{info.doc}}">
-                <svg class="document-icon" viewBox="0 0 24 24" fill="#3498db">
-                    <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 4h7v5h5v11H6V4zm8 18v-1h4v1h-4z"/>
-                </svg>
-                </a>
-                Ваш договор
-            </p>
+            <h2>Документы</h2>
+            <div class="document-list">
+                {% for document in documents %}
+                    <div class="document-item">
+                        <svg class="document-icon" viewBox="0 0 24 24" fill="#3498db" aria-hidden="true">
+                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 4h7v5h5v11H6V4zm8 18v-1h4v1h-4z"/>
+                        </svg>
+                        <div class="document-name">
+                            <strong>{{ document.file_name }}</strong><br>
+                            <small>Загружен {{ document.created_at|date:"d.m.Y H:i" }}</small>
+                        </div>
+                        <a href="{% url 'download_document' document.id %}" class="download-button">Скачать</a>
+                    </div>
+                {% empty %}
+                    <div class="document-item">Документы ещё не загружены</div>
+                {% endfor %}
+            </div>
         </div>
     </div>
 </body>
