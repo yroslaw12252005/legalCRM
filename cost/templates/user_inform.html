@@ -1,9 +1,119 @@
 {% extends "base.html" %}
-
-{% block content %}
 {% load static %}
 
-<p>Касса - {{ cash.cost__sum }}</p>
-<p>ЗП - {{ zp }}</p>
-<p>Вид зп - {{ employee.type_zp }}</p>
+{% block content %}
+<style>
+    .salary-page {
+        max-width: 980px;
+        margin: 2rem auto;
+        padding: 0 1rem 2rem;
+        color: #17253f;
+        font-family: "Segoe UI", system-ui, sans-serif;
+    }
+    .salary-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: end;
+        gap: 1.25rem;
+        margin-bottom: 1.25rem;
+    }
+    .salary-head h1 { margin: 0 0 .35rem; font-size: 2rem; }
+    .salary-head p { margin: 0; color: #687386; }
+    .month-form { display: flex; gap: .65rem; align-items: center; }
+    .month-form input, .month-form button {
+        min-height: 42px;
+        border-radius: 10px;
+        font: inherit;
+    }
+    .month-form input { padding: 0 .8rem; border: 1px solid #dce2eb; background: #fff; }
+    .month-form button { padding: 0 1rem; border: 0; color: #fff; background: #172d50; cursor: pointer; font-weight: 700; }
+    .salary-summary {
+        display: grid;
+        grid-template-columns: 1.25fr .75fr;
+        gap: 1rem;
+        padding: 1.5rem;
+        border-radius: 22px;
+        color: #fff;
+        background: #172d50;
+    }
+    .salary-total span, .salary-meta span { display: block; color: #bdc9d9; font-size: .8rem; }
+    .salary-total strong { display: block; margin-top: .35rem; font-size: clamp(2rem, 5vw, 3.25rem); }
+    .salary-meta { display: grid; grid-template-columns: 1fr 1fr; gap: .75rem; }
+    .salary-meta div { padding: 1rem; border: 1px solid rgba(255,255,255,.12); border-radius: 14px; background: rgba(255,255,255,.06); }
+    .salary-meta strong { display: block; margin-top: .4rem; font-size: 1.05rem; }
+    .salary-breakdown { display: grid; grid-template-columns: repeat(3, 1fr); gap: 1rem; margin-top: 1rem; }
+    .salary-card { padding: 1.2rem; border: 1px solid #e3e7ed; border-radius: 18px; background: #fff; }
+    .salary-card__label { color: #687386; font-size: .8rem; }
+    .salary-card__value { display: block; margin: .55rem 0 .25rem; font-size: 1.55rem; font-weight: 800; }
+    .salary-card__caption { color: #8992a1; font-size: .75rem; }
+    .salary-note { margin-top: 1rem; padding: 1rem 1.1rem; border-radius: 14px; color: #77552f; background: #fff6eb; line-height: 1.5; }
+    @media (max-width: 760px) {
+        .salary-head { align-items: stretch; flex-direction: column; }
+        .month-form input { flex: 1; min-width: 0; }
+        .salary-summary { grid-template-columns: 1fr; }
+        .salary-breakdown { grid-template-columns: 1fr; }
+    }
+</style>
+
+<main class="salary-page">
+    <div class="salary-head">
+        <div>
+            <h1>Расчёт зарплаты</h1>
+            <p>{{ employee.username }} · {{ employee.status }} · {{ month_label }}</p>
+        </div>
+        <form class="month-form" method="get">
+            <input type="month" name="month" value="{{ month_value }}" aria-label="Месяц расчёта" required>
+            <button type="submit">Рассчитать</button>
+        </form>
+    </div>
+
+    <section class="salary-summary">
+        <div class="salary-total">
+            <span>Зарплата за {{ month_label }}</span>
+            <strong>{{ zp|floatformat:2 }} ₽</strong>
+        </div>
+        <div class="salary-meta">
+            <div>
+                <span>Тип ЗП</span>
+                <strong>{{ employee.type_zp }}</strong>
+            </div>
+            <div>
+                <span>Расчётная база</span>
+                <strong>{{ base_total|floatformat:2 }} ₽</strong>
+            </div>
+        </div>
+    </section>
+
+    <section class="salary-breakdown">
+        <article class="salary-card">
+            <span class="salary-card__label">Внесено при заключении</span>
+            <strong class="salary-card__value">{{ initial_payments|floatformat:2 }} ₽</strong>
+            <span class="salary-card__caption">Договоров в месяце: {{ contracts_count }}</span>
+        </article>
+        <article class="salary-card">
+            <span class="salary-card__label">Подтверждённые доплаты</span>
+            <strong class="salary-card__value">{{ surcharge_payments|floatformat:2 }} ₽</strong>
+            <span class="salary-card__caption">Внесённых доплат: {{ surcharges_count }}</span>
+        </article>
+        <article class="salary-card">
+            {% if employee.type_zp == "Ставка" or employee.type_zp == "Оклад" %}
+                <span class="salary-card__label">Ставка за месяц</span>
+                <strong class="salary-card__value">{{ bet_value|floatformat:2 }} ₽</strong>
+                <span class="salary-card__caption">Поступления показаны справочно</span>
+            {% else %}
+                <span class="salary-card__label">Процент / коэффициент</span>
+                <strong class="salary-card__value">{{ percent_value }}</strong>
+                {% if employee.type_zp == "Процент + Ставка" %}
+                    <span class="salary-card__caption">Плюс ставка {{ bet_value|floatformat:2 }} ₽</span>
+                {% else %}
+                    <span class="salary-card__caption">Применён к расчётной базе</span>
+                {% endif %}
+            {% endif %}
+        </article>
+    </section>
+
+    <div class="salary-note">
+        В расчёт входят первоначальные взносы по договорам выбранного месяца и только подтверждённые доплаты со статусом «Внесено». Плановые и неоплаченные доплаты не учитываются.
+    </div>
+</main>
 {% endblock content %}

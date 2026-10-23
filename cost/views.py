@@ -1,6 +1,9 @@
-﻿from django.contrib import messages
+from datetime import date, datetime, time
+from decimal import Decimal
+
+from django.contrib import messages
 from django.contrib.auth.decorators import login_required
-from django.db.models import Sum
+from django.db.models import Q, Sum
 from django.http import HttpResponse
 from django.shortcuts import get_object_or_404, redirect, render
 from django.utils import timezone
@@ -12,6 +15,79 @@ from leads.access import status_matches
 
 from .forms import Surcharge_form
 from .models import Surcharge
+
+
+MONTH_NAMES = (
+    "",
+    "Январь",
+    "Февраль",
+    "Март",
+    "Апрель",
+    "Май",
+    "Июнь",
+    "Июль",
+    "Август",
+    "Сентябрь",
+    "Октябрь",
+    "Ноябрь",
+    "Декабрь",
+)
+
+
+def _selected_month(request):
+    raw_month = request.GET.get("month", "")
+    try:
+        return datetime.strptime(raw_month, "%Y-%m").date().replace(day=1)
+    except (TypeError, ValueError):
+        return date.today().replace(day=1)
+
+
+def _next_month(value):
+    if value.month == 12:
+        return value.replace(year=value.year + 1, month=1)
+    return value.replace(month=value.month + 1)
+
+
+def _employee_contracts(employee):
+    contracts = Contract.objects.filter(record__companys=employee.companys)
+    if status_matches(employee.status, "Юрист пирвичник"):
+        return contracts.filter(record__employees_UPP=employee.username)
+    if status_matches(employee.status, "Оператор"):
+        return contracts.filter(record__employees_KC=employee.username)
+    return contracts.none()
+
+
+def _monthly_salary_base(employee, month_start):
+    month_end = _next_month(month_start)
+    contracts = _employee_contracts(employee)
+    monthly_contracts = contracts.filter(
+        contract_date__gte=month_start,
+        contract_date__lt=month_end,
+    )
+    initial_payments = monthly_contracts.aggregate(total=Sum("initial_payment"))["total"] or Decimal("0")
+
+    period_start = datetime.combine(month_start, time.min)
+    period_end = datetime.combine(month_end, time.min)
+    paid_surcharges = Surcharge.objects.filter(
+        contract__in=contracts,
+        is_paid=True,
+    ).filter(
+        Q(paid_at__gte=period_start, paid_at__lt=period_end)
+        | Q(
+            paid_at__isnull=True,
+            dat__gte=period_start,
+            dat__lt=period_end,
+        )
+    )
+    surcharge_payments = paid_surcharges.aggregate(total=Sum("cost"))["total"] or Decimal("0")
+
+    return {
+        "initial_payments": initial_payments,
+        "surcharge_payments": surcharge_payments,
+        "base_total": initial_payments + surcharge_payments,
+        "contracts_count": monthly_contracts.count(),
+        "surcharges_count": paid_surcharges.count(),
+    }
 
 
 @login_required
@@ -54,16 +130,34 @@ def cost(request, pk):
 
 @login_required
 def calculating_salaries(request, pk):
-    get_employee = get_object_or_404(User, id=pk, companys=request.user.companys)
+    employee = get_object_or_404(User, id=pk, companys=request.user.companys)
+    month_start = _selected_month(request)
+    salary_base = _monthly_salary_base(employee, month_start)
+    percent_value = employee.percent or Decimal("0")
+    bet_value = employee.bet or Decimal("0")
 
-    if get_employee.type_zp == "Процент":
-        return percent(request, get_employee)
-    if get_employee.type_zp in {"Ставка", "Оклад"}:
-        return bet(request, get_employee)
-    if get_employee.type_zp == "Процент + Ставка":
-        return percent_and_bet(request, get_employee)
+    if employee.type_zp == "Процент":
+        salary = salary_base["base_total"] * percent_value
+    elif employee.type_zp in {"Ставка", "Оклад"}:
+        salary = bet_value
+    elif employee.type_zp == "Процент + Ставка":
+        salary = salary_base["base_total"] * percent_value + bet_value
+    else:
+        return HttpResponse("Неизвестный тип зарплаты", status=400)
 
-    return HttpResponse("Неизвестный тип зарплаты", status=400)
+    return render(
+        request,
+        "user_inform.html",
+        {
+            "employee": employee,
+            "zp": salary,
+            "percent_value": percent_value,
+            "bet_value": bet_value,
+            "month_value": month_start.strftime("%Y-%m"),
+            "month_label": f"{MONTH_NAMES[month_start.month]} {month_start.year}",
+            **salary_base,
+        },
+    )
 
 
 @login_required
@@ -102,65 +196,3 @@ def mark_surcharge_paid(request, pk):
         surcharge.save(update_fields=["is_paid", "paid_at", "paid_by"])
         messages.success(request, "Доплата отмечена как внесённая")
     return redirect("record", pk=surcharge.contract.record_id)
-
-
-@login_required
-def percent(request, get_employee):
-    if status_matches(get_employee.status, "Юрист пирвичник"):
-        amount_sum = Contract.objects.filter(
-            record__employees_UPP=get_employee.username,
-            record__companys=get_employee.companys,
-        ).aggregate(Sum("amount"))["amount__sum"]
-    elif status_matches(get_employee.status, "Оператор"):
-        amount_sum = Contract.objects.filter(
-            record__employees_KC=get_employee.username,
-            record__companys=get_employee.companys,
-        ).aggregate(Sum("amount"))["amount__sum"]
-    else:
-        amount_sum = None
-
-    amount_sum = amount_sum or 0
-    get_and_sum_cost_record = {"cost__sum": amount_sum}
-    calculation_salary_user = float(amount_sum) * float(get_employee.percent or 0)
-
-    return render(
-        request,
-        "user_inform.html",
-        {"zp": calculation_salary_user, "cash": get_and_sum_cost_record, "employee": get_employee},
-    )
-
-
-@login_required
-def bet(request, get_employee):
-    get_salary_user = get_employee.bet
-    get_and_sum_cost_record = "Не предусмотренно"
-    return render(
-        request,
-        "user_inform.html",
-        {"zp": get_salary_user, "cash": get_and_sum_cost_record, "employee": get_employee},
-    )
-
-
-@login_required
-def percent_and_bet(request, get_employee):
-    if status_matches(get_employee.status, "Юрист пирвичник"):
-        amount_sum = Contract.objects.filter(
-            record__employees_UPP=get_employee.username,
-            record__companys=get_employee.companys,
-        ).aggregate(Sum("amount"))["amount__sum"]
-    elif status_matches(get_employee.status, "Оператор"):
-        amount_sum = Contract.objects.filter(
-            record__employees_KC=get_employee.username,
-            record__companys=get_employee.companys,
-        ).aggregate(Sum("amount"))["amount__sum"]
-    else:
-        amount_sum = None
-
-    amount_sum = amount_sum or 0
-    get_and_sum_cost_record = {"cost__sum": amount_sum}
-    calculation_salary_employee = float(amount_sum) * float(get_employee.percent or 0) + float(get_employee.bet or 0)
-    return render(
-        request,
-        "user_inform.html",
-        {"zp": calculation_salary_employee, "cash": get_and_sum_cost_record, "employee": get_employee},
-    )
