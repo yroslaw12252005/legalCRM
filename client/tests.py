@@ -178,10 +178,15 @@ class ClientCabinetDocumentsTests(TestCase):
     @patch("leads.document_download.urlopen")
     def test_client_can_download_own_document_by_token(self, mocked_urlopen):
         mocked_urlopen.return_value = BytesIO(b"document-content")
+        stored_url = (
+            "https://storage.example.test/old-bucket/"
+            "%D0%94%D0%BE%D0%B3%D0%BE%D0%B2%D0%BE%D1%80.pdf"
+        )
         document = RecordDocument.objects.create(
             record=self.record,
             file_name="Договор.pdf",
-            file_url="https://storage.example.test/contract.pdf",
+            file_url=stored_url,
+            s3_key="new-bucket-path/Договор.pdf",
         )
 
         response = self.client.get(
@@ -195,6 +200,7 @@ class ClientCabinetDocumentsTests(TestCase):
         self.assertEqual(response.content, b"document-content")
         self.assertIn(quote("Договор.pdf"), response["Content-Disposition"])
         self.assertEqual(response["Cache-Control"], "private, no-store")
+        mocked_urlopen.assert_called_once_with(stored_url, timeout=30)
 
     @patch("leads.document_download.urlopen")
     def test_client_cannot_download_document_with_another_token(self, mocked_urlopen):

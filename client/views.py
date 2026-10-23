@@ -139,5 +139,5 @@ def client_document_download(request, token, doc_id):
     )
     try:
         return build_document_download_response(document)
-    except (OSError, URLError):
+    except (OSError, URLError, ValueError):
         return HttpResponse("Не удалось скачать документ", status=502)

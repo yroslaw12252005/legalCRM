@@ -6,20 +6,24 @@ from django.http import HttpResponse
 
 
 def build_document_source_url(document):
+    if document.file_url:
+        parsed = urlsplit(document.file_url)
+        if parsed.scheme in {"http", "https"} and parsed.netloc:
+            return urlunsplit(
+                (
+                    parsed.scheme,
+                    parsed.netloc,
+                    quote(parsed.path, safe="/%"),
+                    parsed.query,
+                    parsed.fragment,
+                )
+            )
+
     if document.s3_key:
         base_url = f"{settings.S3_ENDPOINT_URL.rstrip('/')}/{settings.S3_BUCKET_NAME}"
         return f"{base_url}/{quote(document.s3_key, safe='/')}"
 
-    parsed = urlsplit(document.file_url)
-    return urlunsplit(
-        (
-            parsed.scheme,
-            parsed.netloc,
-            quote(parsed.path, safe="/"),
-            parsed.query,
-            parsed.fragment,
-        )
-    )
+    raise ValueError("Document has no valid source URL")
 
 
 def build_document_download_response(document):

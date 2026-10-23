@@ -68,6 +68,7 @@ from datetime import date, datetime, timedelta
 from collections import defaultdict
 from io import BytesIO
 from urllib.parse import quote
+from urllib.error import URLError
 from xml.etree import ElementTree as ET
 from xml.sax.saxutils import escape as xml_escape
 from zipfile import ZipFile, ZIP_DEFLATED
@@ -966,7 +967,11 @@ def download_document(request, doc_id):
         messages.warning(request, "Нет доступа к документу")
         return redirect("all_leads")
 
-    return build_document_download_response(document)
+    try:
+        return build_document_download_response(document)
+    except (OSError, URLError, ValueError):
+        messages.error(request, "Не удалось скачать документ из хранилища")
+        return redirect("record", pk=document.record_id)
 
 #@csrf_exempt
 #@require_POST
