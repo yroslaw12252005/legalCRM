@@ -1,0 +1,1123 @@
+<!doctype html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Личный кабинет — РоссЮрист</title>
+    <style>
+        :root {
+            --ink: #17253f;
+            --muted: #6f7888;
+            --line: #e8ebf0;
+            --paper: #ffffff;
+            --canvas: #f4f5f7;
+            --navy: #172d50;
+            --navy-soft: #edf2fa;
+            --accent: #d39355;
+            --accent-soft: #fff6eb;
+            --green: #258b68;
+            --green-soft: #eaf7f1;
+            --red: #b65a5e;
+            --red-soft: #fceff0;
+            --shadow: 0 20px 50px rgba(25, 39, 65, .09);
+            --radius-lg: 28px;
+            --radius-md: 20px;
+            --radius-sm: 14px;
+        }
+
+        * {
+            box-sizing: border-box;
+        }
+
+        html {
+            scroll-behavior: smooth;
+        }
+
+        body {
+            margin: 0;
+            min-width: 320px;
+            color: var(--ink);
+            background:
+                radial-gradient(circle at 8% 0%, rgba(211, 147, 85, .11), transparent 28rem),
+                radial-gradient(circle at 94% 5%, rgba(23, 45, 80, .08), transparent 32rem),
+                var(--canvas);
+            font-family: Inter, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        button,
+        input {
+            font: inherit;
+        }
+
+        button,
+        a {
+            -webkit-tap-highlight-color: transparent;
+        }
+
+        .topbar {
+            position: sticky;
+            top: 0;
+            z-index: 20;
+            border-bottom: 1px solid rgba(23, 45, 80, .08);
+            background: rgba(255, 255, 255, .86);
+            backdrop-filter: blur(18px);
+        }
+
+        .topbar__inner {
+            width: min(1180px, calc(100% - 40px));
+            min-height: 84px;
+            margin: 0 auto;
+            display: grid;
+            grid-template-columns: 1fr auto 1fr;
+            align-items: center;
+            gap: 24px;
+        }
+
+        .brand {
+            display: inline-flex;
+            align-items: center;
+            gap: 12px;
+            color: var(--ink);
+            text-decoration: none;
+            font-weight: 750;
+            letter-spacing: -.02em;
+        }
+
+        .brand__mark {
+            width: 42px;
+            height: 42px;
+            border-radius: 13px;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            background: var(--navy);
+            box-shadow: 0 9px 20px rgba(23, 45, 80, .22);
+            font-family: Georgia, serif;
+            font-size: 17px;
+        }
+
+        .profile {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+
+        .profile__avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            display: grid;
+            place-items: center;
+            color: var(--navy);
+            background: var(--navy-soft);
+            font-weight: 800;
+        }
+
+        .profile__name {
+            display: block;
+            font-weight: 760;
+            letter-spacing: -.015em;
+        }
+
+        .profile__caption {
+            display: block;
+            margin-top: 2px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .chat-button {
+            justify-self: end;
+            display: inline-flex;
+            align-items: center;
+            gap: 9px;
+            min-height: 44px;
+            padding: 0 17px;
+            border: 0;
+            border-radius: 14px;
+            color: #fff;
+            background: var(--navy);
+            cursor: pointer;
+            font-weight: 720;
+            box-shadow: 0 10px 22px rgba(23, 45, 80, .18);
+        }
+
+        .chat-button svg,
+        .icon-button svg,
+        .download svg,
+        .upload__icon svg {
+            width: 20px;
+            height: 20px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .page {
+            width: min(1180px, calc(100% - 40px));
+            margin: 0 auto;
+            padding: 52px 0 72px;
+        }
+
+        .intro {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 28px;
+            margin-bottom: 25px;
+        }
+
+        .eyebrow {
+            margin: 0 0 10px;
+            color: var(--accent);
+            font-size: 13px;
+            font-weight: 800;
+            letter-spacing: .14em;
+            text-transform: uppercase;
+        }
+
+        h1,
+        h2,
+        h3,
+        p {
+            margin-top: 0;
+        }
+
+        h1 {
+            margin-bottom: 8px;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: clamp(34px, 5vw, 54px);
+            font-weight: 500;
+            line-height: 1.03;
+            letter-spacing: -.035em;
+        }
+
+        .intro__text {
+            max-width: 640px;
+            margin-bottom: 0;
+            color: var(--muted);
+            line-height: 1.65;
+        }
+
+        .support {
+            flex: 0 0 auto;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 13px 16px;
+            border-radius: 16px;
+            color: var(--ink);
+            background: rgba(255, 255, 255, .68);
+            box-shadow: inset 0 0 0 1px rgba(23, 45, 80, .06);
+        }
+
+        .support__dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background: #35a97f;
+            box-shadow: 0 0 0 5px rgba(53, 169, 127, .12);
+        }
+
+        .support small {
+            display: block;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .support strong {
+            display: block;
+            margin-top: 2px;
+            font-size: 13px;
+        }
+
+        .contract {
+            overflow: hidden;
+            border: 1px solid rgba(23, 45, 80, .06);
+            border-radius: var(--radius-lg);
+            background: var(--paper);
+            box-shadow: var(--shadow);
+        }
+
+        .contract__hero {
+            position: relative;
+            overflow: hidden;
+            padding: 31px 34px 27px;
+            color: #fff;
+            background: var(--navy);
+        }
+
+        .contract__hero::after {
+            content: "";
+            position: absolute;
+            top: -115px;
+            right: -70px;
+            width: 350px;
+            height: 350px;
+            border: 1px solid rgba(255, 255, 255, .09);
+            border-radius: 50%;
+            box-shadow: 0 0 0 65px rgba(255, 255, 255, .025), 0 0 0 130px rgba(255, 255, 255, .018);
+            pointer-events: none;
+        }
+
+        .contract__heading {
+            position: relative;
+            z-index: 1;
+            display: flex;
+            align-items: start;
+            justify-content: space-between;
+            gap: 20px;
+        }
+
+        .contract__label {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            margin-bottom: 8px;
+            color: #c7d1df;
+            font-size: 13px;
+            font-weight: 650;
+        }
+
+        .status-pill {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 11px;
+            border-radius: 999px;
+            color: #ccf4e5;
+            background: rgba(74, 193, 148, .15);
+            font-size: 12px;
+            font-weight: 750;
+        }
+
+        .status-pill::before {
+            content: "";
+            width: 7px;
+            height: 7px;
+            border-radius: 50%;
+            background: #65d3aa;
+        }
+
+        .contract__number {
+            margin-bottom: 0;
+            font-size: clamp(25px, 4vw, 36px);
+            font-weight: 760;
+            letter-spacing: -.035em;
+        }
+
+        .contract__date {
+            position: relative;
+            z-index: 1;
+            padding-top: 5px;
+            color: #c7d1df;
+            text-align: right;
+            font-size: 13px;
+        }
+
+        .contract__date strong {
+            display: block;
+            margin-top: 4px;
+            color: #fff;
+            font-size: 16px;
+        }
+
+        .money-grid {
+            position: relative;
+            z-index: 1;
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 14px;
+            margin-top: 27px;
+        }
+
+        .money-card {
+            padding: 17px 18px;
+            border: 1px solid rgba(255, 255, 255, .09);
+            border-radius: 16px;
+            background: rgba(255, 255, 255, .06);
+        }
+
+        .money-card span {
+            display: block;
+            margin-bottom: 8px;
+            color: #b8c5d6;
+            font-size: 12px;
+        }
+
+        .money-card strong {
+            display: block;
+            font-size: clamp(20px, 2.6vw, 26px);
+            letter-spacing: -.025em;
+        }
+
+        .money-card--accent {
+            border-color: rgba(230, 174, 117, .22);
+            background: rgba(211, 147, 85, .13);
+        }
+
+        .payment-footer {
+            position: relative;
+            z-index: 1;
+            margin-top: 22px;
+            display: grid;
+            grid-template-columns: minmax(0, 1fr) auto;
+            align-items: end;
+            gap: 22px;
+        }
+
+        .progress {
+            min-width: 0;
+        }
+
+        .progress__meta {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 9px;
+            color: #c7d1df;
+            font-size: 12px;
+        }
+
+        .progress__track {
+            height: 7px;
+            overflow: hidden;
+            border-radius: 999px;
+            background: rgba(255, 255, 255, .11);
+        }
+
+        .progress__value {
+            width: 50%;
+            height: 100%;
+            border-radius: inherit;
+            background: linear-gradient(90deg, #d39355, #efbd83);
+        }
+
+        .pay-button {
+            min-height: 47px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 9px;
+            padding: 0 19px;
+            border-radius: 14px;
+            color: #17253f;
+            background: linear-gradient(135deg, #f1c58f, #d99a5c);
+            box-shadow: 0 12px 25px rgba(7, 17, 32, .2);
+            text-decoration: none;
+            font-size: 13px;
+            font-weight: 820;
+            white-space: nowrap;
+            transition: transform .2s ease, box-shadow .2s ease;
+        }
+
+        .pay-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 15px 30px rgba(7, 17, 32, .27);
+        }
+
+        .pay-button svg {
+            width: 19px;
+            height: 19px;
+            fill: none;
+            stroke: currentColor;
+            stroke-width: 1.8;
+            stroke-linecap: round;
+            stroke-linejoin: round;
+        }
+
+        .contract__body {
+            padding: 30px 34px 34px;
+        }
+
+        .content-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.05fr) minmax(350px, .95fr);
+            gap: 24px;
+        }
+
+        .panel {
+            border: 1px solid var(--line);
+            border-radius: var(--radius-md);
+            background: #fff;
+        }
+
+        .panel__head {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 21px 22px 17px;
+        }
+
+        .panel__title {
+            margin-bottom: 0;
+            font-size: 17px;
+            letter-spacing: -.02em;
+        }
+
+        .panel__caption {
+            display: block;
+            margin-top: 4px;
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .lawyer-note {
+            height: 100%;
+            padding: 25px;
+            border: 1px solid #f0dfca;
+            border-radius: var(--radius-md);
+            background: linear-gradient(145deg, var(--accent-soft), #fffdfa);
+        }
+
+        .lawyer-note__top {
+            display: flex;
+            align-items: center;
+            gap: 13px;
+            margin-bottom: 19px;
+        }
+
+        .lawyer-note__avatar {
+            width: 45px;
+            height: 45px;
+            border-radius: 14px;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            background: var(--accent);
+            font-family: Georgia, serif;
+            font-weight: 700;
+        }
+
+        .lawyer-note__name {
+            margin-bottom: 2px;
+            font-size: 15px;
+            font-weight: 760;
+        }
+
+        .lawyer-note__role {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .lawyer-note__text {
+            margin-bottom: 19px;
+            color: #4d5665;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 17px;
+            line-height: 1.65;
+        }
+
+        .lawyer-note__date {
+            color: #97704b;
+            font-size: 11px;
+            font-weight: 700;
+            letter-spacing: .06em;
+            text-transform: uppercase;
+        }
+
+        .payments {
+            overflow: hidden;
+        }
+
+        .payment-list {
+            padding: 0 10px 10px;
+        }
+
+        .payment {
+            display: grid;
+            grid-template-columns: 1fr auto;
+            align-items: center;
+            gap: 18px;
+            padding: 15px 12px;
+            border-top: 1px solid var(--line);
+        }
+
+        .payment:first-child {
+            border-top: 0;
+        }
+
+        .payment__amount {
+            display: block;
+            margin-bottom: 4px;
+            font-size: 18px;
+            font-weight: 780;
+            letter-spacing: -.015em;
+        }
+
+        .payment__date {
+            color: var(--muted);
+            font-size: 12px;
+        }
+
+        .payment__status {
+            display: inline-flex;
+            align-items: center;
+            gap: 7px;
+            padding: 7px 10px;
+            border-radius: 999px;
+            font-size: 11px;
+            font-weight: 760;
+            white-space: nowrap;
+        }
+
+        .payment__status::before {
+            content: "";
+            width: 6px;
+            height: 6px;
+            border-radius: 50%;
+            background: currentColor;
+        }
+
+        .payment__status--waiting {
+            color: var(--red);
+            background: var(--red-soft);
+        }
+
+        .payment__status--paid {
+            color: var(--green);
+            background: var(--green-soft);
+        }
+
+        .documents-section {
+            margin-top: 25px;
+        }
+
+        .section-head {
+            display: flex;
+            align-items: end;
+            justify-content: space-between;
+            gap: 20px;
+            margin-bottom: 15px;
+        }
+
+        .section-head h2 {
+            margin-bottom: 4px;
+            font-family: Georgia, "Times New Roman", serif;
+            font-size: 27px;
+            font-weight: 500;
+            letter-spacing: -.025em;
+        }
+
+        .section-head p {
+            margin-bottom: 0;
+            color: var(--muted);
+            font-size: 13px;
+        }
+
+        .document-count {
+            padding: 8px 12px;
+            border-radius: 999px;
+            color: var(--navy);
+            background: var(--navy-soft);
+            font-size: 12px;
+            font-weight: 760;
+        }
+
+        .documents-grid {
+            display: grid;
+            grid-template-columns: minmax(0, 1.45fr) minmax(280px, .55fr);
+            gap: 20px;
+        }
+
+        .documents-list {
+            overflow: hidden;
+            border: 1px solid var(--line);
+            border-radius: var(--radius-md);
+            background: #fff;
+            box-shadow: 0 12px 32px rgba(25, 39, 65, .055);
+        }
+
+        .document {
+            display: grid;
+            grid-template-columns: auto minmax(0, 1fr) auto;
+            align-items: center;
+            gap: 15px;
+            padding: 16px 18px;
+            border-top: 1px solid var(--line);
+        }
+
+        .document:first-child {
+            border-top: 0;
+        }
+
+        .document__icon {
+            width: 42px;
+            height: 42px;
+            border-radius: 13px;
+            display: grid;
+            place-items: center;
+            color: var(--navy);
+            background: var(--navy-soft);
+            font-size: 11px;
+            font-weight: 850;
+        }
+
+        .document__name {
+            overflow: hidden;
+            margin-bottom: 4px;
+            font-weight: 730;
+            text-overflow: ellipsis;
+            white-space: nowrap;
+        }
+
+        .document__meta {
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .download {
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 39px;
+            padding: 0 13px;
+            border: 1px solid #dce2eb;
+            border-radius: 12px;
+            color: var(--navy);
+            background: #fff;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 760;
+            transition: .2s ease;
+        }
+
+        .download:hover {
+            border-color: var(--navy);
+            transform: translateY(-1px);
+        }
+
+        .upload {
+            min-height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 27px 22px;
+            border: 1.5px dashed #bdc8d8;
+            border-radius: var(--radius-md);
+            color: var(--ink);
+            background: rgba(255, 255, 255, .55);
+            text-align: center;
+            cursor: pointer;
+            transition: .2s ease;
+        }
+
+        .upload:hover {
+            border-color: var(--accent);
+            background: var(--accent-soft);
+        }
+
+        .upload__icon {
+            width: 54px;
+            height: 54px;
+            margin-bottom: 14px;
+            border-radius: 17px;
+            display: grid;
+            place-items: center;
+            color: #fff;
+            background: var(--accent);
+            box-shadow: 0 12px 25px rgba(211, 147, 85, .24);
+        }
+
+        .upload strong {
+            margin-bottom: 7px;
+            font-size: 15px;
+        }
+
+        .upload span {
+            max-width: 220px;
+            color: var(--muted);
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        .footer {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 20px;
+            margin-top: 28px;
+            padding: 0 3px;
+            color: var(--muted);
+            font-size: 11px;
+        }
+
+        .footer a {
+            color: var(--navy);
+            text-decoration: none;
+            font-weight: 700;
+        }
+
+        @media (max-width: 860px) {
+            .topbar__inner {
+                grid-template-columns: auto 1fr auto;
+            }
+
+            .brand__text,
+            .chat-button span,
+            .profile__caption {
+                display: none;
+            }
+
+            .profile {
+                justify-self: center;
+            }
+
+            .chat-button {
+                width: 44px;
+                padding: 0;
+                justify-content: center;
+            }
+
+            .intro {
+                align-items: start;
+                flex-direction: column;
+            }
+
+            .content-grid,
+            .documents-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .money-grid {
+                grid-template-columns: 1fr 1fr;
+            }
+
+            .payment-footer {
+                grid-template-columns: 1fr;
+            }
+
+            .pay-button {
+                justify-self: start;
+            }
+
+            .money-card:first-child {
+                grid-column: 1 / -1;
+            }
+
+            .upload {
+                min-height: 210px;
+            }
+        }
+
+        @media (max-width: 560px) {
+            .topbar__inner,
+            .page {
+                width: min(100% - 24px, 1180px);
+            }
+
+            .topbar__inner {
+                min-height: 70px;
+                gap: 10px;
+            }
+
+            .brand__mark,
+            .profile__avatar {
+                width: 40px;
+                height: 40px;
+            }
+
+            .profile__name {
+                max-width: 130px;
+                overflow: hidden;
+                font-size: 13px;
+                text-overflow: ellipsis;
+                white-space: nowrap;
+            }
+
+            .page {
+                padding: 34px 0 45px;
+            }
+
+            h1 {
+                font-size: 37px;
+            }
+
+            .support {
+                width: 100%;
+            }
+
+            .contract {
+                border-radius: 22px;
+            }
+
+            .contract__hero,
+            .contract__body {
+                padding-left: 19px;
+                padding-right: 19px;
+            }
+
+            .contract__heading {
+                flex-direction: column;
+                gap: 12px;
+            }
+
+            .contract__date {
+                padding-top: 0;
+                text-align: left;
+            }
+
+            .contract__date strong {
+                display: inline;
+                margin-left: 6px;
+            }
+
+            .money-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .money-card:first-child {
+                grid-column: auto;
+            }
+
+            .pay-button {
+                width: 100%;
+            }
+
+            .lawyer-note,
+            .panel__head {
+                padding-left: 17px;
+                padding-right: 17px;
+            }
+
+            .section-head {
+                align-items: start;
+            }
+
+            .document {
+                grid-template-columns: auto minmax(0, 1fr);
+            }
+
+            .download {
+                grid-column: 1 / -1;
+                width: 100%;
+                justify-content: center;
+            }
+
+            .footer {
+                align-items: start;
+                flex-direction: column;
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            * {
+                scroll-behavior: auto !important;
+                transition: none !important;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header class="topbar">
+        <div class="topbar__inner">
+            <a class="brand" href="#" aria-label="РоссЮрист">
+                <span class="brand__mark">РЮ</span>
+                <span class="brand__text">РоссЮрист</span>
+            </a>
+
+            <div class="profile">
+                <div class="profile__avatar" aria-hidden="true">КУ</div>
+                <div>
+                    <span class="profile__name">Климент Уролов</span>
+                    <span class="profile__caption">Личный кабинет клиента</span>
+                </div>
+            </div>
+
+            <button class="chat-button" type="button" aria-label="Написать юристу">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg>
+                <span>Связаться</span>
+            </button>
+        </div>
+    </header>
+
+    <main class="page">
+        <section class="intro">
+            <div>
+                <p class="eyebrow">Личный кабинет</p>
+                <h1>Ваши договоры</h1>
+                <p class="intro__text">Здесь собрана вся важная информация: состояние договора, график оплат, сообщения юриста и документы по вашему делу.</p>
+            </div>
+            <div class="support">
+                <span class="support__dot" aria-hidden="true"></span>
+                <div>
+                    <small>Ваш юрист сейчас</small>
+                    <strong>на связи</strong>
+                </div>
+            </div>
+        </section>
+
+        <article class="contract">
+            <div class="contract__hero">
+                <div class="contract__heading">
+                    <div>
+                        <div class="contract__label">
+                            <span>Договор</span>
+                            <span class="status-pill">Действует</span>
+                        </div>
+                        <h2 class="contract__number">№ 23102601</h2>
+                    </div>
+                    <div class="contract__date">
+                        Дата заключения
+                        <strong>23 октября 2026</strong>
+                    </div>
+                </div>
+
+                <div class="money-grid">
+                    <div class="money-card">
+                        <span>Сумма договора</span>
+                        <strong>100 000 ₽</strong>
+                    </div>
+                    <div class="money-card">
+                        <span>Внесено при заключении</span>
+                        <strong>50 000 ₽</strong>
+                    </div>
+                    <div class="money-card money-card--accent">
+                        <span>Осталось внести</span>
+                        <strong>50 000 ₽</strong>
+                    </div>
+                </div>
+
+                <div class="payment-footer">
+                    <div class="progress">
+                        <div class="progress__meta">
+                            <span>Оплачено по договору</span>
+                            <strong>50%</strong>
+                        </div>
+                        <div class="progress__track"><div class="progress__value"></div></div>
+                    </div>
+                    <a class="pay-button" href="https://paylink.tbank.ru/6c2772a4-247c-40a7-9a9f-bc30990d346b" target="_blank" rel="noopener noreferrer">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h3"/></svg>
+                        Оплатить договор
+                    </a>
+                </div>
+            </div>
+
+            <div class="contract__body">
+                <div class="content-grid">
+                    <section class="lawyer-note">
+                        <div class="lawyer-note__top">
+                            <div class="lawyer-note__avatar" aria-hidden="true">АВ</div>
+                            <div>
+                                <div class="lawyer-note__name">Алексей Воронцов</div>
+                                <div class="lawyer-note__role">Ведущий юрист по вашему делу</div>
+                            </div>
+                        </div>
+                        <p class="lawyer-note__text">«Мы получили необходимые документы и подготовили первичный пакет. Следующий этап — подача заявления. Я сообщу вам, как только появится новая информация.»</p>
+                        <span class="lawyer-note__date">Обновлено 23 октября, 14:20</span>
+                    </section>
+
+                    <section class="panel payments">
+                        <div class="panel__head">
+                            <div>
+                                <h3 class="panel__title">График доплат</h3>
+                                <span class="panel__caption">Ближайшие платежи по договору</span>
+                            </div>
+                        </div>
+                        <div class="payment-list">
+                            <div class="payment">
+                                <div>
+                                    <span class="payment__amount">25 000 ₽</span>
+                                    <span class="payment__date">до 29 октября 2026</span>
+                                </div>
+                                <span class="payment__status payment__status--waiting">Не внесено</span>
+                            </div>
+                            <div class="payment">
+                                <div>
+                                    <span class="payment__amount">25 000 ₽</span>
+                                    <span class="payment__date">до 1 ноября 2026</span>
+                                </div>
+                                <span class="payment__status payment__status--waiting">Не внесено</span>
+                            </div>
+                            <div class="payment">
+                                <div>
+                                    <span class="payment__amount">50 000 ₽</span>
+                                    <span class="payment__date">23 октября 2026</span>
+                                </div>
+                                <span class="payment__status payment__status--paid">Внесено</span>
+                            </div>
+                        </div>
+                    </section>
+                </div>
+            </div>
+        </article>
+
+        <section class="documents-section">
+            <div class="section-head">
+                <div>
+                    <h2>Ваши документы</h2>
+                    <p>Материалы, которые относятся к делу и договору</p>
+                </div>
+                <span class="document-count">4 документа</span>
+            </div>
+
+            <div class="documents-grid">
+                <div class="documents-list">
+                    <div class="document">
+                        <div class="document__icon">PDF</div>
+                        <div>
+                            <div class="document__name">Договор № 23102601</div>
+                            <div class="document__meta">PDF · 1,8 МБ · 23.10.2026</div>
+                        </div>
+                        <a class="download" href="#" aria-label="Скачать договор">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+                            Скачать
+                        </a>
+                    </div>
+                    <div class="document">
+                        <div class="document__icon">DOC</div>
+                        <div>
+                            <div class="document__name">Заявление на представительство</div>
+                            <div class="document__meta">DOCX · 540 КБ · 23.10.2026</div>
+                        </div>
+                        <a class="download" href="#" aria-label="Скачать заявление">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+                            Скачать
+                        </a>
+                    </div>
+                    <div class="document">
+                        <div class="document__icon">PDF</div>
+                        <div>
+                            <div class="document__name">Согласие на обработку данных</div>
+                            <div class="document__meta">PDF · 820 КБ · 23.10.2026</div>
+                        </div>
+                        <a class="download" href="#" aria-label="Скачать согласие">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+                            Скачать
+                        </a>
+                    </div>
+                    <div class="document">
+                        <div class="document__icon">JPG</div>
+                        <div>
+                            <div class="document__name">Копия паспорта</div>
+                            <div class="document__meta">JPG · 2,4 МБ · 22.10.2026</div>
+                        </div>
+                        <a class="download" href="#" aria-label="Скачать копию паспорта">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+                            Скачать
+                        </a>
+                    </div>
+                </div>
+
+                <label class="upload">
+                    <input type="file" hidden>
+                    <span class="upload__icon">
+                        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>
+                    </span>
+                    <strong>Загрузить файл</strong>
+                    <span>Нажмите для выбора документа или перетащите его сюда</span>
+                </label>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <span>© 2026 РоссЮрист. Информация защищена.</span>
+            <a href="#">Нужна помощь?</a>
+        </footer>
+    </main>
+</body>
+</html>

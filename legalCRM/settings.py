@@ -182,6 +182,11 @@ S3_SECRET_KEY = "bOWBlZckIVapgodQAZ4X9cMeAWwQ1i9nZ8rBVppE"
 S3_ENDPOINT_URL = "https://s3.twcstorage.ru"
 S3_BUCKET_NAME = "edb6a103-vsecrm"
 
+CLIENT_PAYMENT_URL = os.getenv(
+    "CLIENT_PAYMENT_URL",
+    "https://paylink.tbank.ru/6c2772a4-247c-40a7-9a9f-bc30990d346b",
+)
+
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 

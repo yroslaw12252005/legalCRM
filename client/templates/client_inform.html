@@ -1,147 +1,241 @@
-<!DOCTYPE html>
+{% load static client_format %}
+<!doctype html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
+    <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="robots" content="noindex,nofollow">
-    <style>
-        body {
-            background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-            min-height: 100vh;
-            display: flex;
-            justify-content: center;
-            align-items: center;
-            margin: 0;
-            font-family: 'Arial', sans-serif;
-        }
-
-        .container {
-            background: white;
-            padding: 40px 60px;
-            border-radius: 20px;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
-            text-align: center;
-            border: 2px solid #e0e6f5;
-        }
-
-        h1 {
-            color: #2c3e50;
-            font-size: 2.5em;
-            margin-bottom: 10px;
-            border-bottom: 3px solid #3498db;
-            display: inline-block;
-            padding-bottom: 5px;
-        }
-
-        .greeting {
-            color: #3498db;
-            font-size: 1.8em;
-            margin: 20px 0;
-        }
-
-        .document-section {
-            background: #f8f9ff;
-            padding: 20px;
-            border-radius: 10px;
-            margin-top: 30px;
-        }
-
-        .document-text {
-            color: #2c3e50;
-            font-size: 1.4em;
-            margin: 0;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            gap: 10px;
-        }
-
-        .document-icon {
-            width: 30px;
-            height: 30px;
-        }
-
-        .document-list {
-            display: grid;
-            gap: 12px;
-            margin-top: 16px;
-        }
-
-        .document-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            padding: 12px 14px;
-            background: white;
-            border: 1px solid #dbe3ec;
-            border-radius: 8px;
-            text-align: left;
-        }
-
-        .document-name {
-            flex: 1;
-            min-width: 0;
-            overflow-wrap: anywhere;
-        }
-
-        .download-button {
-            display: inline-block;
-            padding: 8px 14px;
-            border-radius: 7px;
-            background: #3498db;
-            color: white;
-            text-decoration: none;
-            white-space: nowrap;
-        }
-    </style>
+    <title>Личный кабинет — {{ info.name|default:"Клиент" }}</title>
+    <link rel="stylesheet" href="{% static 'client/client_portal.css' %}">
 </head>
 <body>
-    <div class="container">
-        <h1>{{info.name}} Добро пожаловать!</h1>
-        {% for contract in contracts %}
-            <div class="greeting">Договор №{{ contract.number }}</div>
-            <p>Сумма договора: {{ contract.amount }} руб.</p>
-            <p>Внесено при заключении: {{ contract.initial_payment }} руб.</p>
-            <p>Осталось внести: {{ contract.remaining_amount }} руб.</p>
-            <p>Дата договора: {{ contract.contract_date|date:"d.m.Y" }}</p>
-            {% for surcharge in contract.surcharges.all %}
-                <p{% if surcharge.is_paid %} style="color:#16803a; font-weight:600;"{% endif %}>
-                    Доплата: {{ surcharge.cost }} руб. — {{ surcharge.dat|date:"d.m.Y H:i" }}{% if surcharge.is_paid %} — Внесено{% endif %}
-                </p>
-            {% endfor %}
-        {% empty %}
-            <div class="greeting">Договоры ещё не добавлены</div>
-        {% endfor %}
+    <header class="topbar">
+        <div class="topbar__inner">
+            <a class="brand" href="#top" aria-label="РоссЮрист">
+                <span class="brand__mark">РЮ</span>
+                <span class="brand__text">РоссЮрист</span>
+            </a>
 
-        <div class="document-section">
-            <h2>Документы</h2>
-            <div class="document-list">
-                {% for document in documents %}
-                    <div class="document-item">
-                        <svg class="document-icon" viewBox="0 0 24 24" fill="#3498db" aria-hidden="true">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 4h7v5h5v11H6V4zm8 18v-1h4v1h-4z"/>
-                        </svg>
-                        <div class="document-name">
-                            <strong>{{ document.file_name }}</strong><br>
-                            <small>Загружен {{ document.created_at|date:"d.m.Y H:i" }}</small>
-                        </div>
-                        <a href="{% url 'client_document_download' info.client_access_token document.id %}" class="download-button">Скачать</a>
-                    </div>
-                {% endfor %}
-                {% if info.doc %}
-                    <div class="document-item">
-                        <svg class="document-icon" viewBox="0 0 24 24" fill="#3498db" aria-hidden="true">
-                            <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8l-6-6zM6 4h7v5h5v11H6V4zm8 18v-1h4v1h-4z"/>
-                        </svg>
-                        <div class="document-name"><strong>Документ из старой карточки</strong></div>
-                        <a href="{{ info.doc }}" class="download-button" rel="noopener noreferrer">Скачать</a>
-                    </div>
-                {% endif %}
-                {% if not documents and not info.doc %}
-                    <div class="document-item">Документы ещё не загружены</div>
-                {% endif %}
+            <div class="profile">
+                <div class="profile__avatar" aria-hidden="true">{{ client_initials }}</div>
+                <div>
+                    <span class="profile__name">{{ info.name|default:"Клиент" }}</span>
+                    <span class="profile__caption">Личный кабинет клиента</span>
+                </div>
             </div>
+
+            {% if lawyer_email %}
+                <a class="contact-button" href="mailto:{{ lawyer_email }}" aria-label="Написать юристу">
+            {% else %}
+                <a class="contact-button" href="#lawyer-note" aria-label="Информация от юриста">
+            {% endif %}
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/><path d="M8 10h.01M12 10h.01M16 10h.01"/></svg>
+                <span>Связаться</span>
+            </a>
         </div>
-    </div>
+    </header>
+
+    <main class="page" id="top">
+        <section class="intro">
+            <div>
+                <p class="eyebrow">Личный кабинет</p>
+                <h1>Ваши договоры</h1>
+                <p class="intro__text">Здесь собрана важная информация: состояние договоров, график оплат, сообщения юриста и документы по вашему делу.</p>
+            </div>
+            <div class="support">
+                <span class="support__dot" aria-hidden="true"></span>
+                <div>
+                    <small>Ваш юрист</small>
+                    <strong>{{ lawyer_name }}</strong>
+                </div>
+            </div>
+        </section>
+
+        {% if messages %}
+            <div class="flash-list" role="status">
+                {% for message in messages %}
+                    <div class="flash {{ message.tags }}">{{ message }}</div>
+                {% endfor %}
+            </div>
+        {% endif %}
+
+        <section class="contracts">
+            {% for contract in contracts %}
+                <article class="contract">
+                    <div class="contract__hero">
+                        <div class="contract__heading">
+                            <div>
+                                <div class="contract__label">
+                                    <span>Договор</span>
+                                    <span class="status-pill">
+                                        {% if contract.remaining_amount == 0 %}Оплачен{% else %}Действует{% endif %}
+                                    </span>
+                                </div>
+                                <h2 class="contract__number">№ {{ contract.number }}</h2>
+                            </div>
+                            <div class="contract__date">
+                                Дата заключения
+                                <strong>{{ contract.contract_date|date:"d.m.Y" }}</strong>
+                            </div>
+                        </div>
+
+                        <div class="money-grid">
+                            <div class="money-card">
+                                <span>Сумма договора</span>
+                                <strong>{{ contract.amount|money }} ₽</strong>
+                            </div>
+                            <div class="money-card">
+                                <span>Оплачено всего</span>
+                                <strong>{{ contract.paid_amount|money }} ₽</strong>
+                            </div>
+                            <div class="money-card money-card--accent">
+                                <span>Осталось внести</span>
+                                <strong>{{ contract.remaining_amount|money }} ₽</strong>
+                            </div>
+                        </div>
+
+                        <div class="payment-footer">
+                            <div class="progress">
+                                <div class="progress__meta">
+                                    <span>Оплачено по договору</span>
+                                    <strong>{{ contract.payment_progress }}%</strong>
+                                </div>
+                                <div class="progress__track">
+                                    <div class="progress__value" style="width: {{ contract.payment_progress }}%;"></div>
+                                </div>
+                            </div>
+                            {% if contract.remaining_amount > 0 %}
+                                <a class="pay-button" href="{{ payment_url }}" target="_blank" rel="noopener noreferrer">
+                                    <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h3"/></svg>
+                                    Оплатить договор
+                                </a>
+                            {% endif %}
+                        </div>
+                    </div>
+
+                    <div class="contract__body">
+                        <div class="content-grid">
+                            <section class="lawyer-note"{% if forloop.first %} id="lawyer-note"{% endif %}>
+                                <div class="lawyer-note__top">
+                                    <div class="lawyer-note__avatar" aria-hidden="true">{{ lawyer_initials }}</div>
+                                    <div>
+                                        <div class="lawyer-note__name">{{ lawyer_name }}</div>
+                                        <div class="lawyer-note__role">Юрист по вашему делу</div>
+                                    </div>
+                                </div>
+                                {% if info.work_comment %}
+                                    <p class="lawyer-note__text">{{ info.work_comment }}</p>
+                                    <span class="lawyer-note__date">Информация от юриста</span>
+                                {% else %}
+                                    <p class="lawyer-note__text">Как только по вашему делу появится новая информация, юрист разместит её здесь.</p>
+                                    <span class="lawyer-note__date">Ожидается обновление</span>
+                                {% endif %}
+                            </section>
+
+                            <section class="panel">
+                                <div class="panel__head">
+                                    <h3 class="panel__title">График доплат</h3>
+                                    <span class="panel__caption">Платежи по договору</span>
+                                </div>
+                                <div class="payment-list">
+                                    {% for surcharge in contract.surcharges.all %}
+                                        <div class="payment">
+                                            <div>
+                                                <span class="payment__amount">{{ surcharge.cost|money }} ₽</span>
+                                                <span class="payment__date">
+                                                    {% if surcharge.is_paid and surcharge.paid_at %}
+                                                        внесено {{ surcharge.paid_at|date:"d.m.Y" }}
+                                                    {% else %}
+                                                        до {{ surcharge.dat|date:"d.m.Y" }}
+                                                    {% endif %}
+                                                </span>
+                                            </div>
+                                            {% if surcharge.is_paid %}
+                                                <span class="payment__status payment__status--paid">Внесено</span>
+                                            {% else %}
+                                                <span class="payment__status payment__status--waiting">Не внесено</span>
+                                            {% endif %}
+                                        </div>
+                                    {% empty %}
+                                        <div class="empty-note">Доплаты по договору не назначены</div>
+                                    {% endfor %}
+                                </div>
+                            </section>
+                        </div>
+                    </div>
+                </article>
+            {% empty %}
+                <div class="empty-contracts">
+                    <h2>Договоры ещё не добавлены</h2>
+                    <p>После оформления договор автоматически появится в этом разделе.</p>
+                </div>
+            {% endfor %}
+        </section>
+
+        <section class="documents-section" id="documents">
+            <div class="section-head">
+                <div>
+                    <h2>Ваши документы</h2>
+                    <p>Материалы, которые относятся к вашему делу</p>
+                </div>
+                <span class="document-count">{{ document_count }} док.</span>
+            </div>
+
+            <div class="documents-grid">
+                <div class="documents-list">
+                    {% for document in documents %}
+                        <div class="document">
+                            <div class="document__icon">{{ document.extension|slice:":4" }}</div>
+                            <div>
+                                <div class="document__name">{{ document.file_name }}</div>
+                                <div class="document__meta">Загружен {{ document.created_at|date:"d.m.Y H:i" }}</div>
+                            </div>
+                            <a class="download" href="{% url 'client_document_download' info.client_access_token document.id %}">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+                                Скачать
+                            </a>
+                        </div>
+                    {% endfor %}
+
+                    {% if info.doc %}
+                        <div class="document">
+                            <div class="document__icon">FILE</div>
+                            <div>
+                                <div class="document__name">Документ из старой карточки</div>
+                                <div class="document__meta">Ранее загруженный документ</div>
+                            </div>
+                            <a class="download" href="{{ info.doc }}" target="_blank" rel="noopener noreferrer">
+                                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+                                Скачать
+                            </a>
+                        </div>
+                    {% endif %}
+
+                    {% if not documents and not info.doc %}
+                        <div class="empty-note">Документы ещё не загружены</div>
+                    {% endif %}
+                </div>
+
+                <form class="upload-form" method="post" enctype="multipart/form-data" action="{% url 'client_document_upload' info.client_access_token %}">
+                    {% csrf_token %}
+                    <div class="upload">
+                        <span class="upload__icon">
+                            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 16V4m0 0L8 8m4-4 4 4M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>
+                        </span>
+                        <strong>Загрузить файл</strong>
+                        <span>Добавьте документ к своей карточке</span>
+                        <input type="file" name="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png" required>
+                        <button class="upload-button" type="submit">Загрузить</button>
+                        <div class="upload-help">PDF, DOC, DOCX, JPG или PNG · до 15 МБ</div>
+                    </div>
+                </form>
+            </div>
+        </section>
+
+        <footer class="footer">
+            <span>© 2026 РоссЮрист. Информация защищена.</span>
+            {% if lawyer_email %}<a href="mailto:{{ lawyer_email }}">Нужна помощь?</a>{% endif %}
+        </footer>
+    </main>
 </body>
 </html>

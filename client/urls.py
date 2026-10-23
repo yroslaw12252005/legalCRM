@@ -9,6 +9,11 @@ path(
     views.client_document_download,
     name="client_document_download",
 ),
+path(
+    "lk/<uuid:token>/documents/upload/",
+    views.client_document_upload,
+    name="client_document_upload",
+),
 
 
 ]

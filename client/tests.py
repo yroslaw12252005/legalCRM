@@ -1,12 +1,16 @@
 from io import BytesIO
-from unittest.mock import patch
+from datetime import date, datetime
+from unittest.mock import AsyncMock, patch
 from urllib.parse import quote
 
+from django.core.files.uploadedfile import SimpleUploadedFile
 from django.test import TestCase
 from django.urls import reverse
 
 from accounts.models import User
 from company.models import Companys
+from contract.models import Contract
+from cost.models import Surcharge
 from felial.models import Felial
 from leads.models import Record, RecordDocument
 
@@ -48,7 +52,7 @@ class ClientCabinetDocumentsTests(TestCase):
         )
         response = self.client.get(reverse("client_portal", args=[self.record.client_access_token]))
 
-        self.assertContains(response, "Документы")
+        self.assertContains(response, "Ваши документы")
         self.assertContains(response, "Договор.pdf")
         self.assertContains(
             response,
@@ -65,6 +69,87 @@ class ClientCabinetDocumentsTests(TestCase):
         response = self.client.get(reverse("client_portal", args=[self.record.client_access_token]))
 
         self.assertContains(response, "Документы ещё не загружены")
+
+    def test_client_cabinet_shows_real_contract_payment_and_lawyer_data(self):
+        lawyer = User.objects.create_user(
+            username="lawyer_client_cabinet",
+            first_name="Анна",
+            last_name="Юристова",
+            email="lawyer@example.test",
+            status="Юрист пирвичник",
+            companys=self.company,
+            felial=self.branch,
+        )
+        self.record.employees_UPP = lawyer.username
+        self.record.work_comment = "Документы подготовлены и переданы в работу."
+        self.record.save(update_fields=["employees_UPP", "work_comment"])
+        contract = Contract.objects.create(
+            record=self.record,
+            number="23102601",
+            amount=100000,
+            initial_payment=50000,
+            contract_date=date(2026, 10, 23),
+        )
+        Surcharge.objects.create(
+            contract=contract,
+            cost=25000,
+            dat=datetime(2026, 10, 29, 12, 0),
+            is_paid=True,
+        )
+        Surcharge.objects.create(
+            contract=contract,
+            cost=25000,
+            dat=datetime(2026, 11, 1, 12, 0),
+            is_paid=False,
+        )
+
+        response = self.client.get(reverse("client_portal", args=[self.record.client_access_token]))
+
+        self.assertContains(response, self.record.name)
+        self.assertContains(response, "№ 23102601")
+        self.assertContains(response, "75 000 ₽")
+        self.assertContains(response, "25 000 ₽")
+        self.assertContains(response, "75%")
+        self.assertContains(response, "Анна Юристова")
+        self.assertContains(response, self.record.work_comment)
+        self.assertContains(response, "Оплатить договор")
+
+    @patch("client.views.document_storage.upload_bytes", new_callable=AsyncMock)
+    def test_client_can_upload_document_to_own_record(self, mocked_upload):
+        mocked_upload.return_value = True
+        upload = SimpleUploadedFile(
+            "client-document.pdf",
+            b"pdf-content",
+            content_type="application/pdf",
+        )
+
+        response = self.client.post(
+            reverse("client_document_upload", args=[self.record.client_access_token]),
+            {"file": upload},
+        )
+
+        self.assertRedirects(
+            response,
+            f"{reverse('client_portal', args=[self.record.client_access_token])}#documents",
+            fetch_redirect_response=False,
+        )
+        document = RecordDocument.objects.get(record=self.record)
+        self.assertEqual(document.file_name, "client-document.pdf")
+        self.assertIn(f"/{self.record.id}/client/", document.s3_key)
+        mocked_upload.assert_awaited_once()
+
+    @patch("client.views.document_storage.upload_bytes", new_callable=AsyncMock)
+    def test_client_upload_rejects_unsupported_file(self, mocked_upload):
+        upload = SimpleUploadedFile("script.exe", b"bad", content_type="application/octet-stream")
+
+        response = self.client.post(
+            reverse("client_document_upload", args=[self.record.client_access_token]),
+            {"file": upload},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.assertFalse(RecordDocument.objects.filter(record=self.record).exists())
+        mocked_upload.assert_not_awaited()
 
     def test_client_cabinet_does_not_open_record_from_other_company(self):
         self.client.force_login(self.manager)

@@ -1,4 +1,5 @@
 import uuid
+from pathlib import Path
 
 from django.db import models
 
@@ -51,3 +52,7 @@ class RecordDocument(models.Model):
 
     def __str__(self):
         return self.file_name
+
+    @property
+    def extension(self):
+        return Path(self.file_name).suffix.lstrip(".").upper() or "FILE"

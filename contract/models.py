@@ -54,10 +54,20 @@ class Contract(models.Model):
         return self.amount - self.initial_payment
 
     @property
-    def remaining_amount(self):
+    def paid_amount(self):
         paid_surcharges = sum(
             (surcharge.cost or Decimal("0") for surcharge in self.surcharges.all() if surcharge.is_paid),
             Decimal("0"),
         )
-        return max(self.surcharge_plan_amount - paid_surcharges, Decimal("0"))
+        return min(self.initial_payment + paid_surcharges, self.amount)
+
+    @property
+    def remaining_amount(self):
+        return max(self.amount - self.paid_amount, Decimal("0"))
+
+    @property
+    def payment_progress(self):
+        if not self.amount:
+            return 100
+        return min(int((self.paid_amount / self.amount) * 100), 100)
 
