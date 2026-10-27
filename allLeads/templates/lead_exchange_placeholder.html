@@ -1,7 +1,204 @@
 {% extends "base.html" %}
+{% load static %}
+
 {% block content %}
-<div style="max-width: 720px; margin: 24px auto; background: #fff; border-radius: 16px; padding: 24px; box-shadow: 0 8px 24px rgba(15, 23, 42, 0.08);">
-  <h2 style="margin-top: 0;">Биржа заявок</h2>
-  <p style="margin-bottom: 0; color: #4b5563;">Раздел пока в разработке. Кнопка добавлена как заглушка для администратора.</p>
-</div>
+<link rel="stylesheet" href="{% static 'allLeads/lead_exchange.css' %}">
+
+<main class="exchange-page">
+  <header class="exchange-hero">
+    <div class="exchange-hero__copy">
+      <p class="exchange-eyebrow">Новый канал привлечения</p>
+      <h1>Биржа заявок</h1>
+      <p>Получайте одиночные лиды в автоматическом потоке или выбирайте готовые пакеты на аукционе. Сейчас перед вами визуальный прототип будущего раздела.</p>
+    </div>
+    <div class="exchange-hero__aside">
+      <span class="exchange-preview-badge">Демонстрационный режим</span>
+    </div>
+  </header>
+
+  <section class="exchange-section">
+    <div class="exchange-section-head">
+      <div>
+        <h2>Потоковое получение лидов</h2>
+        <p>Отдельный автоматический канал — без торгов и конкуренции с другими компаниями</p>
+      </div>
+      <span class="exchange-section-tag">Поток включён</span>
+    </div>
+
+    <div class="flow-panel">
+      <div class="flow-panel__top">
+        <div class="flow-settings">
+          <div class="flow-settings__title">
+            <div class="flow-icon">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
+            </div>
+            <div>
+              <h3>Параметры потока</h3>
+              <span>Демонстрационные настройки автоматического получения</span>
+            </div>
+          </div>
+
+          <div class="flow-fields">
+            <div class="flow-field">
+              <label for="flow-start">Начало работы</label>
+              <input class="flow-input" id="flow-start" type="time" value="09:00">
+            </div>
+            <div class="flow-field">
+              <label for="flow-end">Окончание</label>
+              <input class="flow-input" id="flow-end" type="time" value="20:00">
+            </div>
+            <div class="flow-field">
+              <label for="flow-price">Цена одного лида</label>
+              <input class="flow-input" id="flow-price" type="text" value="300 ₽">
+            </div>
+            <div class="flow-field">
+              <label>Состояние потока</label>
+              <div class="flow-toggle-wrap">
+                <span class="flow-toggle-label">Включён</span>
+                <button class="flow-toggle" type="button" aria-label="Поток включён"></button>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <aside class="flow-forecast">
+          <span class="flow-forecast__label">Прогноз при текущей цене</span>
+          <strong class="flow-forecast__value">≈ 2 лида / час</strong>
+          <span class="flow-forecast__caption">При бюджете 6 000 ₽ и стоимости 300 ₽ за лид поток рассчитан примерно на 20 заявок в день.</span>
+        </aside>
+      </div>
+
+      <div class="flow-stats" aria-label="Статистика потоковых заявок">
+        <div class="flow-stat">
+          <span class="flow-stat__label">Получено</span>
+          <strong class="flow-stat__value">48</strong>
+          <span class="flow-stat__delta">+12 за неделю</span>
+        </div>
+        <div class="flow-stat">
+          <span class="flow-stat__label">Принято</span>
+          <strong class="flow-stat__value">41</strong>
+          <span class="flow-stat__delta">85% от потока</span>
+        </div>
+        <div class="flow-stat">
+          <span class="flow-stat__label">Обработано</span>
+          <strong class="flow-stat__value">34</strong>
+          <span class="flow-stat__delta">83% принятых</span>
+        </div>
+        <div class="flow-stat">
+          <span class="flow-stat__label">Отказов</span>
+          <strong class="flow-stat__value">7</strong>
+          <span class="flow-stat__delta flow-stat__delta--muted">15% от потока</span>
+        </div>
+        <div class="flow-stat">
+          <span class="flow-stat__label">Потрачено</span>
+          <strong class="flow-stat__value">14 400 ₽</strong>
+          <span class="flow-stat__delta flow-stat__delta--muted">за текущий месяц</span>
+        </div>
+        <div class="flow-stat">
+          <span class="flow-stat__label">Остаток бюджета</span>
+          <strong class="flow-stat__value">5 600 ₽</strong>
+          <span class="flow-stat__delta">хватит примерно на 18 лидов</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section class="exchange-section">
+    <div class="exchange-section-head">
+      <div>
+        <h2>Активные аукционы</h2>
+        <p>Пакеты заявок, за которые компании предлагают свою стоимость одного лида</p>
+      </div>
+      <div class="auction-toolbar">
+        <select class="auction-filter" aria-label="Город">
+          <option>Все города</option>
+          <option>Москва</option>
+          <option>Санкт-Петербург</option>
+        </select>
+        <select class="auction-filter" aria-label="Тематика">
+          <option>Все тематики</option>
+          <option>Банкротство</option>
+          <option>Семейное право</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="auction-grid">
+      <a class="auction-card" href="{% url 'lead_exchange_lot_preview' 'bankruptcy-msk-100' %}">
+        <div class="auction-card__visual">
+          <div class="auction-card__top">
+            <span class="auction-card__category">Банкротство</span>
+            <span class="auction-card__time">Осталось 38 минут</span>
+          </div>
+          <strong>100 лидов · Москва</strong>
+        </div>
+        <div class="auction-card__body">
+          <h3 class="auction-card__title">Пакет «Банкротство физлиц»</h3>
+          <p class="auction-card__description">Заявки по банкротству и списанию долгов из Москвы и Московской области.</p>
+          <div class="auction-card__meta">
+            <div class="auction-meta"><span>Текущая ставка</span><strong>300 ₽ / лид</strong></div>
+            <div class="auction-meta"><span>Стартовая цена</span><strong>200 ₽ / лид</strong></div>
+          </div>
+          <div class="auction-card__footer">
+            <div class="auction-participants">
+              <span class="auction-avatars"><span class="auction-avatar">БЮ</span><span class="auction-avatar">ЩП</span><span class="auction-avatar">+2</span></span>
+              4 компании
+            </div>
+            <span class="auction-link">Подробнее <svg viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></span>
+          </div>
+        </div>
+      </a>
+
+      <a class="auction-card" href="{% url 'lead_exchange_lot_preview' 'family-spb-10' %}">
+        <div class="auction-card__visual">
+          <div class="auction-card__top">
+            <span class="auction-card__category">Семейное право</span>
+            <span class="auction-card__time">Осталось 1 ч 20 мин</span>
+          </div>
+          <strong>10 лидов · Санкт-Петербург</strong>
+        </div>
+        <div class="auction-card__body">
+          <h3 class="auction-card__title">Пакет «Семейные споры»</h3>
+          <p class="auction-card__description">Разводы, алименты и раздел имущества. Только Санкт-Петербург.</p>
+          <div class="auction-card__meta">
+            <div class="auction-meta"><span>Текущая ставка</span><strong>250 ₽ / лид</strong></div>
+            <div class="auction-meta"><span>Стартовая цена</span><strong>180 ₽ / лид</strong></div>
+          </div>
+          <div class="auction-card__footer">
+            <div class="auction-participants">
+              <span class="auction-avatars"><span class="auction-avatar">АП</span><span class="auction-avatar">+1</span></span>
+              2 компании
+            </div>
+            <span class="auction-link">Подробнее <svg viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></span>
+          </div>
+        </div>
+      </a>
+
+      <a class="auction-card" href="{% url 'lead_exchange_lot_preview' 'auto-russia-50' %}">
+        <div class="auction-card__visual">
+          <div class="auction-card__top">
+            <span class="auction-card__category">Автоюрист</span>
+            <span class="auction-card__time">Осталось 2 ч 05 мин</span>
+          </div>
+          <strong>50 лидов · Россия</strong>
+        </div>
+        <div class="auction-card__body">
+          <h3 class="auction-card__title">Пакет «Автомобильные споры»</h3>
+          <p class="auction-card__description">ДТП, страховые выплаты и споры с дилерами из крупных городов России.</p>
+          <div class="auction-card__meta">
+            <div class="auction-meta"><span>Текущая ставка</span><strong>220 ₽ / лид</strong></div>
+            <div class="auction-meta"><span>Стартовая цена</span><strong>160 ₽ / лид</strong></div>
+          </div>
+          <div class="auction-card__footer">
+            <div class="auction-participants">
+              <span class="auction-avatars"><span class="auction-avatar">ЮА</span><span class="auction-avatar">ПЗ</span><span class="auction-avatar">+3</span></span>
+              5 компаний
+            </div>
+            <span class="auction-link">Подробнее <svg viewBox="0 0 24 24"><path d="M5 12h14m-5-5 5 5-5 5"/></svg></span>
+          </div>
+        </div>
+      </a>
+    </div>
+  </section>
+</main>
 {% endblock content %}

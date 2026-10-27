@@ -54,6 +54,36 @@ class AllLeadsBulkActionsTests(TestCase):
 
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Биржа заявок")
+        self.assertContains(response, "Потоковое получение лидов")
+        self.assertContains(response, "Активные аукционы")
+        self.assertContains(response, "Демонстрационный режим")
+
+    def test_admin_can_open_lead_exchange_lot_preview(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.get(
+            reverse("lead_exchange_lot_preview", args=["bankruptcy-msk-100"])
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Компании-участники")
+        self.assertContains(response, "Отправить предложение")
+
+    def test_non_admin_cannot_open_lead_exchange_lot_preview(self):
+        manager = User.objects.create_user(
+            username="exchange_manager",
+            password="test-pass-123",
+            status="Менеджер",
+            companys=self.company,
+            felial=self.felial,
+        )
+        self.client.force_login(manager)
+
+        response = self.client.get(
+            reverse("lead_exchange_lot_preview", args=["bankruptcy-msk-100"])
+        )
+
+        self.assertRedirects(response, reverse("all_leads"))
 
 
 class AllLeadsPhoneVisibilityTests(TestCase):

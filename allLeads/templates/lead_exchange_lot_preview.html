@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'allLeads/lead_exchange.css' %}">
+
+<main class="exchange-page">
+  <nav class="exchange-breadcrumbs" aria-label="Навигация">
+    <a href="{% url 'lead_exchange' %}">Биржа заявок</a>
+    <span>/</span>
+    <span>Пакет «Банкротство физлиц»</span>
+  </nav>
+
+  <header class="exchange-hero">
+    <div class="exchange-hero__copy">
+      <p class="exchange-eyebrow">Аукцион пакета</p>
+      <h1>100 лидов · Москва</h1>
+      <p>Заявки по банкротству физических лиц и списанию долгов. Компании предлагают стоимость одного лида, после чего организатор выбирает подходящее предложение.</p>
+    </div>
+    <div class="exchange-hero__aside">
+      <span class="exchange-preview-badge">Осталось 38 минут</span>
+    </div>
+  </header>
+
+  <div class="lot-layout">
+    <section class="lot-panel">
+      <div class="lot-panel__head">
+        <div>
+          <h2>Компании-участники</h2>
+          <p>Предложения отсортированы по стоимости одного лида</p>
+        </div>
+        <span class="participant-count">4 предложения</span>
+      </div>
+
+      <div class="participant-list">
+        <article class="participant participant--leader">
+          <div class="participant__logo">БЮ</div>
+          <div>
+            <span class="participant__name">БизнесЮрист</span>
+            <span class="participant__time">Предложение отправлено сегодня в 14:32</span>
+          </div>
+          <div class="participant__bid">
+            <strong>300 ₽</strong>
+            <span class="leader-mark">Лидер торгов</span>
+          </div>
+        </article>
+
+        <article class="participant">
+          <div class="participant__logo">КП</div>
+          <div>
+            <span class="participant__name">Компания «Право»</span>
+            <span class="participant__time">Предложение отправлено сегодня в 14:18</span>
+          </div>
+          <div class="participant__bid">
+            <strong>280 ₽</strong>
+            <span>за один лид</span>
+          </div>
+        </article>
+
+        <article class="participant">
+          <div class="participant__logo">ЩП</div>
+          <div>
+            <span class="participant__name">Щит и Право</span>
+            <span class="participant__time">Предложение отправлено сегодня в 13:54</span>
+          </div>
+          <div class="participant__bid">
+            <strong>250 ₽</strong>
+            <span>за один лид</span>
+          </div>
+        </article>
+
+        <article class="participant">
+          <div class="participant__logo">ЮК</div>
+          <div>
+            <span class="participant__name">Юридическая команда</span>
+            <span class="participant__time">Предложение отправлено сегодня в 13:21</span>
+          </div>
+          <div class="participant__bid">
+            <strong>200 ₽</strong>
+            <span>за один лид</span>
+          </div>
+        </article>
+      </div>
+    </section>
+
+    <aside class="bid-card">
+      <div class="bid-card__hero">
+        <span class="bid-card__label">Информация о пакете</span>
+        <h2>Банкротство физлиц</h2>
+        <p>Москва и Московская область. Контакты прошли первичную проверку.</p>
+
+        <div class="lot-facts">
+          <div class="lot-fact"><span>Объём пакета</span><strong>100 лидов</strong></div>
+          <div class="lot-fact"><span>Стартовая цена</span><strong>200 ₽</strong></div>
+          <div class="lot-fact"><span>Текущая ставка</span><strong>300 ₽</strong></div>
+          <div class="lot-fact"><span>Участников</span><strong>4 компании</strong></div>
+        </div>
+      </div>
+
+      <div class="bid-form">
+        <div class="bid-form__company">
+          <div class="bid-form__company-logo">РЮ</div>
+          <div>
+            <small>Вы участвуете от компании</small>
+            <strong>РоссЮрист</strong>
+          </div>
+        </div>
+
+        <label for="bid-price">Предложите стоимость одного лида</label>
+        <div class="bid-price-wrap">
+          <input class="bid-price" id="bid-price" type="text" value="350" inputmode="numeric">
+          <span class="bid-currency">₽</span>
+        </div>
+        <div class="bid-hint"><span>Минимум 200 ₽</span><span>Текущий лидер: 300 ₽</span></div>
+        <button class="bid-button" type="button">Отправить предложение</button>
+        <p class="bid-disclaimer">Демонстрационный макет: кнопка пока не отправляет и не сохраняет предложение.</p>
+      </div>
+    </aside>
+  </div>
+</main>
+{% endblock content %}

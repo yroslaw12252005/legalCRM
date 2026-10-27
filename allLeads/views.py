@@ -625,6 +625,15 @@ def lead_exchange(request):
     return render(request, "lead_exchange_placeholder.html")
 
 
+def lead_exchange_lot_preview(request, slug):
+
+    if not request.user.is_authenticated or request.user.status != STATUS_ADMIN:
+        messages.warning(request, "Доступ ограничен")
+        return redirect("all_leads")
+
+    return render(request, "lead_exchange_lot_preview.html", {"lot_slug": slug})
+
+
 
 
 
