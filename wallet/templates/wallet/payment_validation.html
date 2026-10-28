@@ -1,0 +1,27 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'wallet/wallet.css' %}">
+
+<div class="validation-page">
+    <a class="back-link" href="{% url 'wallet_detail' %}">← Вернуться в кошелёк</a>
+    <section class="validation-card">
+        <span class="wallet-eyebrow">Ручное подтверждение</span>
+        <h1>Валидация платежа</h1>
+        <p class="validation-lead">Выберите компанию и укажите сумму, которая фактически поступила на счёт.</p>
+
+        <form method="post" class="validation-form">
+            {% csrf_token %}
+            {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors }}</div>{% endif %}
+            {% for field in form %}
+                <label class="form-field">
+                    <span>{{ field.label }}</span>
+                    {{ field }}
+                    {% if field.errors %}<small class="form-error">{{ field.errors|striptags }}</small>{% endif %}
+                </label>
+            {% endfor %}
+            <button type="submit" class="validation-submit">Подтвердить пополнение</button>
+        </form>
+    </section>
+</div>
+{% endblock content %}

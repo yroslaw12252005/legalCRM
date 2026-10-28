@@ -1,0 +1,80 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'wallet/wallet.css' %}">
+
+<div class="wallet-page">
+    <section class="wallet-hero">
+        <div>
+            <span class="wallet-eyebrow">Кошелёк компании</span>
+            <h1>{{ wallet.company.title }}</h1>
+            <p>Пополняйте баланс и отслеживайте все денежные операции в одном месте.</p>
+        </div>
+        <div class="wallet-total">
+            <span>Доступный баланс</span>
+            <strong>{{ wallet.balance|floatformat:2 }} ₽</strong>
+            <small>Обновлён {{ wallet.updated_at|date:"d.m.Y в H:i" }}</small>
+        </div>
+    </section>
+
+    <div class="wallet-grid">
+        <section class="payment-card">
+            <div class="section-title">
+                <span class="section-icon">₽</span>
+                <div>
+                    <h2>Пополнить баланс</h2>
+                    <p>Отсканируйте QR-код или перейдите по ссылке</p>
+                </div>
+            </div>
+            <div class="qr-shell">
+                <img src="{{ payment_qr_url }}" alt="QR-код для пополнения баланса" width="260" height="260">
+            </div>
+            <a class="payment-link" href="{{ payment_url }}" target="_blank" rel="noopener noreferrer">
+                Перейти к оплате
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14m-5-5 5 5-5 5"/></svg>
+            </a>
+            <div class="receipt-note">
+                <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 9v4m0 4h.01M10.3 4.3 2.8 17.2A2 2 0 0 0 4.5 20h15a2 2 0 0 0 1.7-2.8L13.7 4.3a2 2 0 0 0-3.4 0Z"/></svg>
+                <span>После оплаты пришлите чек на почту, чтобы оператор подтвердил оплату.</span>
+            </div>
+        </section>
+
+        <section class="operations-card">
+            <div class="operations-head">
+                <div>
+                    <span class="wallet-eyebrow">История</span>
+                    <h2>Операции со счётом</h2>
+                </div>
+                {% if can_validate_payment %}
+                    <a class="validate-button" href="{% url 'wallet_validate_payment' %}">Валидация платежа</a>
+                {% endif %}
+            </div>
+
+            <div class="operations-list">
+                {% for operation in transactions %}
+                    <article class="operation">
+                        <span class="operation__mark operation__mark--{{ operation.operation_type }}">
+                            {% if operation.operation_type == "deposit" %}+{% else %}−{% endif %}
+                        </span>
+                        <div class="operation__main">
+                            <strong>{{ operation.get_operation_type_display }}</strong>
+                            <span>{{ operation.created_at|date:"d.m.Y в H:i" }}</span>
+                            {% if operation.comment %}<p>{{ operation.comment }}</p>{% endif %}
+                        </div>
+                        <div class="operation__amount operation__amount--{{ operation.operation_type }}">
+                            <strong>{% if operation.operation_type == "deposit" %}+{% else %}−{% endif %}{{ operation.amount|floatformat:2 }} ₽</strong>
+                            <span>Баланс: {{ operation.balance_after|floatformat:2 }} ₽</span>
+                        </div>
+                    </article>
+                {% empty %}
+                    <div class="operations-empty">
+                        <span>₽</span>
+                        <h3>Операций пока нет</h3>
+                        <p>После первого пополнения или списания операция появится здесь.</p>
+                    </div>
+                {% endfor %}
+            </div>
+        </section>
+    </div>
+</div>
+{% endblock content %}

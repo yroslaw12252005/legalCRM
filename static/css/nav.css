@@ -79,6 +79,28 @@ nav {
     gap: 8px;
 }
 
+.sidebar-wallet {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 11px;
+    margin: 4px 0 20px;
+    padding: 13px;
+    border: 1px solid rgba(216, 166, 111, .28);
+    border-radius: 15px;
+    color: #fff;
+    background: linear-gradient(135deg, rgba(211,147,85,.22), rgba(255,255,255,.06));
+    text-decoration: none;
+    box-shadow: 0 12px 28px rgba(0,0,0,.12);
+    transition: transform .2s ease, border-color .2s ease;
+}
+.sidebar-wallet:hover { color:#fff; border-color:rgba(216,166,111,.6); transform:translateY(-2px); }
+.sidebar-wallet__icon { width:40px; height:40px; display:grid; place-items:center; border-radius:12px; color:#1f2937; background:#e1aa70; font-size:19px; font-weight:850; }
+.sidebar-wallet__content { min-width:0; }
+.sidebar-wallet__content small { display:block; color:#aebdce; font-size:10px; }
+.sidebar-wallet__content strong { display:block; margin-top:3px; overflow:hidden; font-size:16px; text-overflow:ellipsis; white-space:nowrap; }
+.sidebar-wallet__arrow { color:#d7a269; font-size:25px; line-height:1; }
+
 .nav-button {
     background: none;
     border: 1px solid rgba(148, 163, 184, 0.3);

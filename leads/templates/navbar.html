@@ -84,6 +84,15 @@ $(document).ready(function() {
     <div id="content-container"></div>
     {% endif %}
 
+    <a class="sidebar-wallet" href="{% url 'wallet_detail' %}">
+        <span class="sidebar-wallet__icon" aria-hidden="true">₽</span>
+        <span class="sidebar-wallet__content">
+            <small>Баланс компании</small>
+            <strong>{% if sidebar_wallet %}{{ sidebar_wallet.balance|floatformat:2 }}{% else %}0.00{% endif %} ₽</strong>
+        </span>
+        <span class="sidebar-wallet__arrow" aria-hidden="true">›</span>
+    </a>
+
     <div class="sidebar-menu">
         <ul>
         {% if user.is_authenticated %}
@@ -205,6 +214,12 @@ $(document).ready(function() {
             {% if user.username == "Yrik" or user.username == "Сергей" %}
                 <li>
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'companys' %}"><img width="24" src="{% static 'img/statistics.png' %}" alt=""> Статистика компаний</a></span>
+                </li>
+            {% endif %}
+
+            {% if can_validate_wallet_payment %}
+                <li>
+                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'wallet_validate_payment' %}">Валидация платежа</a></span>
                 </li>
             {% endif %}
 

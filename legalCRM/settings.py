@@ -57,6 +57,7 @@ INSTALLED_APPS = [
     "call_recording",
     "education",
     "current_applications",
+    "wallet",
 ]
 
 MIDDLEWARE = [
@@ -83,6 +84,7 @@ TEMPLATES = [
                 'django.template.context_processors.request',
                 'django.contrib.auth.context_processors.auth',
                 'django.contrib.messages.context_processors.messages',
+                'wallet.context_processors.company_wallet',
             ],
         },
     },
@@ -186,6 +188,8 @@ CLIENT_PAYMENT_URL = os.getenv(
     "CLIENT_PAYMENT_URL",
     "https://paylink.tbank.ru/6c2772a4-247c-40a7-9a9f-bc30990d346b",
 )
+
+WALLET_PAYMENT_URL = os.getenv("WALLET_PAYMENT_URL", CLIENT_PAYMENT_URL)
 
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
