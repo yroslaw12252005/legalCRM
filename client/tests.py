@@ -69,6 +69,7 @@ class ClientCabinetDocumentsTests(TestCase):
         response = self.client.get(reverse("client_portal", args=[self.record.client_access_token]))
 
         self.assertContains(response, "Документы ещё не загружены")
+        self.assertContains(response, "Оплатить договор", count=1)
 
     def test_client_cabinet_shows_real_contract_payment_and_lawyer_data(self):
         lawyer = User.objects.create_user(
@@ -112,7 +113,7 @@ class ClientCabinetDocumentsTests(TestCase):
         self.assertContains(response, "75%")
         self.assertContains(response, "Анна Юристова")
         self.assertContains(response, self.record.work_comment)
-        self.assertContains(response, "Оплатить договор")
+        self.assertContains(response, "Оплатить договор", count=1)
 
     @patch("client.views.document_storage.upload_bytes", new_callable=AsyncMock)
     def test_client_can_upload_document_to_own_record(self, mocked_upload):
