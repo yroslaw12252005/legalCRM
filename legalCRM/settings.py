@@ -58,6 +58,7 @@ INSTALLED_APPS = [
     "education",
     "current_applications",
     "wallet",
+    "marketplace",
 ]
 
 MIDDLEWARE = [

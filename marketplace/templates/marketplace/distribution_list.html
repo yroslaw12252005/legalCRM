@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'marketplace/marketplace.css' %}">
+
+<main class="distribution-page">
+  <div class="distribution-breadcrumbs"><a href="{% url 'lead_exchange' %}">Биржа заявок</a><span>›</span><span>Распределение</span></div>
+  <header class="distribution-hero">
+    <div>
+      <span class="distribution-eyebrow">Ручное управление</span>
+      <h1>Распределение заявок</h1>
+      <p>Выберите непроданные заявки и передайте их компании по стоимости из её параметров потока.</p>
+    </div>
+    <div class="distribution-summary"><span>Доступно</span><strong>{{ available_count }}</strong><small>заявок</small></div>
+  </header>
+
+  <section class="distribution-panel">
+    <div class="distribution-toolbar">
+      <div class="distribution-tabs">
+        <a class="{% if selected_status == 'all' %}active{% endif %}" href="?status=all">Все</a>
+        <a class="{% if selected_status == 'available' %}active{% endif %}" href="?status=available">Не проданы</a>
+        <a class="{% if selected_status == 'sold' %}active{% endif %}" href="?status=sold">Проданы</a>
+      </div>
+      <span>Показано: {{ page_obj.paginator.count }}</span>
+    </div>
+
+    <form method="post" id="lead-distribution-form">
+      {% csrf_token %}
+      <div class="distribution-table-wrap">
+        <table class="distribution-table">
+          <thead><tr><th class="check-cell"><input id="select-all-leads" type="checkbox" aria-label="Выбрать все доступные"></th><th>Имя</th><th>Телефон</th><th>Примечание</th><th>Город</th><th>Тематика</th><th>Статус</th></tr></thead>
+          <tbody>
+            {% for lead in leads %}
+              <tr class="{% if lead.status == 'sold' %}lead-row--sold{% endif %}">
+                <td class="check-cell"><input class="lead-checkbox" type="checkbox" name="selected_leads" value="{{ lead.id }}" {% if lead.status == 'sold' %}disabled{% endif %} aria-label="Выбрать заявку {{ lead.name }}"></td>
+                <td><strong>{{ lead.name }}</strong><small>{{ lead.created_at|date:"d.m.Y H:i" }}</small></td>
+                <td>{{ lead.phone }}</td>
+                <td class="note-cell">{{ lead.note|default:"—"|truncatechars:90 }}</td>
+                <td>{{ lead.city|default:"—" }}</td>
+                <td>{{ lead.topic|default:"—" }}</td>
+                <td>{% if lead.status == 'sold' %}<span class="status status--sold">Продана</span>{% else %}<span class="status status--available">Не продана</span>{% endif %}{% if lead.buyer %}<small>{{ lead.buyer.title }}</small>{% endif %}</td>
+              </tr>
+            {% empty %}
+              <tr><td class="empty-table" colspan="7">Биржевые заявки пока не добавлены</td></tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+
+      <div class="selection-bar" id="selection-bar" hidden>
+        <div><span>Выбрано заявок</span><strong id="selection-count">0</strong></div>
+        <button type="submit">Распределить</button>
+      </div>
+    </form>
+
+    {% if page_obj.paginator.num_pages > 1 %}
+      <nav class="distribution-pagination">
+        {% if page_obj.has_previous %}<a href="?status={{ selected_status }}&page={{ page_obj.previous_page_number }}">← Назад</a>{% endif %}
+        <span>{{ page_obj.number }} / {{ page_obj.paginator.num_pages }}</span>
+        {% if page_obj.has_next %}<a href="?status={{ selected_status }}&page={{ page_obj.next_page_number }}">Далее →</a>{% endif %}
+      </nav>
+    {% endif %}
+  </section>
+</main>
+
+<script>
+  (function () {
+    const boxes = Array.from(document.querySelectorAll('.lead-checkbox:not(:disabled)'));
+    const selectAll = document.getElementById('select-all-leads');
+    const bar = document.getElementById('selection-bar');
+    const count = document.getElementById('selection-count');
+    function updateSelection() {
+      const selected = boxes.filter(box => box.checked).length;
+      count.textContent = selected;
+      bar.hidden = selected === 0;
+      selectAll.checked = boxes.length > 0 && selected === boxes.length;
+      selectAll.indeterminate = selected > 0 && selected < boxes.length;
+    }
+    selectAll.addEventListener('change', () => { boxes.forEach(box => box.checked = selectAll.checked); updateSelection(); });
+    boxes.forEach(box => box.addEventListener('change', updateSelection));
+  }());
+</script>
+{% endblock content %}

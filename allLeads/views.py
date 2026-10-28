@@ -24,6 +24,8 @@ from leads.models import Record
 from leads.sms import send_bulk_sms
 from leads.status_utils import get_allowed_status_values_for_user, get_status_choices_for_user
 from smart_calendar.models import Booking
+from marketplace.forms import LeadStreamSettingsForm
+from marketplace.models import LeadPurchase, LeadStreamSettings
 
 from todolist.models import ToDoList
 
@@ -622,7 +624,41 @@ def lead_exchange(request):
         messages.warning(request, "Доступ ограничен")
         return redirect("all_leads")
 
-    return render(request, "lead_exchange_placeholder.html")
+    stream_settings, _ = LeadStreamSettings.objects.get_or_create(company=request.user.companys)
+    stream_form = LeadStreamSettingsForm(request.POST or None, instance=stream_settings)
+
+    if request.method == "POST" and request.POST.get("action") == "save_stream_settings":
+        if stream_form.is_valid():
+            stream_settings = stream_form.save()
+            messages.success(request, "Параметры потока сохранены")
+            return redirect("lead_exchange")
+        messages.error(request, "Проверьте параметры потока")
+
+    working_hours = max(
+        (
+            datetime.combine(date.today(), stream_settings.work_end)
+            - datetime.combine(date.today(), stream_settings.work_start)
+        ).total_seconds() / 3600,
+        1,
+    )
+    planned_leads = int(stream_settings.budget / stream_settings.lead_price) if stream_settings.lead_price else 0
+    leads_per_hour = planned_leads / working_hours if planned_leads else 0
+    remaining_leads = int(stream_settings.remaining_budget / stream_settings.lead_price) if stream_settings.lead_price else 0
+    purchases = LeadPurchase.objects.filter(company=request.user.companys)
+
+    return render(
+        request,
+        "lead_exchange_placeholder.html",
+        {
+            "stream_form": stream_form,
+            "stream_settings": stream_settings,
+            "planned_leads": planned_leads,
+            "leads_per_hour": leads_per_hour,
+            "remaining_leads": remaining_leads,
+            "received_count": purchases.count(),
+            "processed_count": purchases.exclude(crm_record__status="Новая").count(),
+        },
+    )
 
 
 def lead_exchange_lot_preview(request, slug):

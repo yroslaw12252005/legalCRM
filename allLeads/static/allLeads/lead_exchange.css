@@ -64,6 +64,8 @@
 .exchange-hero p { max-width: 720px; margin: 0; color: #c6cede; line-height: 1.65; }
 .exchange-preview-badge { display: inline-flex; align-items: center; gap: 8px; padding: 9px 12px; border: 1px solid rgba(255,255,255,.12); border-radius: 999px; color: #fff; background: rgba(255,255,255,.07); font-size: 12px; font-weight: 750; white-space: nowrap; }
 .exchange-preview-badge::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: #f0b56f; }
+.exchange-admin-action { display:inline-flex; align-items:center; justify-content:center; min-height:46px; padding:0 19px; border-radius:14px; color:#fff; background:#6b5ce7; box-shadow:0 12px 28px rgba(52,39,145,.35); font-size:13px; font-weight:820; text-decoration:none; }
+.exchange-admin-action:hover { color:#fff; transform:translateY(-2px); }
 
 .exchange-section { margin-top: 22px; }
 .exchange-section-head { display: flex; align-items: end; justify-content: space-between; gap: 20px; margin-bottom: 14px; padding: 0 3px; }
@@ -85,15 +87,21 @@
 .flow-icon svg { width: 23px; height: 23px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
 .flow-settings__title h3 { margin: 0 0 3px; color: var(--exchange-ink); font-size: 17px; }
 .flow-settings__title span { color: var(--exchange-muted); font-size: 12px; }
-.flow-fields { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 12px; }
+.flow-fields { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
 .flow-field { min-width: 0; }
 .flow-field label { display: block; margin-bottom: 7px; color: var(--exchange-muted); font-size: 11px; font-weight: 700; }
 .flow-input { width: 100%; min-height: 45px; padding: 0 13px; border: 1px solid #dfe3eb; border-radius: 12px; color: var(--exchange-ink); background: #fbfcfe; outline: none; }
 .flow-input:focus { border-color: var(--exchange-violet); box-shadow: 0 0 0 3px rgba(101,86,216,.11); }
 .flow-toggle-wrap { display: flex; align-items: center; justify-content: space-between; min-height: 45px; padding: 0 13px; border: 1px solid #dfe3eb; border-radius: 12px; background: #fbfcfe; }
 .flow-toggle-label { color: var(--exchange-ink); font-size: 13px; font-weight: 750; }
-.flow-toggle { position: relative; width: 45px; height: 25px; border: 0; border-radius: 999px; background: var(--exchange-violet); cursor: default; }
-.flow-toggle::after { content: ""; position: absolute; top: 3px; right: 3px; width: 19px; height: 19px; border-radius: 50%; background: #fff; }
+.flow-toggle { position:relative; width:45px; height:25px; margin:0; }
+.flow-toggle input { position:absolute; opacity:0; pointer-events:none; }
+.flow-toggle span { position:absolute; inset:0; border-radius:999px; background:#c7ced9; cursor:pointer; transition:.2s ease; }
+.flow-toggle span::after { content:""; position:absolute; top:3px; left:3px; width:19px; height:19px; border-radius:50%; background:#fff; transition:.2s ease; }
+.flow-toggle input:checked + span { background:var(--exchange-violet); }
+.flow-toggle input:checked + span::after { transform:translateX(20px); }
+.flow-save { min-height:42px; margin-top:16px; padding:0 17px; border:0; border-radius:12px; color:#fff; background:#293554; font-size:12px; font-weight:800; cursor:pointer; }
+.flow-error { display:block; margin-top:5px; color:#b44d58; font-size:10px; line-height:1.35; }
 
 .flow-forecast { position: relative; overflow: hidden; display: flex; flex-direction: column; justify-content: center; padding: 28px; color: #fff; background: var(--exchange-violet); }
 .flow-forecast::after { content: ""; position: absolute; right: -70px; bottom: -90px; width: 230px; height: 230px; border: 1px solid rgba(255,255,255,.16); border-radius: 50%; }

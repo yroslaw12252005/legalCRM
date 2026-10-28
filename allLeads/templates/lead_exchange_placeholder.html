@@ -12,7 +12,11 @@
       <p>Получайте одиночные лиды в автоматическом потоке или выбирайте готовые пакеты на аукционе. Сейчас перед вами визуальный прототип будущего раздела.</p>
     </div>
     <div class="exchange-hero__aside">
-      <span class="exchange-preview-badge">Демонстрационный режим</span>
+      {% if user.username == "Yrik" %}
+        <a class="exchange-admin-action" href="{% url 'marketplace_distribution' %}">Распределять заявки</a>
+      {% else %}
+        <span class="exchange-preview-badge">Аукционы в демонстрационном режиме</span>
+      {% endif %}
     </div>
   </header>
 
@@ -22,82 +26,96 @@
         <h2>Потоковое получение лидов</h2>
         <p>Отдельный автоматический канал — без торгов и конкуренции с другими компаниями</p>
       </div>
-      <span class="exchange-section-tag">Поток включён</span>
+      <span class="exchange-section-tag">{% if stream_settings.is_enabled %}Поток включён{% else %}Поток выключен{% endif %}</span>
     </div>
 
     <div class="flow-panel">
       <div class="flow-panel__top">
-        <div class="flow-settings">
+        <form class="flow-settings" method="post">
+          {% csrf_token %}
+          <input type="hidden" name="action" value="save_stream_settings">
           <div class="flow-settings__title">
             <div class="flow-icon">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 12h16M14 6l6 6-6 6"/></svg>
             </div>
             <div>
               <h3>Параметры потока</h3>
-              <span>Демонстрационные настройки автоматического получения</span>
+              <span>Цена из этих настроек используется при ручном распределении</span>
             </div>
           </div>
 
           <div class="flow-fields">
             <div class="flow-field">
-              <label for="flow-start">Начало работы</label>
-              <input class="flow-input" id="flow-start" type="time" value="09:00">
+              <label for="{{ stream_form.work_start.id_for_label }}">Начало работы</label>
+              {{ stream_form.work_start }}
+              {% if stream_form.work_start.errors %}<small class="flow-error">{{ stream_form.work_start.errors|striptags }}</small>{% endif %}
             </div>
             <div class="flow-field">
-              <label for="flow-end">Окончание</label>
-              <input class="flow-input" id="flow-end" type="time" value="20:00">
+              <label for="{{ stream_form.work_end.id_for_label }}">Окончание</label>
+              {{ stream_form.work_end }}
+              {% if stream_form.work_end.errors %}<small class="flow-error">{{ stream_form.work_end.errors|striptags }}</small>{% endif %}
             </div>
             <div class="flow-field">
-              <label for="flow-price">Цена одного лида</label>
-              <input class="flow-input" id="flow-price" type="text" value="300 ₽">
+              <label for="{{ stream_form.budget.id_for_label }}">Бюджет</label>
+              {{ stream_form.budget }}
+              {% if stream_form.budget.errors %}<small class="flow-error">{{ stream_form.budget.errors|striptags }}</small>{% endif %}
+            </div>
+            <div class="flow-field">
+              <label for="{{ stream_form.lead_price.id_for_label }}">Цена одного лида</label>
+              {{ stream_form.lead_price }}
+              {% if stream_form.lead_price.errors %}<small class="flow-error">{{ stream_form.lead_price.errors|striptags }}</small>{% endif %}
             </div>
             <div class="flow-field">
               <label>Состояние потока</label>
               <div class="flow-toggle-wrap">
-                <span class="flow-toggle-label">Включён</span>
-                <button class="flow-toggle" type="button" aria-label="Поток включён"></button>
+                <span class="flow-toggle-label">Участвовать</span>
+                <label class="flow-toggle" aria-label="Участие в потоке">
+                  {{ stream_form.is_enabled }}
+                  <span></span>
+                </label>
               </div>
             </div>
           </div>
-        </div>
+          <button class="flow-save" type="submit">Сохранить параметры</button>
+        </form>
 
         <aside class="flow-forecast">
           <span class="flow-forecast__label">Прогноз при текущей цене</span>
-          <strong class="flow-forecast__value">≈ 2 лида / час</strong>
-          <span class="flow-forecast__caption">При бюджете 6 000 ₽ и стоимости 300 ₽ за лид поток рассчитан примерно на 20 заявок в день.</span>
+          <strong class="flow-forecast__value">≈ {{ leads_per_hour|floatformat:1 }} лида / час</strong>
+          <span class="flow-forecast__caption">При бюджете {{ stream_settings.budget|floatformat:0 }} ₽ и стоимости {{ stream_settings.lead_price|floatformat:0 }} ₽ поток рассчитан примерно на {{ planned_leads }} заявок.</span>
         </aside>
       </div>
 
       <div class="flow-stats" aria-label="Статистика потоковых заявок">
         <div class="flow-stat">
           <span class="flow-stat__label">Получено</span>
-          <strong class="flow-stat__value">48</strong>
-          <span class="flow-stat__delta">+12 за неделю</span>
+          <strong class="flow-stat__value">{{ received_count }}</strong>
+          <span class="flow-stat__delta">за всё время</span>
         </div>
         <div class="flow-stat">
           <span class="flow-stat__label">Принято</span>
-          <strong class="flow-stat__value">41</strong>
-          <span class="flow-stat__delta">85% от потока</span>
+          <strong class="flow-stat__value">{{ received_count }}</strong>
+          <span class="flow-stat__delta">передано в CRM</span>
         </div>
         <div class="flow-stat">
           <span class="flow-stat__label">Обработано</span>
-          <strong class="flow-stat__value">34</strong>
-          <span class="flow-stat__delta">83% принятых</span>
+          <strong class="flow-stat__value">{{ processed_count }}</strong>
+          <span class="flow-stat__delta">сменили первый статус</span>
         </div>
         <div class="flow-stat">
           <span class="flow-stat__label">Отказов</span>
-          <strong class="flow-stat__value">7</strong>
-          <span class="flow-stat__delta flow-stat__delta--muted">15% от потока</span>
+          <strong class="flow-stat__value">0</strong>
+          <span class="flow-stat__delta flow-stat__delta--muted">ручной режим</span>
         </div>
         <div class="flow-stat">
           <span class="flow-stat__label">Потрачено</span>
-          <strong class="flow-stat__value">14 400 ₽</strong>
-          <span class="flow-stat__delta flow-stat__delta--muted">за текущий месяц</span>
+          <strong class="flow-stat__value">{{ stream_settings.spent_amount|floatformat:0 }} ₽</strong>
+          <span class="flow-stat__delta flow-stat__delta--muted">из текущего бюджета</span>
         </div>
         <div class="flow-stat">
           <span class="flow-stat__label">Остаток бюджета</span>
-          <strong class="flow-stat__value">5 600 ₽</strong>
-          <span class="flow-stat__delta">хватит примерно на 18 лидов</span>
+          <strong class="flow-stat__value">{{ stream_settings.remaining_budget|floatformat:0 }} ₽</strong>
+          <span class="flow-stat__delta">хватит примерно на {{ remaining_leads }} лидов</span>
         </div>
       </div>
     </div>

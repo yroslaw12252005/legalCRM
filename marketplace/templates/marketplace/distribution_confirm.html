@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'marketplace/marketplace.css' %}">
+
+<main class="distribution-page distribution-page--confirm">
+  <div class="distribution-breadcrumbs"><a href="{% url 'marketplace_distribution' %}">Распределение</a><span>›</span><span>Выбор компании</span></div>
+  <div class="confirm-layout">
+    <section class="confirm-card">
+      <span class="distribution-eyebrow">Шаг 2</span>
+      <h1>Кому передать заявки?</h1>
+      <p class="confirm-lead">Цена и итоговое списание будут рассчитаны автоматически по параметрам потока компании.</p>
+      <form method="post" class="confirm-form" id="confirm-form">
+        {% csrf_token %}
+        {{ form.lead_ids }}
+        {% if form.non_field_errors %}<div class="confirm-error">{{ form.non_field_errors|striptags }}</div>{% endif %}
+        {% if form.lead_ids.errors %}<div class="confirm-error">{{ form.lead_ids.errors|striptags }}</div>{% endif %}
+        <label><span>{{ form.company.label }}</span>{{ form.company }}{% if form.company.errors %}<small class="confirm-error">{{ form.company.errors|striptags }}</small>{% endif %}</label>
+        <div class="company-preview" id="company-preview">
+          <div><span>Цена одного лида</span><strong id="preview-price">—</strong></div>
+          <div><span>Итоговое списание</span><strong id="preview-total">—</strong></div>
+          <div><span>Доступный бюджет</span><strong id="preview-budget">—</strong></div>
+          <div><span>Баланс кошелька</span><strong id="preview-balance">—</strong></div>
+        </div>
+        <button class="confirm-submit" type="submit">Подтвердить распределение</button>
+        <p class="confirm-warning">После подтверждения заявки появятся в CRM компании, а сумма будет списана с её кошелька.</p>
+      </form>
+    </section>
+
+    <aside class="selected-card">
+      <div class="selected-card__head"><div><span>Выбрано</span><strong>{{ selected_leads|length }} заявок</strong></div><a href="{% url 'marketplace_distribution' %}">Изменить</a></div>
+      <div class="selected-list">
+        {% for lead in selected_leads %}
+          <div class="selected-lead"><span>{{ forloop.counter }}</span><div><strong>{{ lead.name }}</strong><small>{{ lead.phone }} · {{ lead.city|default:"город не указан" }}</small></div></div>
+        {% empty %}<div class="confirm-error">Заявки не выбраны</div>{% endfor %}
+      </div>
+    </aside>
+  </div>
+</main>
+
+{{ company_finances|json_script:"company-finances" }}
+<script>
+  (function () {
+    const company = document.getElementById('id_company');
+    const count = {{ selected_leads|length }};
+    const companies = JSON.parse(document.getElementById('company-finances').textContent);
+    const priceNode = document.getElementById('preview-price');
+    const totalNode = document.getElementById('preview-total');
+    const budgetNode = document.getElementById('preview-budget');
+    const balanceNode = document.getElementById('preview-balance');
+    function renderPrice() {
+      const data = companies[company.value] || {};
+      const price = Number(data.price || 0);
+      priceNode.textContent = price ? price.toLocaleString('ru-RU') + ' ₽' : '—';
+      totalNode.textContent = price ? (price * count).toLocaleString('ru-RU') + ' ₽' : '—';
+      budgetNode.textContent = company.value ? Number(data.budget || 0).toLocaleString('ru-RU') + ' ₽' : '—';
+      balanceNode.textContent = company.value ? Number(data.balance || 0).toLocaleString('ru-RU') + ' ₽' : '—';
+    }
+    company.addEventListener('change', renderPrice);
+    renderPrice();
+  }());
+</script>
+{% endblock content %}

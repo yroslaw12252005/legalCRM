@@ -22,6 +22,7 @@ from django.views.generic import RedirectView
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include('landing.urls')),
+    path('all-leads/lead-exchange/', include('marketplace.urls')),
     path('all-leads/', include('allLeads.urls')),
     path('all-leads/', include('leads.urls')),
     path('current-applications/', include('current_applications.urls')),
