@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% load static %}
+{% block content %}
+<link rel="stylesheet" href="{% static 'marketplace/marketplace.css' %}">
+
+<main class="distribution-page distribution-page--confirm">
+  <div class="distribution-breadcrumbs">
+    <a href="{% url 'lead_exchange' %}">Биржа заявок</a><span>›</span>
+    <a href="{% url 'marketplace_distribution' %}">Распределение</a><span>›</span>
+    <span>Загрузка Excel</span>
+  </div>
+
+  <section class="excel-import-card">
+    <span class="distribution-eyebrow">Массовое добавление</span>
+    <h1>Добавить заявки из Excel</h1>
+    <p>
+      В файле должны быть столбцы <strong>Имя</strong> и <strong>Телефон</strong>.
+      Все корректные строки будут добавлены на биржу со статусом «Не продана».
+    </p>
+
+    <div class="excel-import-actions">
+      <a class="excel-template-link" href="{% url 'marketplace_excel_template' %}">Скачать шаблон Excel</a>
+      <a class="excel-back-link" href="{% url 'marketplace_distribution' %}">Вернуться к заявкам</a>
+    </div>
+
+    <form class="excel-upload-form" method="post" enctype="multipart/form-data">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="excel-upload-submit" type="submit">Загрузить заявки на биржу</button>
+    </form>
+  </section>
+</main>
+{% endblock content %}

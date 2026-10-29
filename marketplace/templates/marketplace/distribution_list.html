@@ -10,6 +10,9 @@
       <span class="distribution-eyebrow">Ручное управление</span>
       <h1>Распределение заявок</h1>
       <p>Выберите непроданные заявки и передайте их компании по стоимости из её параметров потока.</p>
+      <a class="distribution-excel-button" href="{% url 'marketplace_excel_import' %}">
+        <span aria-hidden="true">＋</span> Добавить Excel
+      </a>
     </div>
     <div class="distribution-summary"><span>Доступно</span><strong>{{ available_count }}</strong><small>заявок</small></div>
   </header>

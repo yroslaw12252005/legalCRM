@@ -1,12 +1,18 @@
 from urllib.parse import urlencode
+from xml.etree.ElementTree import ParseError
+from zipfile import BadZipFile
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.core.exceptions import PermissionDenied, ValidationError
 from django.core.paginator import Paginator
+from django.http import HttpResponse
 from django.shortcuts import redirect, render
 from django.urls import reverse
 
+from leads.forms import ExcelUploadForm
+
+from .excel import build_excel_template_bytes, extract_leads_from_excel
 from .forms import LeadDistributionForm
 from .models import MarketplaceLead
 from .services import distribute_marketplace_leads
@@ -15,6 +21,42 @@ from .services import distribute_marketplace_leads
 def _require_yrik(user):
     if user.username != "Yrik":
         raise PermissionDenied
+
+
+@login_required
+def download_excel_template(request):
+    _require_yrik(request.user)
+    response = HttpResponse(
+        build_excel_template_bytes(),
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    response["Content-Disposition"] = 'attachment; filename="marketplace_leads_template.xlsx"'
+    return response
+
+
+@login_required
+def import_leads_from_excel(request):
+    _require_yrik(request.user)
+    form = ExcelUploadForm(request.POST or None, request.FILES or None)
+
+    if request.method == "POST" and form.is_valid():
+        try:
+            leads, skipped_rows = extract_leads_from_excel(form.cleaned_data["file"])
+        except (ValueError, KeyError, BadZipFile, ParseError):
+            form.add_error("file", "Не удалось прочитать Excel-файл. Скачайте шаблон и заполните его заново.")
+        else:
+            marketplace_leads = [
+                MarketplaceLead(name=lead["name"], phone=lead["phone"])
+                for lead in leads
+            ]
+            MarketplaceLead.objects.bulk_create(marketplace_leads)
+            message = f"На биржу загружено заявок: {len(marketplace_leads)}"
+            if skipped_rows:
+                message += f". Пропущено строк без имени или телефона: {skipped_rows}"
+            messages.success(request, message)
+            return redirect("marketplace_distribution")
+
+    return render(request, "marketplace/excel_import.html", {"form": form})
 
 
 @login_required

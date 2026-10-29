@@ -1,4 +1,6 @@
 from decimal import Decimal
+from io import BytesIO
+from zipfile import ZipFile
 
 from django.core.exceptions import ValidationError
 from django.test import TestCase
@@ -11,6 +13,7 @@ from leads.models import Record
 from wallet.models import CompanyWallet, WalletTransaction
 
 from .models import LeadPurchase, LeadStreamSettings, MarketplaceLead
+from .excel import build_excel_template_bytes
 from .services import distribute_marketplace_leads
 
 
@@ -118,3 +121,56 @@ class MarketplacePermissionsTests(TestCase):
         response = self.client.get(reverse("marketplace_distribution"))
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Распределение заявок")
+
+    def test_excel_import_is_forbidden_for_regular_user(self):
+        self.client.force_login(self.user)
+        response = self.client.get(reverse("marketplace_excel_import"))
+        self.assertEqual(response.status_code, 403)
+
+    def test_yrik_can_download_marketplace_excel_template(self):
+        self.client.force_login(self.yrik)
+        response = self.client.get(reverse("marketplace_excel_template"))
+        self.assertEqual(response.status_code, 200)
+        self.assertEqual(
+            response["Content-Type"],
+            "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+        )
+        self.assertTrue(response.content.startswith(b"PK"))
+
+    def test_yrik_can_import_marketplace_leads_from_excel(self):
+        self.client.force_login(self.yrik)
+        excel_file = BytesIO(build_excel_template_bytes())
+        excel_file.name = "marketplace.xlsx"
+        with ZipFile(excel_file, "a") as archive:
+            archive.writestr(
+                "xl/worksheets/sheet1.xml",
+                (
+                    '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>'
+                    '<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+                    '<sheetData>'
+                    '<row r="1">'
+                    '<c r="A1" t="inlineStr"><is><t>Имя</t></is></c>'
+                    '<c r="B1" t="inlineStr"><is><t>Телефон</t></is></c>'
+                    '</row>'
+                    '<row r="2">'
+                    '<c r="A2" t="inlineStr"><is><t>Иван</t></is></c>'
+                    '<c r="B2" t="inlineStr"><is><t>+79990000001</t></is></c>'
+                    '</row>'
+                    '<row r="3">'
+                    '<c r="A3" t="inlineStr"><is><t>Анна</t></is></c>'
+                    '<c r="B3" t="inlineStr"><is><t>+79990000002</t></is></c>'
+                    '</row>'
+                    '</sheetData>'
+                    '</worksheet>'
+                ),
+            )
+        excel_file.seek(0)
+
+        response = self.client.post(reverse("marketplace_excel_import"), data={"file": excel_file})
+
+        self.assertRedirects(response, reverse("marketplace_distribution"))
+        self.assertEqual(MarketplaceLead.objects.count(), 2)
+        self.assertEqual(
+            list(MarketplaceLead.objects.order_by("phone").values_list("name", "status")),
+            [("Иван", MarketplaceLead.STATUS_AVAILABLE), ("Анна", MarketplaceLead.STATUS_AVAILABLE)],
+        )

@@ -6,6 +6,9 @@
 .distribution-eyebrow { display:block; margin-bottom:7px; color:#aaa1ff; font-size:11px; font-weight:850; letter-spacing:.13em; text-transform:uppercase; }
 .distribution-hero h1,.confirm-card h1 { margin:0 0 8px; font-size:clamp(29px,4vw,43px); letter-spacing:-.04em; }
 .distribution-hero p { max-width:700px; margin:0; color:#cbd3df; font-size:13px; }
+.distribution-excel-button { display:inline-flex; align-items:center; gap:7px; margin-top:19px; padding:10px 15px; border:1px solid rgba(255,255,255,.2); border-radius:12px; color:#fff; background:rgba(255,255,255,.1); text-decoration:none; font-size:11px; font-weight:820; transition:transform .18s ease,background .18s ease; }
+.distribution-excel-button:hover { color:#fff; background:rgba(255,255,255,.18); transform:translateY(-1px); }
+.distribution-excel-button span { font-size:17px; line-height:1; }
 .distribution-summary { min-width:120px; padding:15px 20px; border:1px solid rgba(255,255,255,.12); border-radius:17px; background:rgba(255,255,255,.07); text-align:center; }
 .distribution-summary span,.distribution-summary small { display:block; color:#bfc9d8; font-size:10px; }
 .distribution-summary strong { display:block; margin:2px 0; font-size:31px; }
@@ -63,5 +66,17 @@
 .selected-lead > span { width:31px; height:31px; display:grid; place-items:center; border-radius:10px; color:var(--mp-violet); background:#efedff; font-size:11px; font-weight:800; }
 .selected-lead strong,.selected-lead small { display:block; }
 .selected-lead small { margin-top:3px; color:var(--mp-muted); font-size:9px; }
+.excel-import-card { max-width:680px; margin:20px auto 0; padding:32px; border:1px solid var(--mp-line); border-radius:23px; background:#fff; box-shadow:0 15px 42px rgba(32,42,68,.08); }
+.excel-import-card h1 { margin:0 0 10px; font-size:clamp(27px,4vw,38px); letter-spacing:-.04em; }
+.excel-import-card > p { margin:0 0 24px; color:var(--mp-muted); font-size:13px; line-height:1.6; }
+.excel-import-actions { display:flex; gap:10px; flex-wrap:wrap; margin-bottom:23px; }
+.excel-import-actions a { display:inline-flex; align-items:center; min-height:42px; padding:0 14px; border-radius:11px; text-decoration:none; font-size:11px; font-weight:800; }
+.excel-template-link { color:#fff; background:var(--mp-violet); }
+.excel-back-link { color:var(--mp-ink); background:#f1f3f8; }
+.excel-upload-form { display:grid; gap:18px; }
+.excel-upload-form label { display:block; margin-bottom:7px; font-size:12px; font-weight:800; }
+.excel-upload-form input[type=file] { width:100%; padding:14px; border:1px dashed #cbd1de; border-radius:13px; background:#fafbfe; font-size:12px; }
+.excel-upload-form .errorlist { margin:7px 0 0; padding:10px 13px; border-radius:10px; color:var(--mp-red); background:#fceff1; list-style:none; font-size:11px; }
+.excel-upload-submit { min-height:49px; border:0; border-radius:13px; color:#fff; background:var(--mp-green); font-weight:820; }
 @media(max-width:800px){.distribution-hero{align-items:flex-start;flex-direction:column}.distribution-summary{width:100%}.confirm-layout{grid-template-columns:1fr}.selected-card{grid-row:1}.distribution-page{padding:20px 10px 55px}}
-@media(max-width:540px){.distribution-toolbar{align-items:flex-start;flex-direction:column}.distribution-tabs{width:100%;overflow:auto}.selection-bar{width:calc(100% - 18px)}.confirm-card{padding:23px 18px}.company-preview{grid-template-columns:1fr}}
+@media(max-width:540px){.distribution-toolbar{align-items:flex-start;flex-direction:column}.distribution-tabs{width:100%;overflow:auto}.selection-bar{width:calc(100% - 18px)}.confirm-card,.excel-import-card{padding:23px 18px}.company-preview{grid-template-columns:1fr}.excel-import-actions a{width:100%;justify-content:center}}
