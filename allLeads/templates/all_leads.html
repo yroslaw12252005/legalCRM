@@ -362,7 +362,7 @@
                     <td title="{{ record.employees_KC }}">{{ record.employees_KC|truncatechars:8 }}</td>
                   {% endif %}
                   {% if user.status == "Директор ЮПП" or user.status == "Администратор" or user.status == "Менеджер"%}
-                    <td title="{{ record.employees_UPP }}">{{ record.employees_UPP|truncatechars:8 }}</td>
+                    <td title="{{ record.lawyer_display_name }}">{{ record.lawyer_display_name|truncatechars:8 }}</td>
                   {% endif %}
                   {% if user.status == "Директор представителей" or user.status == "Администратор" or user.status == "Менеджер" or user.status == "Директор ЮПП"%}
                     <td title="{{ record.employees_REP }}">{{ record.employees_REP|truncatechars:8 }}</td>

@@ -106,8 +106,10 @@ def _visible_records_for_user(records, user):
         return records.filter(in_work=True)
 
     if user.status in {STATUS_LAWYER_PRIMARY, STATUS_OP}:
-
-        return records.filter(employees_UPP=user.username)
+        return records.filter(
+            Q(lawyer=user)
+            | Q(lawyer__isnull=True, employees_UPP=user.username)
+        )
 
     if user.status == STATUS_DIRECTOR_REP:
 
@@ -274,6 +276,17 @@ def _build_unassigned_employee_filter(field_name):
     return query
 
 
+def _lawyer_username_filter(username):
+    return Q(lawyer__username=username) | Q(
+        lawyer__isnull=True,
+        employees_UPP=username,
+    )
+
+
+def _unassigned_lawyer_filter():
+    return Q(lawyer__isnull=True) & _build_unassigned_employee_filter("employees_UPP")
+
+
 
 
 def all_leads(request):
@@ -361,7 +374,7 @@ def all_leads(request):
 
             Q(employees_KC=selected_employee)
 
-            | Q(employees_UPP=selected_employee)
+            | _lawyer_username_filter(selected_employee)
 
             | Q(employees_REP=selected_employee)
 
@@ -375,9 +388,9 @@ def all_leads(request):
 
     if selected_lawyer_upp:
         if selected_lawyer_upp == UNASSIGNED_FILTER_VALUE:
-            get_records = get_records.filter(_build_unassigned_employee_filter("employees_UPP"))
+            get_records = get_records.filter(_unassigned_lawyer_filter())
         else:
-            get_records = get_records.filter(employees_UPP=selected_lawyer_upp)
+            get_records = get_records.filter(_lawyer_username_filter(selected_lawyer_upp))
 
     if selected_lawyer_op:
         if selected_lawyer_op == UNASSIGNED_FILTER_VALUE:
@@ -406,8 +419,7 @@ def all_leads(request):
         get_records = get_records.filter(_build_unassigned_employee_filter("employees_KC"))
 
     if selected_lawyer_state == UNASSIGNED_FILTER_VALUE:
-
-        get_records = get_records.filter(_build_unassigned_employee_filter("employees_UPP"))
+        get_records = get_records.filter(_unassigned_lawyer_filter())
 
 
 
@@ -416,16 +428,19 @@ def all_leads(request):
     operators = User.objects.filter(
         companys_id=company_id,
         status__in=status_variants(STATUS_OPERATOR),
+        is_active=True,
     ).order_by("username")
 
     lawyers = User.objects.filter(
         companys_id=company_id,
         status__in=status_variants(STATUS_LAWYER_PRIMARY),
+        is_active=True,
     ).order_by("username")
 
     representatives = User.objects.filter(
         companys_id=company_id,
         status__in=status_variants(STATUS_REPRESENTATIVE),
+        is_active=True,
     ).order_by("username")
 
     filter_employees = User.objects.filter(
@@ -433,6 +448,7 @@ def all_leads(request):
         companys_id=company_id,
 
         status__in=[STATUS_OPERATOR, STATUS_LAWYER_PRIMARY, STATUS_OP, STATUS_REPRESENTATIVE],
+        is_active=True,
 
     ).order_by("username")
 
@@ -470,7 +486,7 @@ def all_leads(request):
 
 
 
-    get_records = get_records.distinct().only(
+    get_records = get_records.select_related("lawyer").distinct().only(
         "id",
         "name",
         "phone",
@@ -481,6 +497,8 @@ def all_leads(request):
         "in_work",
         "employees_KC",
         "employees_UPP",
+        "lawyer_id",
+        "lawyer__username",
         "employees_REP",
         "paid_online",
     )
@@ -585,14 +603,9 @@ def filter_by_upp(request, filter_upp):
     """Фильтрация заявок по прикрепленному юристу"""
 
     records = Record.objects.filter(
-
-        employees_UPP=filter_upp,
-
         companys=request.user.companys,
-
         felial=request.user.felial
-
-    )
+    ).filter(_lawyer_username_filter(filter_upp))
 
     return render(request, "all_leads.html", {"records": records})
 
@@ -708,7 +721,9 @@ class SearchView(ListView):
             query_filter |= Q(id=int(query))
 
         records = _visible_records_for_user(_base_records_for_user(self.request.user), self.request.user)
-        return _with_booking_come(records.filter(query_filter).distinct())
+        return _with_booking_come(
+            records.filter(query_filter).select_related("lawyer").distinct()
+        )
 
 
 
@@ -793,6 +808,7 @@ def bulk_in_work(request):
             companys_id=company_id,
 
             status=STATUS_OPERATOR,
+            is_active=True,
 
         ).first()
 
@@ -880,6 +896,7 @@ def bulk_in_work(request):
             companys_id=company_id,
 
             status__in=[STATUS_LAWYER_PRIMARY, STATUS_OP],
+            is_active=True,
 
         ).first()
 
@@ -893,7 +910,10 @@ def bulk_in_work(request):
 
 
 
-        updated_count = records_for_user.update(employees_UPP=lawyer.username)
+        updated_count = records_for_user.update(
+            lawyer=lawyer,
+            employees_UPP=lawyer.username,
+        )
 
         messages.success(request, f"Юрист прикреплен: {updated_count}")
 
@@ -945,6 +965,7 @@ def bulk_in_work(request):
             companys_id=company_id,
 
             status=STATUS_REPRESENTATIVE,
+            is_active=True,
 
         ).first()
 

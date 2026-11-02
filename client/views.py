@@ -29,14 +29,16 @@ def _initials(value, fallback="КЛ"):
 
 
 def _client_cabinet_records():
-    return Record.objects.prefetch_related("contracts__surcharges", "documents")
+    return Record.objects.select_related("lawyer").prefetch_related(
+        "contracts__surcharges", "documents"
+    )
 
 
 def _render_client_cabinet(request, record):
     contracts = list(record.contracts.all())
     documents = list(record.documents.all())
-    lawyer = None
-    if record.employees_UPP and record.employees_UPP != "Не прикреплён":
+    lawyer = record.lawyer
+    if lawyer is None and record.employees_UPP and record.employees_UPP != "Не прикреплён":
         lawyer = User.objects.filter(
             companys_id=record.companys_id,
             username=record.employees_UPP,

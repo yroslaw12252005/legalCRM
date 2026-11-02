@@ -33,6 +33,7 @@ class AddEventForm(forms.ModelForm):
         self.fields["employees"].queryset = User.objects.filter(
             companys_id=self.user.companys_id,
             status__in=list(_status_variants("Юрист пирвичник")),
+            is_active=True,
         )
         clients_queryset = Record.objects.filter(
             companys_id=self.user.companys_id,
@@ -63,6 +64,7 @@ class AddRepresentativeEventForm(forms.ModelForm):
         self.fields["representative"].queryset = User.objects.filter(
             companys_id=self.user.companys_id,
             status__in=list(_status_variants("Представитель")),
+            is_active=True,
         ).order_by("username")
 
         clients_queryset = Record.objects.filter(
@@ -110,6 +112,7 @@ class AddCallEventForm(forms.ModelForm):
         lawyers_qs = User.objects.filter(
             companys_id=self.user.companys_id,
             status__in=list(_status_variants("Юрист пирвичник")),
+            is_active=True,
         ).order_by("username")
         if self.user.felial_id:
             lawyers_qs = lawyers_qs.filter(felial_id=self.user.felial_id)

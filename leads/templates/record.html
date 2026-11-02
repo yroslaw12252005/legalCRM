@@ -445,7 +445,7 @@
 
             <div class="stat-item">
                 <div class="stat-label">ЮПП</div>
-                <div >{{ record.employees_UPP}}</div>
+                <div>{{ record.lawyer_display_name }}</div>
             </div>
             <div class="stat-item">
                 <div class="stat-label">Представитель</div>
@@ -632,7 +632,7 @@
             {% if user.status == "Директор ЮПП" or user.status == "Администратор"%}
             <div class="stat-item">
                 <div class="stat-label">Прикрепленные юристы</div>
-                <div class="stat-value" style="color: #94a3b8;">{{ record.employees_UPP }}</div>
+                <div class="stat-value" style="color: #94a3b8;">{{ record.lawyer_display_name }}</div>
                 <form method="post"  style="display: flex;     flex-direction: column;">
                                   {% csrf_token %}
                                   {{form_employees_UPP.as_p}}
@@ -781,7 +781,7 @@
 
    <div class="urist" >
       <p class="status_text">Прикрепленные юристы:
-{{ record.employees_UPP }}</p>
+{{ record.lawyer_display_name }}</p>
       <form method="post"  style="display: flex;">
                                   {% csrf_token %}
                                   {{form_employees_UPP.as_p}}

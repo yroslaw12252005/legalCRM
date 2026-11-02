@@ -17,7 +17,7 @@ def current_applications(request):
         request,
         "current_applications/current_applications.html",
         {
-            "records": records.order_by("-created_at"),
+            "records": records.select_related("lawyer").order_by("-created_at"),
             "selected_date": today,
         },
     )

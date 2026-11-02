@@ -1,6 +1,7 @@
 import uuid
 from pathlib import Path
 
+from django.conf import settings
 from django.db import models
 
 from company.models import Companys
@@ -23,6 +24,14 @@ class Record(models.Model):
     created_at = models.DateTimeField(auto_now_add=True)
     employees_KC = models.CharField(max_length=50, null=True, default="Не прикреплён")
     employees_UPP = models.CharField(max_length=50, null=True, default="Не прикреплён")
+    lawyer = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="assigned_leads_as_lawyer",
+        verbose_name="Прикреплённый юрист",
+    )
     employees_REP = models.CharField(max_length=50, null=True, default="Не прикреплён")
     where = models.CharField(max_length=50, null=True)
     cost = models.DecimalField(max_digits=10, decimal_places=0, null=True)
@@ -35,6 +44,21 @@ class Record(models.Model):
 
     def __str__(self):
         return f"{self.name}"
+
+    @property
+    def lawyer_display_name(self):
+        """Return the FK lawyer name, falling back to the legacy snapshot."""
+        if self.lawyer_id:
+            return self.lawyer.username
+        return self.employees_UPP or "Не прикреплён"
+
+    def is_assigned_to_lawyer(self, user):
+        """Support both migrated and not-yet-migrated lawyer assignments."""
+        if not user or not getattr(user, "pk", None):
+            return False
+        if self.lawyer_id:
+            return self.lawyer_id == user.pk
+        return self.employees_UPP == user.username
 
     class Meta:
         ordering = ["-created_at"]

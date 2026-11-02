@@ -570,7 +570,10 @@ async def record(request, pk):
 
     can_edit_status_flag = can_edit_status(current_user)
     can_edit_topic = status_matches(current_user.status, "Директор КЦ", "Оператор")
-    is_assigned_lawyer = status_matches(current_user.status, "Юрист пирвичник") and record.employees_UPP == current_user.username
+    is_assigned_lawyer = (
+        status_matches(current_user.status, "Юрист пирвичник")
+        and record.is_assigned_to_lawyer(current_user)
+    )
     can_manage_contracts = status_matches(current_user.status, "Менеджер", "Администратор", "Директор ЮПП")
     can_view_contracts = can_manage_contracts or is_assigned_lawyer
     can_add_surcharges = can_manage_contracts or is_assigned_lawyer
@@ -1389,8 +1392,13 @@ def get_time(request):
                 )
                 if is_lawyer:
                     base_surcharges = base_surcharges.filter(
-                        contract__record__employees_UPP=request.user.username,
                         contract__record__felial=request.user.felial,
+                    ).filter(
+                        Q(contract__record__lawyer=request.user)
+                        | Q(
+                            contract__record__lawyer__isnull=True,
+                            contract__record__employees_UPP=request.user.username,
+                        )
                     )
                 for surcharge in base_surcharges:
                     current_day = surcharge.dat.date() if surcharge.dat else None

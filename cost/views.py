@@ -51,7 +51,10 @@ def _next_month(value):
 def _employee_contracts(employee):
     contracts = Contract.objects.filter(record__companys=employee.companys)
     if status_matches(employee.status, "Юрист пирвичник"):
-        return contracts.filter(record__employees_UPP=employee.username)
+        return contracts.filter(
+            Q(record__lawyer=employee)
+            | Q(record__lawyer__isnull=True, record__employees_UPP=employee.username)
+        )
     if status_matches(employee.status, "Оператор"):
         return contracts.filter(record__employees_KC=employee.username)
     return contracts.none()
@@ -101,7 +104,7 @@ def cost(request, pk):
     if not status_matches(request.user.status, "Юрист пирвичник", "Менеджер", "Администратор", "Директор ЮПП"):
         messages.warning(request, "Нет прав для внесения доплаты")
         return redirect("record", pk=record.id)
-    if status_matches(request.user.status, "Юрист пирвичник") and record.employees_UPP != request.user.username:
+    if status_matches(request.user.status, "Юрист пирвичник") and not record.is_assigned_to_lawyer(request.user):
         messages.warning(request, "Нет прав для внесения доплаты")
         return redirect("record", pk=record.id)
     get_surcharge_form = Surcharge_form(request.POST or None)

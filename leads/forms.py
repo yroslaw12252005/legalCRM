@@ -23,7 +23,10 @@ def _status_variants(value):
 
 
 def _tenant_user_queryset(user, status, company_id=None):
-    queryset = User.objects.filter(status__in=list(_status_variants(status)))
+    queryset = User.objects.filter(
+        status__in=list(_status_variants(status)),
+        is_active=True,
+    )
     tenant_id = company_id or getattr(user, "companys_id", None)
     if tenant_id:
         queryset = queryset.filter(companys_id=tenant_id)
@@ -153,6 +156,15 @@ class Employees_UPPForm(forms.ModelForm):
     class Meta:
         model = Record
         fields = ["employees_UPP"]
+
+    def save(self, commit=True):
+        record = super().save(commit=False)
+        lawyer = self.cleaned_data.get("employees_UPP")
+        record.lawyer = lawyer
+        record.employees_UPP = lawyer.username if lawyer else "Не прикреплён"
+        if commit:
+            record.save()
+        return record
 
 
 class Employees_REPForm(forms.ModelForm):

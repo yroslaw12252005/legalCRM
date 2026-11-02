@@ -193,7 +193,7 @@
 
           {% if surcharges %}
             {% for surcharge in surcharges %}
-              {% if surcharge.contract.record.employees_UPP == user.username %}
+              {% if surcharge.contract.record.lawyer_display_name == user.username %}
                 <a href="{% url 'record' surcharge.contract.record.id %}" style="text-decoration:none;">
                   <div class="event event-surcharge{% if surcharge.is_paid %} event-surcharge-paid{% endif %}">
                     <div class="event-content">

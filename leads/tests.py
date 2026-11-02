@@ -1,6 +1,8 @@
 from io import BytesIO
 from zipfile import ZipFile
+from importlib import import_module
 
+from django.apps import apps
 from django.test import TestCase
 from django.urls import reverse
 
@@ -8,7 +10,7 @@ from accounts.models import User
 from call_recording.models import CallRecording
 from company.models import Companys
 from felial.models import Felial
-from leads.forms import Employees_KCForm
+from leads.forms import Employees_KCForm, Employees_UPPForm
 from leads.models import Record
 from leads.views import _build_excel_template_bytes
 from smart_calendar.models import Booking
@@ -70,6 +72,67 @@ class TenantIsolationTests(TestCase):
         form = Employees_KCForm(instance=self.record_1, user=self.director_1, company_id=self.record_1.companys_id)
         self.assertIn(self.operator_1, form.fields["employees_KC"].queryset)
         self.assertNotIn(self.operator_2, form.fields["employees_KC"].queryset)
+
+    def test_lawyer_form_writes_fk_and_legacy_snapshot(self):
+        lawyer = User.objects.create_user(
+            username="lawyer_1",
+            password="test-pass-123",
+            status="Юрист пирвичник",
+            companys=self.company_1,
+            felial=self.felial_1,
+        )
+        form = Employees_UPPForm(
+            data={"employees_UPP": str(lawyer.id)},
+            instance=self.record_1,
+            user=self.director_1,
+            company_id=self.company_1.id,
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
+        form.save()
+        self.record_1.refresh_from_db()
+
+        self.assertEqual(self.record_1.lawyer_id, lawyer.id)
+        self.assertEqual(self.record_1.employees_UPP, lawyer.username)
+
+    def test_inactive_lawyer_is_not_available_for_assignment(self):
+        lawyer = User.objects.create_user(
+            username="inactive_lawyer",
+            password="test-pass-123",
+            status="Юрист пирвичник",
+            companys=self.company_1,
+            felial=self.felial_1,
+            is_active=False,
+        )
+        form = Employees_UPPForm(
+            instance=self.record_1,
+            user=self.director_1,
+            company_id=self.company_1.id,
+        )
+
+        self.assertNotIn(lawyer, form.fields["employees_UPP"].queryset)
+
+    def test_data_migration_maps_only_same_company_lawyer(self):
+        lawyer = User.objects.create_user(
+            username="legacy_lawyer",
+            password="test-pass-123",
+            status="Юрист пирвичник",
+            companys=self.company_1,
+            felial=self.felial_1,
+        )
+        self.record_1.employees_UPP = lawyer.username
+        self.record_1.save(update_fields=["employees_UPP"])
+        self.record_2.employees_UPP = lawyer.username
+        self.record_2.save(update_fields=["employees_UPP"])
+
+        migration = import_module("leads.migrations.0039_record_lawyer")
+        migration.populate_record_lawyers(apps, None)
+
+        self.record_1.refresh_from_db()
+        self.record_2.refresh_from_db()
+        self.assertEqual(self.record_1.lawyer_id, lawyer.id)
+        self.assertIsNone(self.record_2.lawyer_id)
+        self.assertEqual(self.record_2.employees_UPP, lawyer.username)
 
     def test_record_page_denies_cross_company_access(self):
         self.client.force_login(self.director_1)

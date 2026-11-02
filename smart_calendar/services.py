@@ -20,6 +20,11 @@ def _status_variants(value):
 
 
 def get_record_primary_lawyer(record):
+    if record.lawyer_id:
+        lawyer = record.lawyer
+        if lawyer.companys_id == record.companys_id:
+            return lawyer
+
     username = (record.employees_UPP or "").strip()
     if not username:
         return None

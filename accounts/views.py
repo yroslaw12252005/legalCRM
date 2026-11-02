@@ -11,7 +11,11 @@ def employees(request):
     if request.user.status != "Администратор":
         messages.error(request, "Недостаточно прав")
         return redirect("all_leads")
-    get_employees = User.objects.filter(companys=request.user.companys, felial=request.user.felial)
+    get_employees = User.objects.filter(
+        companys=request.user.companys,
+        felial=request.user.felial,
+        is_active=True,
+    )
     return render(request, "employees.html", {"employees": get_employees})
 
 
@@ -22,8 +26,9 @@ def delete_employee(request, pk):
         return redirect("all_leads")
 
     del_employee = get_object_or_404(User, id=pk, companys=request.user.companys)
-    del_employee.delete()
-    messages.success(request, "Сотрудник удален")
+    del_employee.is_active = False
+    del_employee.save(update_fields=["is_active"])
+    messages.success(request, "Сотрудник деактивирован")
     return redirect("all_leads")
 
 

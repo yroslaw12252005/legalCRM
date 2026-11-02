@@ -25,7 +25,7 @@ def companys(request):
     for company in companys:
         id_companys = company.id
         #Число сотрудников
-        users = len(User.objects.filter(companys=company.id))
+        users = User.objects.filter(companys=company.id, is_active=True).count()
 
         # Число сделок
         leads = len(Record.objects.filter(companys=company.id))
@@ -100,7 +100,7 @@ class CompanyView(TemplateView):
 
         return {
             "id": company,
-            "users": User.objects.filter(companys=company).count(),
+            "users": User.objects.filter(companys=company, is_active=True).count(),
             "leads": records.count(),
             "try_leads": records.filter(status="Акт").count(),
             "in_work_leads": records.exclude(status="Акт").count(),
@@ -118,7 +118,7 @@ class CompanyView(TemplateView):
             records = Record.objects.filter(felial=felial)
 
             branch_stats[felial.title] = {
-                "users_fl": User.objects.filter(felial=felial).count(),
+                "users_fl": User.objects.filter(felial=felial, is_active=True).count(),
                 "leads_fl": records.count(),
                 "try_leads_fl": records.filter(status="Акт").count(),
                 "in_work_leads_fl": records.exclude(status="Акт").count(),
@@ -164,7 +164,7 @@ class CompanyView(TemplateView):
 
     def _generate_plot_urist(self, company):
         # Пример: количество сотрудников по статусу
-        users = User.objects.filter(companys=company)
+        users = User.objects.filter(companys=company, is_active=True)
         statuses = users.values_list('status', flat=True).distinct()
         counts = [users.filter(status=s).count() for s in statuses]
         plt.figure(figsize=(6, 4))

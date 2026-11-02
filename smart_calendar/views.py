@@ -2,6 +2,7 @@ from datetime import datetime, time, timedelta
 
 from django.contrib import messages
 from django.contrib.auth.decorators import login_required
+from django.db.models import Q
 from django.shortcuts import get_object_or_404, redirect, render
 
 from accounts.models import User
@@ -102,9 +103,13 @@ def smart_calendar(request):
         "Директор ЮПП",
     )
     if can_view_all_surcharges:
-        get_all_employees = User.objects.filter(companys=request.user.companys)
+        get_all_employees = User.objects.filter(companys=request.user.companys, is_active=True)
     else:
-        get_all_employees = User.objects.filter(companys=request.user.companys, felial=request.user.felial)
+        get_all_employees = User.objects.filter(
+            companys=request.user.companys,
+            felial=request.user.felial,
+            is_active=True,
+        )
     lawyers = get_all_employees.filter(status__in=list(_status_variants(STATUS_LAWYER_PRIMARY_RU)))
 
     prev_date = selected_date - timedelta(days=1)
@@ -183,14 +188,19 @@ def smart_calendar(request):
         surcharges = Surcharge.objects.filter(
             dat__range=(start_dat, end_dat),
             contract__record__companys=request.user.companys,
-        ).select_related("contract__record").order_by("dat")
+        ).select_related("contract__record", "contract__record__lawyer").order_by("dat")
     elif _status_matches(request.user.status, "Юрист пирвичник"):
         surcharges = Surcharge.objects.filter(
             dat__range=(start_dat, end_dat),
             contract__record__companys=request.user.companys,
             contract__record__felial=request.user.felial,
-            contract__record__employees_UPP=request.user.username,
-        ).select_related("contract__record").order_by("dat")
+        ).filter(
+            Q(contract__record__lawyer=request.user)
+            | Q(
+                contract__record__lawyer__isnull=True,
+                contract__record__employees_UPP=request.user.username,
+            )
+        ).select_related("contract__record", "contract__record__lawyer").order_by("dat")
 
     context = {
         "bookings": bookings,
@@ -227,6 +237,7 @@ def representative_calendar(request):
     reps = User.objects.filter(
         companys=request.user.companys,
         status__in=list(_status_variants(STATUS_REPRESENTATIVE)),
+        is_active=True,
     ).order_by("username")
 
     bookings = RepresentativeBooking.objects.filter(
