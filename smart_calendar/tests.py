@@ -1,8 +1,12 @@
+from datetime import datetime
+
 from django.test import TestCase
 from django.urls import reverse
 
 from accounts.models import User
 from company.models import Companys
+from contract.models import Contract
+from cost.models import Surcharge
 from felial.models import Felial
 from leads.models import Record
 
@@ -123,6 +127,75 @@ class CallBookingTests(TestCase):
         booking = Booking.objects.get(client=self.record)
         self.assertIsNone(booking.employees_id)
         self.assertEqual(booking.registrar_id, self.operator.id)
+
+    def test_solo_admin_sees_all_events_without_lawyer_assignment(self):
+        solo_company = Companys.objects.create(
+            title="Solo company",
+            work_mode=Companys.MODE_SOLO,
+        )
+        solo_felial = Felial.objects.create(
+            title="Main solo",
+            cites="Moscow",
+            companys=solo_company,
+        )
+        solo_admin = User.objects.create_user(
+            username="solo_admin",
+            password="test-pass-123",
+            status="Администратор",
+            companys=solo_company,
+            felial=solo_felial,
+        )
+        solo_record = Record.objects.create(
+            name="Solo office client",
+            phone="+70000000006",
+            description="solo office booking",
+            status="Запись в офис",
+            companys=solo_company,
+            felial=solo_felial,
+        )
+
+        self.client.force_login(solo_admin)
+        response = self.client.post(
+            reverse("add_office_booking", args=[solo_record.id]),
+            data={"date": "2026-03-16", "time": "10:45"},
+        )
+
+        self.assertEqual(response.status_code, 302)
+        booking = Booking.objects.get(client=solo_record)
+        self.assertIsNone(booking.employees_id)
+
+        CallBooking.objects.create(
+            client=solo_record,
+            date="2026-03-16",
+            time="11:40",
+            companys=solo_company,
+            felial=solo_felial,
+            employees=None,
+            registrar=solo_admin,
+        )
+        contract = Contract.objects.create(
+            number="101",
+            amount="100000.00",
+            initial_payment="10000.00",
+            contract_date="2026-03-01",
+            record=solo_record,
+        )
+        Surcharge.objects.create(
+            cost="5000.00",
+            dat=datetime(2026, 3, 16, 12, 40),
+            contract=contract,
+            responsible=None,
+        )
+
+        response = self.client.get(reverse("calendar"), {"date": "2026-03-16"})
+        self.assertEqual(response.status_code, 200)
+        self.assertTrue(response.context["use_office_booking_list"])
+        self.assertTrue(response.context["is_solo_calendar"])
+        self.assertContains(response, "Solo office client")
+        self.assertContains(response, "10:45")
+        self.assertContains(response, "11:40")
+        self.assertContains(response, "Доплата по договору №101")
+        self.assertContains(response, "5000,00")
 
     def test_director_kc_can_create_office_booking_without_lawyer(self):
         self.client.force_login(self.director_kc)

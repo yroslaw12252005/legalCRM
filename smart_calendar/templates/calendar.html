@@ -108,6 +108,9 @@
 
   {% if use_office_booking_list %}
     <div class="office-list">
+      {% if is_solo_calendar %}
+        <h5 style="margin:0 0 10px; color:#0f172a;">Записи в офис</h5>
+      {% endif %}
       {% for booking in office_day_bookings %}
         <a href="{% url 'record' booking.client.id %}" style="text-decoration:none;">
           <div class="office-list-card">
@@ -125,6 +128,45 @@
         </div>
       {% endfor %}
     </div>
+    {% if is_solo_calendar %}
+      <div class="office-list">
+        <h5 style="margin:0 0 10px; color:#0f172a;">Созвоны</h5>
+        {% for call_booking in call_bookings %}
+          <a href="{% url 'record' call_booking.client.id %}" style="text-decoration:none;">
+            <div class="office-list-card" style="border-left:4px solid #ff9800;">
+              <div class="office-list-top">
+                <div class="office-list-name">{{ call_booking.client.name|default:"Без имени" }}</div>
+                <div class="office-list-time">{{ call_booking.time|default:"Время не указано" }}</div>
+              </div>
+              <p class="office-list-description">Созвон</p>
+            </div>
+          </a>
+        {% empty %}
+          <div class="office-list-card">
+            <div class="office-list-name">На этот день созвонов нет</div>
+          </div>
+        {% endfor %}
+      </div>
+
+      <div class="office-list">
+        <h5 style="margin:0 0 10px; color:#0f172a;">Доплаты</h5>
+        {% for surcharge in surcharges %}
+          <a href="{% url 'record' surcharge.contract.record.id %}" style="text-decoration:none;">
+            <div class="office-list-card" style="border-left:4px solid #e53935;">
+              <div class="office-list-top">
+                <div class="office-list-name">{{ surcharge.contract.record.name|default:"Без имени" }}</div>
+                <div class="office-list-time">{{ surcharge.dat|date:"H:i" }}</div>
+              </div>
+              <p class="office-list-description">Доплата по договору №{{ surcharge.contract.number }}: {{ surcharge.cost }}</p>
+            </div>
+          </a>
+        {% empty %}
+          <div class="office-list-card">
+            <div class="office-list-name">На этот день доплат нет</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
   {% else %}
   {% if unassigned_bookings %}
     <div style="margin-bottom:20px; padding:14px 16px; background:#eff6ff; border:1px solid #bfdbfe; border-radius:8px;">

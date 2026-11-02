@@ -140,7 +140,11 @@ def smart_calendar(request):
 
     unassigned_bookings = Booking.objects.none()
     office_day_bookings = Booking.objects.none()
-    use_office_booking_list = _status_matches(request.user.status, "Директор КЦ", "Оператор")
+    use_office_booking_list = _is_solo_admin(request.user) or _status_matches(
+        request.user.status,
+        "Директор КЦ",
+        "Оператор",
+    )
 
     if can_view_all_office_bookings:
         base_office_bookings = Booking.objects.filter(
@@ -225,6 +229,7 @@ def smart_calendar(request):
         "unassigned_bookings": unassigned_bookings,
         "office_day_bookings": office_day_bookings,
         "use_office_booking_list": use_office_booking_list,
+        "is_solo_calendar": _is_solo_admin(request.user),
     }
     return render(request, "calendar.html", context)
 
@@ -383,7 +388,9 @@ def add_office_booking(request, pk):
         event.companys = request.user.companys
         event.felial = record.felial or request.user.felial
         event.registrar = request.user
-        event.employees = get_record_primary_lawyer(record)
+        # В одиночной компании запись в офис принадлежит самой компании и не
+        # требует отдельного назначения пользователя в качестве юриста.
+        event.employees = None if _is_solo_admin(request.user) else get_record_primary_lawyer(record)
 
         if office_booking_has_lawyer_conflict(event, event.employees):
             messages.warning(request, "У выбранного юриста уже есть событие на это время")
