@@ -6,8 +6,16 @@ from .forms import AddEmployeesForm, EmployeeUpdateForm
 from .models import User
 
 
+def _uses_solo_mode(user):
+    company = getattr(user, "companys", None)
+    return bool(company and company.is_solo)
+
+
 @login_required
 def employees(request):
+    if _uses_solo_mode(request.user):
+        messages.info(request, "В самостоятельном режиме используется одна учётная запись")
+        return redirect("current_applications")
     if request.user.status != "Администратор":
         messages.error(request, "Недостаточно прав")
         return redirect("all_leads")
@@ -21,6 +29,9 @@ def employees(request):
 
 @login_required
 def delete_employee(request, pk):
+    if _uses_solo_mode(request.user):
+        messages.warning(request, "Единственную учётную запись нельзя удалить")
+        return redirect("current_applications")
     if request.user.status != "Администратор":
         messages.error(request, "Недостаточно прав")
         return redirect("all_leads")
@@ -34,6 +45,9 @@ def delete_employee(request, pk):
 
 @login_required
 def register_employees(request):
+    if _uses_solo_mode(request.user):
+        messages.info(request, "Добавление сотрудников доступно после перехода в режим компании")
+        return redirect("current_applications")
     if request.user.status not in {"Администратор", "Директор КЦ", "Директор ЮПП"}:
         messages.error(request, "Недостаточно прав")
         return redirect("all_leads")

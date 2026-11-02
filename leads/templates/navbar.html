@@ -194,18 +194,20 @@ $(document).ready(function() {
                 <li>
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
                 </li>
-                <li>
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'reg' %}"><img src="{% static 'img/add_user.png' %}" alt=""> Добавить пользователя</a></span>
-                </li>
-                <li>
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'employees' %}"><img src="{% static 'img/employee.png' %}" width="28" alt=""> Пользователи</a></span>
-                </li>
-                <li>
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'add_felial' %}"><img src="{% static 'img/add_felial.png' %}" alt=""> Создать филиал</a></span>
-                </li>
-                <li>
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'felials' %}"><img src="{% static 'img/branch.png' %}" alt=""> Ваши филиалы</a></span>
-                </li>
+                {% if not user.companys.is_solo %}
+                    <li>
+                        <span><a style="color:#fff; text-decoration:none;" href="{% url 'reg' %}"><img src="{% static 'img/add_user.png' %}" alt=""> Добавить пользователя</a></span>
+                    </li>
+                    <li>
+                        <span><a style="color:#fff; text-decoration:none;" href="{% url 'employees' %}"><img src="{% static 'img/employee.png' %}" width="28" alt=""> Пользователи</a></span>
+                    </li>
+                    <li>
+                        <span><a style="color:#fff; text-decoration:none;" href="{% url 'add_felial' %}"><img src="{% static 'img/add_felial.png' %}" alt=""> Создать филиал</a></span>
+                    </li>
+                    <li>
+                        <span><a style="color:#fff; text-decoration:none;" href="{% url 'felials' %}"><img src="{% static 'img/branch.png' %}" alt=""> Ваши филиалы</a></span>
+                    </li>
+                {% endif %}
                 <li>
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'lead_exchange' %}">Биржа заявок</a></span>
                 </li>

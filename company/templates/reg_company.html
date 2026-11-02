@@ -4,7 +4,23 @@
 <link rel="stylesheet" href="{% static 'css/reg_company.css' %}" />
 <form action="{% url 'reg_company' %}" class="form_add_lead" method="post">
         {% csrf_token %}
-        {{form.as_p}}
-        <button type="submit" class="btn btn-success">Создать заявку</button>
+        {{ form.non_field_errors }}
+        <p>{{ form.title.label_tag }} {{ form.title }} {{ form.title.errors }}</p>
+        <fieldset>
+                <legend>{{ form.work_mode.label }}</legend>
+                {% for option in form.work_mode %}
+                <label style="display:block; margin:12px 0; padding:14px; border:1px solid #ddd; border-radius:10px;">
+                        {{ option.tag }}
+                        <strong>{{ option.choice_label }}</strong><br>
+                        {% if option.data.value == "solo" %}
+                        <small>Одна администраторская учётка, автоматическое назначение лидов и календаря.</small>
+                        {% else %}
+                        <small>Филиалы, отделы, сотрудники и ручное распределение лидов.</small>
+                        {% endif %}
+                </label>
+                {% endfor %}
+                {{ form.work_mode.errors }}
+        </fieldset>
+        <button type="submit" class="btn btn-success">Создать компанию</button>
 </form>
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js" integrity="sha384-qKXV1j0HvMUeCBQ+QVp7JcfGl760yU08IQ+GpUo5hlbpg51QRiuqHAJz8+BrxE/N" crossorigin="anonymous"></script>

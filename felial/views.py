@@ -10,6 +10,9 @@ from .forms import AddFelialForm
 
 @login_required
 def add_felial(request):
+    if request.user.companys and request.user.companys.is_solo:
+        messages.info(request, "Дополнительные филиалы доступны в режиме компании с отделами")
+        return redirect("current_applications")
     form = AddFelialForm(request.POST or None, request)
     if form.is_valid():
         add_felial = form.save(commit=False)

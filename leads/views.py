@@ -829,6 +829,7 @@ def import_records_from_excel(request):
             form.add_error("file", str(exc))
         else:
             default_felial = request.user.felial or Felial.objects.filter(companys=request.user.companys).order_by("id").first()
+            solo_lawyer = request.user if request.user.companys.is_solo else None
             records = [
                 Record(
                     name=lead["name"],
@@ -837,6 +838,10 @@ def import_records_from_excel(request):
                     where="Exel",
                     companys=request.user.companys,
                     felial=default_felial,
+                    lawyer=solo_lawyer,
+                    employees_UPP=(
+                        solo_lawyer.username if solo_lawyer else "Не прикреплён"
+                    ),
                 )
                 for lead in leads
             ]

@@ -57,8 +57,21 @@ def _is_representative_role(user):
     return user.status in _status_variants(STATUS_DIRECTOR_REP) or user.status in _status_variants(STATUS_REPRESENTATIVE)
 
 
+def _is_solo_admin(user):
+    company = getattr(user, "companys", None)
+    return bool(
+        company
+        and company.is_solo
+        and _status_matches(user.status, STATUS_ADMIN)
+    )
+
+
 def _can_manage_call_booking(user):
-    return _status_matches(user.status, STATUS_LAWYER_PRIMARY_RU, STATUS_DIRECTOR_UPP_RU)
+    return _is_solo_admin(user) or _status_matches(
+        user.status,
+        STATUS_LAWYER_PRIMARY_RU,
+        STATUS_DIRECTOR_UPP_RU,
+    )
 
 
 def _can_choose_call_lawyer(user):

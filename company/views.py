@@ -186,24 +186,35 @@ def reg_company(request):
     if request.method == "POST":
 
         if form.is_valid():
-            add_appointment = form.save()
-
-            return redirect("reg_admin_user", id_company=Companys.objects.get(title=form.cleaned_data["title"]).id)
+            company = form.save()
+            return redirect("reg_admin_user", id_company=company.id)
 
     return render(request, "reg_company.html", {"form": form})
 
 def reg_admin_user(request, id_company):
+    company = get_object_or_404(Companys, id=id_company)
+    if company.is_solo and User.objects.filter(companys=company).exists():
+        messages.warning(request, "Для самостоятельной работы уже создана учётная запись")
+        return redirect("all_leads")
+
     form = AddSuperEmployeesForm(request.POST or None)
     if request.method == "POST":
         form = AddSuperEmployeesForm(request.POST)
 
         if form.is_valid():
             add_user = form.save(commit=False)
-            add_user.companys = Companys.objects.get(id=id_company)
+            add_user.companys = company
             add_user.status = 'Администратор'
             add_user.percent = 0
             add_user.bet = 0
             add_user.type_zp = "Ставка"
+            if company.is_solo:
+                main_branch, _ = Felial.objects.get_or_create(
+                    companys=company,
+                    title="Основной",
+                    defaults={"cites": ""},
+                )
+                add_user.felial = main_branch
             add_user.save()
             email = form.cleaned_data["email"]
             password = form.cleaned_data["password1"]

@@ -42,6 +42,28 @@ class Record(models.Model):
     doc = models.URLField(max_length=200, null=True)
     paid_online = models.PositiveSmallIntegerField(default=0, verbose_name="Paid Online")
 
+    def _assign_solo_lawyer(self):
+        if self.lawyer_id or not self.companys_id:
+            return
+        company = self.companys
+        if not company.is_solo:
+            return
+
+        UserModel = self._meta.get_field("lawyer").remote_field.model
+        lawyer = UserModel.objects.filter(
+            companys_id=self.companys_id,
+            is_active=True,
+            status="Администратор",
+        ).order_by("id").first()
+        if lawyer:
+            self.lawyer = lawyer
+            self.employees_UPP = lawyer.username
+
+    def save(self, *args, **kwargs):
+        if self._state.adding:
+            self._assign_solo_lawyer()
+        return super().save(*args, **kwargs)
+
     def __str__(self):
         return f"{self.name}"
 
