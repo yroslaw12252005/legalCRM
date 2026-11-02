@@ -294,6 +294,7 @@ def should_start_auto_monitor(argv=None):
     argv = argv or sys.argv
     management_commands_to_skip = {
         "audit_lawyer_assignments",
+        "audit_login_emails",
         "check",
         "collectstatic",
         "createsuperuser",

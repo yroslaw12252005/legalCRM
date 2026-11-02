@@ -7,7 +7,18 @@ from felial.models import Felial
 User = get_user_model()
 
 
-class AddEmployeesForm(UserCreationForm):
+class UniqueEmailMixin:
+    def clean_email(self):
+        email = (self.cleaned_data.get("email") or "").strip().lower()
+        users = User.objects.filter(email__iexact=email)
+        if getattr(self.instance, "pk", None):
+            users = users.exclude(pk=self.instance.pk)
+        if users.exists():
+            raise forms.ValidationError("Пользователь с таким email уже существует")
+        return email
+
+
+class AddEmployeesForm(UniqueEmailMixin, UserCreationForm):
     email = forms.EmailField(
         label="",
         widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Email"}),
@@ -86,7 +97,7 @@ class AddEmployeesForm(UserCreationForm):
         }
 
 
-class AddSuperEmployeesForm(UserCreationForm):
+class AddSuperEmployeesForm(UniqueEmailMixin, UserCreationForm):
     email = forms.EmailField(
         label="",
         widget=forms.TextInput(attrs={"class": "form-company", "placeholder": "Email"}),
@@ -112,7 +123,7 @@ class AddSuperEmployeesForm(UserCreationForm):
         fields = ("username", "email", "password1", "password2")
 
 
-class EmployeeUpdateForm(forms.ModelForm):
+class EmployeeUpdateForm(UniqueEmailMixin, forms.ModelForm):
     password = forms.CharField(
         label="Новый пароль",
         required=False,

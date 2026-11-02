@@ -2,9 +2,23 @@ from django.db import models
 from django.contrib.auth.models import AbstractUser
 from company.models import Companys
 from felial.models import Felial
+from .validators import username_with_spaces_validator
 
 
 class User(AbstractUser):
+    username = models.CharField(
+        "имя пользователя",
+        max_length=150,
+        unique=True,
+        help_text=(
+            "Не более 150 символов. Разрешены буквы, цифры, пробелы "
+            "и знаки @/./+/-/_."
+        ),
+        validators=[username_with_spaces_validator],
+        error_messages={
+            "unique": "Пользователь с таким именем уже существует.",
+        },
+    )
     status = models.CharField(max_length=50)
     companys = models.ForeignKey(
         Companys,

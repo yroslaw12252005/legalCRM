@@ -297,11 +297,11 @@ def all_leads(request):
 
         if request.method == "POST":
 
-            username = request.POST.get("username", "")
+            email = request.POST.get("email", "").strip()
 
             password = request.POST.get("password", "")
 
-            user = authenticate(request, username=username, password=password)
+            user = authenticate(request, email=email, password=password)
 
             if user is not None:
 
@@ -309,7 +309,7 @@ def all_leads(request):
 
                 return redirect("current_applications")
 
-            messages.warning(request, "Неправильный логин или пароль")
+            messages.warning(request, "Неправильный email или пароль")
 
             return redirect("all_leads")
 

@@ -205,10 +205,10 @@ def reg_admin_user(request, id_company):
             add_user.bet = 0
             add_user.type_zp = "Ставка"
             add_user.save()
-            username = form.cleaned_data["username"]
+            email = form.cleaned_data["email"]
             password = form.cleaned_data["password1"]
 
-            user = authenticate(username=username, password=password)
+            user = authenticate(email=email, password=password)
             login(request, user)
             messages.success(request, "Пользователь зарегестрирован")
             return redirect("current_applications")

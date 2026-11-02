@@ -169,6 +169,10 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 
 AUTH_USER_MODEL = "accounts.User"
 
+AUTHENTICATION_BACKENDS = [
+    "accounts.backends.EmailBackend",
+]
+
 DATETIME_FORMAT="%d.%m.%Y %H:%M"
 USE_L10N = False
 USE_TZ = False
