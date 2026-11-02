@@ -146,7 +146,6 @@ def smart_calendar(request):
         base_office_bookings = Booking.objects.filter(
             date=selected_date,
             companys=request.user.companys,
-            felial=request.user.felial,
         ).order_by("time")
         if use_office_booking_list:
             office_day_bookings = base_office_bookings.select_related("client")
@@ -156,7 +155,6 @@ def smart_calendar(request):
             call_bookings = CallBooking.objects.filter(
                 date=selected_date,
                 companys=request.user.companys,
-                felial=request.user.felial,
             ).order_by("time")
         else:
             call_bookings = CallBooking.objects.none()

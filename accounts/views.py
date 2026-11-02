@@ -1,8 +1,9 @@
 ﻿from django.shortcuts import redirect, render, get_object_or_404
 from django.contrib import messages
+from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
 
-from .forms import AddEmployeesForm, EmployeeUpdateForm
+from .forms import AddEmployeesForm, EmployeeUpdateForm, SoloProfileUpdateForm
 from .models import User
 
 
@@ -85,3 +86,21 @@ def update_employees(request, pk):
         form = EmployeeUpdateForm(instance=employee)
 
     return render(request, "register_employees.html", {"form": form})
+
+
+@login_required
+def update_profile(request):
+    if not _uses_solo_mode(request.user):
+        messages.warning(request, "Личный профиль доступен для самостоятельного режима")
+        return redirect("current_applications")
+
+    form = SoloProfileUpdateForm(request.POST or None, instance=request.user)
+    if request.method == "POST" and form.is_valid():
+        password_changed = bool(form.cleaned_data.get("password"))
+        user = form.save()
+        if password_changed:
+            update_session_auth_hash(request, user)
+        messages.success(request, "Профиль обновлён")
+        return redirect("update_profile")
+
+    return render(request, "profile_edit.html", {"form": form})

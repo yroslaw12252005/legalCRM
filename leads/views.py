@@ -1328,7 +1328,13 @@ def get_time(request):
                 bookings = base_bookings
             day_link_name = "representative_calendar"
         else:
-            filter_by_felial = not _status_matches(employee_status, "Директор КЦ", "Оператор")
+            has_company_wide_scope = _status_matches(
+                employee_status,
+                "Менеджер",
+                "Администратор",
+                "Директор ЮПП",
+                "Директор КЦ",
+            )
             base_bookings = Booking.objects.filter(
                 date__gte=start_date,
                 date__lt=end_date,
@@ -1340,7 +1346,7 @@ def get_time(request):
                 date__lt=end_date,
                 companys=request.user.companys,
             )
-            if filter_by_felial:
+            if not has_company_wide_scope:
                 base_bookings = base_bookings.filter(felial=request.user.felial)
                 base_call_bookings = base_call_bookings.filter(felial=request.user.felial)
 

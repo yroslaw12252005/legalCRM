@@ -1,6 +1,7 @@
 ﻿from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
+from django.contrib.auth.password_validation import validate_password
 
 from felial.models import Felial
 
@@ -150,6 +151,49 @@ class EmployeeUpdateForm(UniqueEmailMixin, forms.ModelForm):
         if password:
             user.set_password(password)
 
+        if commit:
+            user.save()
+        return user
+
+
+class SoloProfileUpdateForm(UniqueEmailMixin, forms.ModelForm):
+    password = forms.CharField(
+        label="Новый пароль",
+        required=False,
+        widget=forms.PasswordInput(
+            attrs={
+                "class": "form-control",
+                "autocomplete": "new-password",
+                "placeholder": "Оставьте пустым, чтобы не менять",
+            }
+        ),
+    )
+
+    class Meta:
+        model = User
+        fields = ("username", "email", "password")
+        widgets = {
+            "username": forms.TextInput(attrs={"class": "form-control"}),
+            "email": forms.EmailInput(
+                attrs={"class": "form-control", "autocomplete": "email"}
+            ),
+        }
+        labels = {
+            "username": "Имя",
+            "email": "Email для входа",
+        }
+
+    def clean_password(self):
+        password = self.cleaned_data.get("password")
+        if password:
+            validate_password(password, self.instance)
+        return password
+
+    def save(self, commit=True):
+        user = super().save(commit=False)
+        password = self.cleaned_data.get("password")
+        if password:
+            user.set_password(password)
         if commit:
             user.save()
         return user

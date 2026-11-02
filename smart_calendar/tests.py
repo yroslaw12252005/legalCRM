@@ -49,6 +49,13 @@ class CallBookingTests(TestCase):
             companys=self.company,
             felial=self.felial,
         )
+        self.admin = User.objects.create_user(
+            username="admin_1",
+            password="test-pass-123",
+            status="Администратор",
+            companys=self.company,
+            felial=None,
+        )
         self.director_kc = User.objects.create_user(
             username="director_kc",
             password="test-pass-123",
@@ -144,6 +151,8 @@ class CallBookingTests(TestCase):
         self.assertIn(booking, list(response.context["unassigned_bookings"]))
 
     def test_unassigned_office_booking_is_counted_in_mini_calendar(self):
+        self.record.status = "Запись в офис"
+        self.record.save(update_fields=["status"])
         Booking.objects.create(
             client=self.record,
             date="2026-03-16",
@@ -156,6 +165,109 @@ class CallBookingTests(TestCase):
         response = self.client.post(reverse("get_time"), {"date": "2026-03-16"})
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "count-bookings")
+        self.assertContains(response, 'title="Записано">1</span>')
+
+    def test_admin_without_branch_sees_company_bookings_from_all_branches(self):
+        second_felial = Felial.objects.create(
+            title="Second",
+            cites="Kazan",
+            companys=self.company,
+        )
+        second_record = Record.objects.create(
+            name="Second branch lead",
+            phone="+70000000003",
+            description="second branch",
+            companys=self.company,
+            felial=second_felial,
+        )
+        first_booking = Booking.objects.create(
+            client=self.record,
+            date="2026-03-16",
+            time="10:30",
+            companys=self.company,
+            felial=self.felial,
+            registrar=self.operator,
+        )
+        second_booking = Booking.objects.create(
+            client=second_record,
+            date="2026-03-16",
+            time="11:30",
+            companys=self.company,
+            felial=second_felial,
+            registrar=self.manager,
+        )
+
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("calendar"), {"date": "2026-03-16"})
+
+        self.assertEqual(response.status_code, 200)
+        visible = list(response.context["unassigned_bookings"])
+        self.assertIn(first_booking, visible)
+        self.assertIn(second_booking, visible)
+
+    def test_admin_calendar_does_not_show_another_company_booking(self):
+        other_company = Companys.objects.create(title="Other company")
+        other_felial = Felial.objects.create(
+            title="Other branch",
+            cites="Perm",
+            companys=other_company,
+        )
+        other_user = User.objects.create_user(
+            username="other_manager",
+            password="test-pass-123",
+            status="Менеджер",
+            companys=other_company,
+            felial=other_felial,
+        )
+        other_record = Record.objects.create(
+            name="Other company lead",
+            phone="+70000000004",
+            description="other company",
+            companys=other_company,
+            felial=other_felial,
+        )
+        other_booking = Booking.objects.create(
+            client=other_record,
+            date="2026-03-16",
+            time="12:30",
+            companys=other_company,
+            felial=other_felial,
+            registrar=other_user,
+        )
+
+        self.client.force_login(self.admin)
+        response = self.client.get(reverse("calendar"), {"date": "2026-03-16"})
+
+        self.assertEqual(response.status_code, 200)
+        self.assertNotIn(other_booking, list(response.context["unassigned_bookings"]))
+
+    def test_admin_mini_calendar_counts_all_company_branches_only(self):
+        second_felial = Felial.objects.create(
+            title="Second mini",
+            cites="Kazan",
+            companys=self.company,
+        )
+        second_record = Record.objects.create(
+            name="Mini calendar lead",
+            phone="+70000000005",
+            description="office booking status",
+            status="Запись в офис",
+            companys=self.company,
+            felial=second_felial,
+        )
+        Booking.objects.create(
+            client=second_record,
+            date="2026-03-16",
+            time="13:30",
+            companys=self.company,
+            felial=second_felial,
+            registrar=self.manager,
+        )
+
+        self.client.force_login(self.admin)
+        response = self.client.post(reverse("get_time"), {"date": "2026-03-16"})
+
+        self.assertEqual(response.status_code, 200)
         self.assertContains(response, 'title="Записано">1</span>')
 
     def test_assign_lawyer_attaches_existing_office_booking_to_lawyer(self):

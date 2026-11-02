@@ -207,6 +207,10 @@ $(document).ready(function() {
                     <li>
                         <span><a style="color:#fff; text-decoration:none;" href="{% url 'felials' %}"><img src="{% static 'img/branch.png' %}" alt=""> Ваши филиалы</a></span>
                     </li>
+                {% else %}
+                    <li>
+                        <span><a style="color:#fff; text-decoration:none;" href="{% url 'update_profile' %}">Мой профиль</a></span>
+                    </li>
                 {% endif %}
                 <li>
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'lead_exchange' %}">Биржа заявок</a></span>

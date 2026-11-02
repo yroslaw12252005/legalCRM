@@ -77,5 +77,28 @@ class CompanyWorkModeTests(TestCase):
 
         dashboard_response = self.client.get(reverse("current_applications"))
         self.assertEqual(dashboard_response.status_code, 200)
+        self.assertContains(dashboard_response, "Мой профиль")
         self.assertNotContains(dashboard_response, "Добавить пользователя")
         self.assertNotContains(dashboard_response, "Создать филиал")
+
+    def test_solo_admin_can_update_own_profile_and_password(self):
+        company, admin = self._register_company_and_admin(Companys.MODE_SOLO, "profile")
+        branch_id = admin.felial_id
+
+        response = self.client.post(
+            reverse("update_profile"),
+            {
+                "username": "Новое Имя",
+                "email": "new-profile@example.com",
+                "password": "new-safe-pass-456",
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        admin.refresh_from_db()
+        self.assertEqual(admin.username, "Новое Имя")
+        self.assertEqual(admin.email, "new-profile@example.com")
+        self.assertEqual(admin.felial_id, branch_id)
+        self.assertEqual(admin.status, "Администратор")
+        self.assertTrue(admin.check_password("new-safe-pass-456"))
+        self.assertEqual(int(self.client.session["_auth_user_id"]), admin.id)
