@@ -59,6 +59,7 @@ INSTALLED_APPS = [
     "current_applications",
     "wallet",
     "marketplace",
+    "tilda_integration",
 ]
 
 MIDDLEWARE = [
@@ -172,6 +173,10 @@ AUTH_USER_MODEL = "accounts.User"
 AUTHENTICATION_BACKENDS = [
     "accounts.backends.EmailBackend",
 ]
+
+TILDA_WEBHOOK_MAX_PAYLOAD_BYTES = int(os.getenv("TILDA_WEBHOOK_MAX_PAYLOAD_BYTES", str(256 * 1024)))
+TILDA_WEBHOOK_RATE_LIMIT = int(os.getenv("TILDA_WEBHOOK_RATE_LIMIT", "120"))
+TILDA_LEGACY_WEBHOOK_ENABLED = os.getenv("TILDA_LEGACY_WEBHOOK_ENABLED", "True").lower() == "true"
 
 DATETIME_FORMAT="%d.%m.%Y %H:%M"
 USE_L10N = False

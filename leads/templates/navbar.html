@@ -215,6 +215,9 @@ $(document).ready(function() {
                 <li>
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'lead_exchange' %}">Биржа заявок</a></span>
                 </li>
+                <li>
+                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'tilda_integration_list' %}">Интеграция с Tilda</a></span>
+                </li>
             {% endif %}
 
             {% if user.username == "Yrik" or user.username == "Сергей" %}

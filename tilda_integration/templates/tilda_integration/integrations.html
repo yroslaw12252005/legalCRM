@@ -1,0 +1,107 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<style>
+  .tilda-page { max-width: 1100px; margin: 0 auto; padding: 20px; }
+  .tilda-card { background:#fff; border:1px solid #e2e8f0; border-radius:14px; padding:18px; margin-bottom:16px; box-shadow:0 2px 8px rgba(15,23,42,.05); }
+  .tilda-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(260px,1fr)); gap:14px; }
+  .tilda-label { color:#64748b; font-size:13px; margin-bottom:4px; }
+  .tilda-value { color:#0f172a; overflow-wrap:anywhere; }
+  .tilda-code { display:block; padding:10px; background:#f8fafc; border:1px solid #cbd5e1; border-radius:8px; overflow-wrap:anywhere; user-select:all; }
+  .tilda-actions { display:flex; flex-wrap:wrap; gap:8px; margin-top:14px; }
+  .tilda-btn { border:0; border-radius:8px; padding:9px 13px; text-decoration:none; cursor:pointer; background:#2563eb; color:#fff; }
+  .tilda-btn-secondary { background:#475569; }
+  .tilda-btn-warning { background:#b45309; }
+  .tilda-secret { border:2px solid #16a34a; background:#f0fdf4; }
+  .tilda-form p { display:flex; flex-direction:column; gap:5px; }
+  .tilda-form input, .tilda-form select, .tilda-form textarea { padding:9px; border:1px solid #cbd5e1; border-radius:8px; }
+  .tilda-help { color:#475569; font-size:14px; }
+</style>
+
+<div class="tilda-page">
+  <h2>Интеграция с Tilda</h2>
+  <p class="tilda-help">Для каждой формы или филиала создайте отдельное подключение. Компания и филиал определяются CRM, передавать их ID из Tilda не требуется.</p>
+
+  {% if new_secret %}
+    <div class="tilda-card tilda-secret">
+      <h3>Сохраните новый API-ключ</h3>
+      <p>Ключ показывается только сейчас. В Tilda выберите передачу ключа в заголовке.</p>
+      <div class="tilda-label">API Name</div>
+      <code class="tilda-code">X-Tilda-Token</code>
+      <div class="tilda-label" style="margin-top:10px;">API Key для «{{ secret_integration.title }}»</div>
+      <code class="tilda-code">{{ new_secret }}</code>
+    </div>
+  {% endif %}
+
+  <div class="tilda-card">
+    <h3>Новое подключение</h3>
+    <form method="post" action="{% url 'tilda_integration_create' %}" class="tilda-form">
+      {% csrf_token %}
+      {{ form.as_p }}
+      <button class="tilda-btn" type="submit">Создать подключение</button>
+    </form>
+  </div>
+
+  <h3>Подключения</h3>
+  {% for row in rows %}
+    <div class="tilda-card">
+      <div class="tilda-grid">
+        <div>
+          <div class="tilda-label">Название</div>
+          <div class="tilda-value"><strong>{{ row.integration.title }}</strong></div>
+        </div>
+        <div>
+          <div class="tilda-label">Филиал</div>
+          <div class="tilda-value">{{ row.integration.branch|default:"Без филиала" }}</div>
+        </div>
+        <div>
+          <div class="tilda-label">Состояние</div>
+          <div class="tilda-value">{% if row.integration.is_active %}Активно{% else %}Отключено{% endif %}</div>
+        </div>
+        <div>
+          <div class="tilda-label">Последний запрос</div>
+          <div class="tilda-value">{{ row.integration.last_request_at|date:"d.m.Y H:i"|default:"Ещё не было" }}</div>
+        </div>
+      </div>
+
+      <div class="tilda-label" style="margin-top:14px;">Webhook URL</div>
+      <code class="tilda-code">{{ row.webhook_url }}</code>
+      <div class="tilda-label" style="margin-top:10px;">API Method / API Name</div>
+      <code class="tilda-code">Header / X-Tilda-Token</code>
+
+      <div class="tilda-grid" style="margin-top:14px;">
+        <div><div class="tilda-label">Принято</div><strong>{{ row.integration.total_received }}</strong></div>
+        <div><div class="tilda-label">Создано лидов</div><strong>{{ row.integration.total_processed }}</strong></div>
+        <div><div class="tilda-label">Дубликаты</div><strong>{{ row.integration.total_duplicates }}</strong></div>
+        <div><div class="tilda-label">Отклонено</div><strong>{{ row.integration.total_rejected }}</strong></div>
+      </div>
+
+      <div class="tilda-actions">
+        <a class="tilda-btn tilda-btn-secondary" href="{% url 'tilda_integration_edit' row.integration.id %}">Настроить</a>
+        <form method="post" action="{% url 'tilda_integration_rotate_secret' row.integration.id %}">
+          {% csrf_token %}
+          <button class="tilda-btn tilda-btn-warning" type="submit">Заменить API-ключ</button>
+        </form>
+        <form method="post" action="{% url 'tilda_integration_toggle' row.integration.id %}">
+          {% csrf_token %}
+          <button class="tilda-btn tilda-btn-secondary" type="submit">{% if row.integration.is_active %}Отключить{% else %}Включить{% endif %}</button>
+        </form>
+      </div>
+    </div>
+  {% empty %}
+    <div class="tilda-card">Подключений пока нет.</div>
+  {% endfor %}
+
+  <div class="tilda-card">
+    <h3>Настройка в Tilda</h3>
+    <ol>
+      <li>Откройте «Настройки сайта → Формы → Webhook».</li>
+      <li>Вставьте Webhook URL нужного подключения.</li>
+      <li>Выберите API Method: <strong>Header</strong>.</li>
+      <li>Укажите API Name: <strong>X-Tilda-Token</strong>.</li>
+      <li>Вставьте API Key, показанный CRM при создании подключения.</li>
+      <li>Сохраните настройку, включите Webhook в блоке формы и опубликуйте страницу.</li>
+    </ol>
+  </div>
+</div>
+{% endblock content %}

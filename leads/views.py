@@ -981,140 +981,6 @@ def download_document(request, doc_id):
         messages.error(request, "Не удалось скачать документ из хранилища")
         return redirect("record", pk=document.record_id)
 
-#@csrf_exempt
-#@require_POST
-#def get_tilda_lead(request):
-#    if request.POST.get('test', False):
-#        print(200)
-#        return HttpResponse("test")
-#    else:
-#        data = request.POST
-#        phone = None
-#        name = None
-#        textarea = None
-#        for key, value in data.items():
-#            if key == "Phone":
-#                phone = value
-#            elif key == "Name":
-#                name = value
-#            elif key == "Textarea":
-#                textarea = value
-#
-#            elif key == "id_company":
-#                id_company = int(value)
-#                get_company = Companys.objects.get(id=id_company)
-#        led = Record(phone=phone, name=name,  description=textarea, where="Tilda", companys=get_company)
-#        led.save()
-#        print(200)
-#        return HttpResponse(200)
-@csrf_exempt
-@require_POST
-def get_tilda_lead(request):
-    webhook_token = os.getenv("TILDA_WEBHOOK_TOKEN", "")
-    if webhook_token:
-        supplied_token = request.headers.get("X-Tilda-Token", "") or request.POST.get("token", "")
-        if not hmac.compare_digest(supplied_token, webhook_token):
-            return HttpResponse("Forbidden", status=403)
-
-    if request.POST.get('test', False):
-        print(200)
-        return HttpResponse("test")
-    else:
-        data = request.POST
-        phone = None
-        name = None
-        textarea = None
-        get_company = None
-        get_felial = Felial.objects.get(id=5)  
-        
-        # Универсальная обработка полей
-        for key, value in data.items():
-            if key == "id_company":
-                try:
-                    id_company = int(value)
-                except (TypeError, ValueError):
-                    return HttpResponse("Invalid company id", status=400)
-                get_company = Companys.objects.filter(id=id_company).first()
-                continue
-            
-            # Пропускаем служебные поля
-            if key in ['test', 'csrfmiddlewaretoken']:
-                continue
-                
-            # Определяем тип поля по содержимому и ключу
-            if not value or value.strip() == '':
-                continue
-                
-            # Определение телефона
-            if is_phone_field(key, value):
-                phone = value
-            # Определение имени
-            elif is_name_field(key, value):
-                name = value
-            # Определение текстового поля (описание)
-            elif is_text_field(key, value):
-                textarea = value
-        
-        # Создаем запись только если есть хотя бы телефон или имя
-        if (phone or name) and get_company is not None:
-            led = Record(
-                phone=phone, 
-                name=name,  
-                description=textarea, 
-                where="Tilda", 
-                companys=get_company,
-                felial=get_felial
-            )
-            led.save()
-            print(200)
-            return HttpResponse(200)
-        else:
-            print("No valid data received")
-            return HttpResponse("No valid data", status=400)
-
-def is_phone_field(key, value):
-    """Определяет, является ли поле телефоном"""
-    # Проверяем по ключу
-    phone_keywords = ['phone', 'tel', 'телефон', 'номер', 'number']
-    if any(keyword in key.lower() for keyword in phone_keywords):
-        return True
-    
-    # Проверяем по содержимому (содержит только цифры, +, -, (, ), пробелы)
-    import re
-    phone_pattern = r'^[\+]?[0-9\s\-\(\)]+$'
-    if re.match(phone_pattern, value.strip()) and len(value.strip()) >= 7:
-        return True
-    
-    return False
-
-def is_name_field(key, value):
-    """Определяет, является ли поле именем"""
-    # Проверяем по ключу
-    name_keywords = ['name', 'имя', 'fio', 'фио', 'contact', 'контакт']
-    if any(keyword in key.lower() for keyword in name_keywords):
-        return True
-    
-    # Проверяем по содержимому (содержит буквы, не слишком длинное)
-    import re
-    if re.match(r'^[а-яё\s\-]+$', value.strip(), re.IGNORECASE) or \
-       re.match(r'^[a-z\s\-]+$', value.strip(), re.IGNORECASE):
-        if 2 <= len(value.strip()) <= 50:
-            return True
-    
-    return False
-
-def is_text_field(key, value):
-    """Определяет, является ли поле текстовым описанием"""
-    # Проверяем по ключу
-    text_keywords = ['text', 'message', 'comment', 'textarea', 'описание', 'сообщение', 'комментарий']
-    if any(keyword in key.lower() for keyword in text_keywords):
-        return True
-    
-    # Если поле длинное и не подходит под телефон/имя
-    if len(value.strip()) > 20:
-        return True
-    
-    return False
 TILDA_IGNORED_FIELDS = {"csrfmiddlewaretoken", "test", "token"}
 TILDA_INTERNAL_IDS = {"id_company", "id_felial", "felial_id"}
 
@@ -1218,6 +1084,9 @@ def _extract_tilda_contact_data(fields):
 @csrf_exempt
 @require_POST
 def get_tilda_lead(request):
+    if not getattr(settings, "TILDA_LEGACY_WEBHOOK_ENABLED", True):
+        return HttpResponse("Legacy Tilda webhook is disabled", status=410)
+
     webhook_token = os.getenv("TILDA_WEBHOOK_TOKEN", "")
     if webhook_token:
         supplied_token = request.headers.get("X-Tilda-Token", "") or request.POST.get("token", "")

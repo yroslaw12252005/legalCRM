@@ -20,6 +20,7 @@ from django.views.generic import RedirectView
 
 
 urlpatterns = [
+    path('', include('tilda_integration.urls')),
     path('admin/', admin.site.urls),
     path('', include('landing.urls')),
     path('all-leads/lead-exchange/', include('marketplace.urls')),
