@@ -175,6 +175,7 @@
         <tr>
           <th></th>
           <th>Дата поступления</th>
+          <th>Последнее изменение</th>
           <th>Имя</th>
           <th>Телефон</th>
           <th>Описание</th>
@@ -203,6 +204,7 @@
             <tr class="{% if record.paid_online == 1 and record.status == 'Онлайн' %}crm-row-paid-online{% endif %}{% if record.booking_come == 0 %} crm-row-not-came{% elif record.booking_come == 1 %} crm-row-came{% endif %}">
               <td></td>
               <td>{{ record.created_at|date:"d.m.Y H:i" }}</td>
+              <td>{{ record.updated_at|date:"d.m.Y H:i" }}</td>
               <td title="{{ record.name }}">
                 {% if record.name != None %}
                   <a href="{% url 'record' record.id %}" style="text-decoration: none; color:#595959;">

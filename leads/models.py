@@ -3,12 +3,20 @@ from pathlib import Path
 
 from django.conf import settings
 from django.db import models
+from django.utils import timezone
 
 from company.models import Companys
 from felial.models import Felial
 
 
+class RecordQuerySet(models.QuerySet):
+    def update(self, **kwargs):
+        kwargs.setdefault("updated_at", timezone.now())
+        return super().update(**kwargs)
+
+
 class Record(models.Model):
+    objects = RecordQuerySet.as_manager()
     client_access_token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
     name = models.CharField(max_length=50, default=None, null=True)
     phone = models.CharField(max_length=50, default=None, null=True)
@@ -22,6 +30,7 @@ class Record(models.Model):
     status = models.CharField(max_length=50, default="Новая", null=True)
     type = models.CharField(max_length=50, default="Неизвестен", null=True)
     created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True, db_index=True)
     employees_KC = models.CharField(max_length=50, null=True, default="Не прикреплён")
     employees_UPP = models.CharField(max_length=50, null=True, default="Не прикреплён")
     lawyer = models.ForeignKey(
@@ -62,6 +71,9 @@ class Record(models.Model):
     def save(self, *args, **kwargs):
         if self._state.adding:
             self._assign_solo_lawyer()
+        update_fields = kwargs.get("update_fields")
+        if update_fields is not None:
+            kwargs["update_fields"] = set(update_fields) | {"updated_at"}
         return super().save(*args, **kwargs)
 
     def __str__(self):
@@ -83,7 +95,7 @@ class Record(models.Model):
         return self.employees_UPP == user.username
 
     class Meta:
-        ordering = ["-created_at"]
+        ordering = ["-updated_at", "-created_at", "-id"]
 
 
 class RecordDocument(models.Model):

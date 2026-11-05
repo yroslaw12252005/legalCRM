@@ -272,6 +272,7 @@
               <th></th>
             {% endif %}
             <th>Дата поступления</th>
+            <th>Последнее изменение</th>
             <th>Имя</th>
             <th>Телефон</th>
             <th>Описание</th>
@@ -306,6 +307,7 @@
                     <td></td>
                   {% endif %}
                   <td>{{ record.created_at|date:"d.m.Y H:i" }}</td>
+                  <td>{{ record.updated_at|date:"d.m.Y H:i" }}</td>
                   <td title="{{ record.name }}">
                     {% if record.name != None %}
                       <a href="{% url 'record' record.id %}" style="text-decoration: none; color:#595959;">

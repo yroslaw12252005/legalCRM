@@ -7,6 +7,7 @@ class LeadsConfig(AppConfig):
 
     def ready(self):
         import legalCRM.signals  # noqa: F401
+        from . import activity_signals  # noqa: F401
         from .novofon import start_auto_monitor
 
         start_auto_monitor()
