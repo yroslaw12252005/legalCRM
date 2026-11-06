@@ -25,3 +25,5 @@ MIGRATION_MODULES = {
     "todolist": None,
     "wallet": None,
 }
+
+PASSWORD_HASHERS = ["django.contrib.auth.hashers.MD5PasswordHasher"]

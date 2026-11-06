@@ -55,7 +55,13 @@
     </div>
   </section>
 
-  {% if is_primary_lawyer %}
+  {% if is_primary_employee %}
+    <section class="salary-cards">
+      <article class="salary-card"><span>Поступило за период</span><strong>{{ base_total|floatformat:2 }} ₽</strong><small>Только по переданным представителю заявкам</small></article>
+      <article class="salary-card"><span>Процент первичника</span><strong>20%</strong><small>От фактически поступивших денег</small></article>
+      <article class="salary-card"><span>Начислено</span><strong>{{ zp|floatformat:2 }} ₽</strong><small>За выбранный период</small></article>
+    </section>
+  {% elif is_primary_lawyer %}
     <section class="salary-cards">
       <article class="salary-card"><span>Без передачи представителю</span><strong>{{ documents_total|floatformat:2 }} ₽</strong><small>10% = {{ documents_salary|floatformat:2 }} ₽</small></article>
       <article class="salary-card"><span>Передано представителю</span><strong>{{ representation_total|floatformat:2 }} ₽</strong><small>9% = {{ representation_salary|floatformat:2 }} ₽</small></article>
@@ -77,13 +83,13 @@
         {% for payment in payment_rows %}
           <tr>
             <td>{{ payment.date|date:"d.m.Y" }}</td><td>{{ payment.client }}</td><td>№{{ payment.contract_number }}</td><td>{{ payment.payment_type }}</td>
-            <td>{% if payment.is_representation %}Передано представителю{% else %}Не передано{% endif %}</td>
+            <td>{% if payment.is_representation == None %}—{% elif payment.is_representation %}Передано представителю{% else %}Не передано{% endif %}</td>
             <td>{{ payment.amount|floatformat:2 }} ₽</td><td>{% widthratio payment.rate 1 100 %}%</td><td><strong>{{ payment.salary|floatformat:2 }} ₽</strong></td>
           </tr>
         {% empty %}<tr><td colspan="8">За выбранный период поступлений нет.</td></tr>{% endfor %}
       </tbody>
     </table>
   </div>
-  <div class="salary-note">Первоначальный взнос учитывается по дате договора. Доплата — по дате подтверждения фактического внесения. Премии, штрафы и авансы в расчёт не входят.</div>
+  <div class="salary-note">Учитываются только заявки, переданные представителю. Первоначальный взнос учитывается по дате договора, доплата — по дате подтверждения фактического внесения. Премии, штрафы и авансы в расчёт не входят.</div>
 </main>
 {% endblock content %}
