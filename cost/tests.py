@@ -39,8 +39,8 @@ class SalaryCalculationTests(TestCase):
             type_zp="Ставка", bet=Decimal("30000"),
             companys=self.company, felial=self.branch,
         )
-        self.primary_employee = User.objects.create_user(
-            username="primary_employee", password="password", status="ОП",
+        self.representative_employee = User.objects.create_user(
+            username="representative_employee", password="password", status="Представитель",
             type_zp="Процент", percent=Decimal("0.100"), bet=0,
             companys=self.company, felial=self.branch,
         )
@@ -60,13 +60,13 @@ class SalaryCalculationTests(TestCase):
             record=self.representation_record, number="1002", amount=Decimal("100000"),
             initial_payment=Decimal("40000"), contract_date=date(2026, 10, 16),
         )
-        self.primary_record = Record.objects.create(
-            name="Клиент первичника", employees_UPP=self.primary_employee.username,
-            lawyer=self.primary_employee, representative=True,
+        self.representative_record = Record.objects.create(
+            name="Клиент представителя", employees_REP=self.representative_employee.username,
+            representative=True,
             companys=self.company, felial=self.branch,
         )
-        self.primary_contract = Contract.objects.create(
-            record=self.primary_record, number="2001", amount=Decimal("120000"),
+        self.representative_contract = Contract.objects.create(
+            record=self.representative_record, number="2001", amount=Decimal("120000"),
             initial_payment=Decimal("20000"), contract_date=date(2026, 10, 20),
         )
         Surcharge.objects.create(
@@ -79,7 +79,7 @@ class SalaryCalculationTests(TestCase):
             dat=datetime(2026, 10, 20, 12), is_paid=False,
         )
         Surcharge.objects.create(
-            contract=self.primary_contract, cost=Decimal("10000"),
+            contract=self.representative_contract, cost=Decimal("10000"),
             dat=datetime(2026, 10, 24, 12), is_paid=True,
             paid_at=datetime(2026, 10, 25, 10),
         )
@@ -121,13 +121,13 @@ class SalaryCalculationTests(TestCase):
         self.assertEqual(rows[self.lawyer.id]["calculation_amount"], Decimal("40000"))
         self.assertEqual(rows[self.operator.id]["calculation_amount"], Decimal("30000"))
         self.assertEqual(rows[self.operator.id]["salary"], Decimal("30000"))
-        self.assertEqual(rows[self.primary_employee.id]["calculation_amount"], Decimal("30000"))
-        self.assertEqual(rows[self.primary_employee.id]["salary"], Decimal("6000.00"))
+        self.assertEqual(rows[self.representative_employee.id]["calculation_amount"], Decimal("30000"))
+        self.assertEqual(rows[self.representative_employee.id]["salary"], Decimal("6000.00"))
 
-    def test_primary_employee_receives_twenty_percent_of_received_money(self):
+    def test_representative_receives_twenty_percent_of_received_money(self):
         not_transferred = Record.objects.create(
-            name="Не передан", employees_UPP=self.primary_employee.username,
-            lawyer=self.primary_employee, representative=False,
+            name="Не передан", employees_REP=self.representative_employee.username,
+            representative=False,
             companys=self.company, felial=self.branch,
         )
         Contract.objects.create(
@@ -135,7 +135,7 @@ class SalaryCalculationTests(TestCase):
             initial_payment=Decimal("50000"), contract_date=date(2026, 10, 22),
         )
         response = self.client.get(
-            reverse("user_inform", args=[self.primary_employee.id]),
+            reverse("user_inform", args=[self.representative_employee.id]),
             {"month": "2026-10", "period": "2"},
         )
         self.assertEqual(response.context["base_total"], Decimal("30000"))
@@ -173,11 +173,11 @@ class SalaryCalculationTests(TestCase):
         with ZipFile(BytesIO(response.content)) as archive:
             sheet = archive.read("xl/worksheets/sheet1.xml").decode("utf-8")
         self.assertIn("salary_lawyer", sheet)
-        self.assertIn("primary_employee", sheet)
+        self.assertIn("representative_employee", sheet)
         self.assertNotIn("salary_operator", sheet)
         self.assertIn('<c r="B4" s="4"/>', sheet)
         self.assertIn('<c r="H4" s="5"/>', sheet)
         self.assertIn('<c r="J4" s="7"/>', sheet)
         self.assertIn("E4+G4+H4", sheet)
         self.assertIn("Ведомость за период", sheet)
-        self.assertIn("Сотрудники-первичники", sheet)
+        self.assertIn("Сотрудники-представители", sheet)

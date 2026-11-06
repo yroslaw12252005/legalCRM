@@ -24,7 +24,7 @@ MONTH_NAMES = (
 )
 SALARY_ACCESS_ROLES = ("Администратор", "Менеджер")
 PRIMARY_LAWYER_ROLE = "Юрист пирвичник"
-PRIMARY_EMPLOYEE_ROLES = ("ОП", "Первичник")
+REPRESENTATIVE_EMPLOYEE_ROLES = ("Представитель", "ОП")
 DOCUMENT_RATE = Decimal("0.10")
 REPRESENTATION_RATE = Decimal("0.09")
 PRIMARY_EMPLOYEE_RATE = Decimal("0.20")
@@ -80,10 +80,15 @@ def _selected_period(request):
 
 def _employee_contracts(employee):
     contracts = Contract.objects.filter(record__companys=employee.companys)
-    if status_matches(employee.status, PRIMARY_LAWYER_ROLE, *PRIMARY_EMPLOYEE_ROLES):
+    if status_matches(employee.status, PRIMARY_LAWYER_ROLE):
         return contracts.filter(
             Q(record__lawyer=employee)
             | Q(record__lawyer__isnull=True, record__employees_UPP=employee.username)
+        )
+    if status_matches(employee.status, *REPRESENTATIVE_EMPLOYEE_ROLES):
+        return contracts.filter(
+            record__representative=True,
+            record__employees_REP=employee.username,
         )
     if status_matches(employee.status, "Оператор"):
         return contracts.filter(record__employees_KC=employee.username)
@@ -180,7 +185,7 @@ def _salary_calculation(employee, period_start, period_end, include_details=Fals
     percent_value = employee.percent or Decimal("0")
     bet_value = employee.bet or Decimal("0")
 
-    if status_matches(employee.status, *PRIMARY_EMPLOYEE_ROLES):
+    if status_matches(employee.status, *REPRESENTATIVE_EMPLOYEE_ROLES):
         received_total = salary_base["base_total"]
         salary = received_total * PRIMARY_EMPLOYEE_RATE
         if include_details:
@@ -260,9 +265,9 @@ def salary_export(request):
         employee for employee in employees
         if status_matches(employee.status, PRIMARY_LAWYER_ROLE)
     ]
-    primary_employees = [
+    representative_employees = [
         employee for employee in employees
-        if status_matches(employee.status, *PRIMARY_EMPLOYEE_ROLES)
+        if status_matches(employee.status, *REPRESENTATIVE_EMPLOYEE_ROLES)
     ]
 
     lawyer_rows = []
@@ -271,16 +276,16 @@ def salary_export(request):
             employee, selected["period_start"], selected["period_end"]
         )
         lawyer_rows.append({"name": employee.username, **calculation})
-    primary_rows = []
-    for employee in primary_employees:
+    representative_rows = []
+    for employee in representative_employees:
         calculation = _salary_calculation(
             employee, selected["period_start"], selected["period_end"]
         )
-        primary_rows.append({"name": employee.username, **calculation})
+        representative_rows.append({"name": employee.username, **calculation})
     content = build_salary_workbook(
         f"Ведомость за период {selected['period_label']}",
         lawyer_rows,
-        primary_rows,
+        representative_rows,
     )
     filename = f"salary_{selected['month_value']}_period_{selected['period']}.xlsx"
     response = HttpResponse(
@@ -347,7 +352,9 @@ def calculating_salaries(request, pk):
         {
             "employee": employee,
             "is_primary_lawyer": status_matches(employee.status, PRIMARY_LAWYER_ROLE),
-            "is_primary_employee": status_matches(employee.status, *PRIMARY_EMPLOYEE_ROLES),
+            "is_representative_employee": status_matches(
+                employee.status, *REPRESENTATIVE_EMPLOYEE_ROLES
+            ),
             "zp": calculation["salary"],
             **selected,
             **calculation,

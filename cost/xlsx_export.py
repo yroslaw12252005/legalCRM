@@ -14,7 +14,7 @@ def _cell(ref, value=None, style=0, formula=None):
     return f'<c{attributes} t="inlineStr"><is><t>{escape(str(value))}</t></is></c>'
 
 
-def build_salary_workbook(title, lawyer_rows, primary_rows):
+def build_salary_workbook(title, lawyer_rows, representative_rows):
     """Build a small dependency-free XLSX payroll statement."""
     headers = [
         "ФИО", "ПИН", "Касса за период", "Документы", "10%",
@@ -52,7 +52,7 @@ def build_salary_workbook(title, lawyer_rows, primary_rows):
     primary_header_row = primary_title_row + 1
     sheet_rows.append(
         f'<row r="{primary_title_row}" ht="26" customHeight="1">'
-        + _cell(f"A{primary_title_row}", "Сотрудники-первичники", style=8)
+        + _cell(f"A{primary_title_row}", "Сотрудники-представители", style=8)
         + "</row>"
     )
     primary_headers = [
@@ -66,7 +66,7 @@ def build_salary_workbook(title, lawyer_rows, primary_rows):
         )
         + "</row>"
     )
-    for row_number, row in enumerate(primary_rows, start=primary_header_row + 1):
+    for row_number, row in enumerate(representative_rows, start=primary_header_row + 1):
         cells = [
             _cell(f"A{row_number}", row["name"], style=3),
             _cell(f"B{row_number}", style=4),

@@ -55,10 +55,10 @@
     </div>
   </section>
 
-  {% if is_primary_employee %}
+  {% if is_representative_employee %}
     <section class="salary-cards">
       <article class="salary-card"><span>Поступило за период</span><strong>{{ base_total|floatformat:2 }} ₽</strong><small>Только по переданным представителю заявкам</small></article>
-      <article class="salary-card"><span>Процент первичника</span><strong>20%</strong><small>От фактически поступивших денег</small></article>
+      <article class="salary-card"><span>Процент представителя</span><strong>20%</strong><small>От фактически поступивших денег</small></article>
       <article class="salary-card"><span>Начислено</span><strong>{{ zp|floatformat:2 }} ₽</strong><small>За выбранный период</small></article>
     </section>
   {% elif is_primary_lawyer %}
