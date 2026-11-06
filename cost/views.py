@@ -1,4 +1,4 @@
-from datetime import date, datetime, time
+from datetime import date, datetime
 from decimal import Decimal
 
 from django.contrib import messages
@@ -15,42 +15,70 @@ from leads.access import status_matches
 
 from .forms import Surcharge_form
 from .models import Surcharge
+from .xlsx_export import build_salary_workbook
 
 
 MONTH_NAMES = (
-    "",
-    "Январь",
-    "Февраль",
-    "Март",
-    "Апрель",
-    "Май",
-    "Июнь",
-    "Июль",
-    "Август",
-    "Сентябрь",
-    "Октябрь",
-    "Ноябрь",
-    "Декабрь",
+    "", "Январь", "Февраль", "Март", "Апрель", "Май", "Июнь",
+    "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
 )
+SALARY_ACCESS_ROLES = ("Администратор", "Менеджер")
+PRIMARY_LAWYER_ROLE = "Юрист пирвичник"
+DOCUMENT_RATE = Decimal("0.10")
+REPRESENTATION_RATE = Decimal("0.09")
 
 
-def _selected_month(request):
-    raw_month = request.GET.get("month", "")
-    try:
-        return datetime.strptime(raw_month, "%Y-%m").date().replace(day=1)
-    except (TypeError, ValueError):
-        return date.today().replace(day=1)
+def _has_salary_access(user):
+    return status_matches(user.status, *SALARY_ACCESS_ROLES)
+
+
+def _salary_access_required(request):
+    if _has_salary_access(request.user):
+        return None
+    messages.error(request, "Раздел зарплаты доступен только администратору и менеджеру")
+    return redirect("all_leads")
 
 
 def _next_month(value):
     if value.month == 12:
-        return value.replace(year=value.year + 1, month=1)
-    return value.replace(month=value.month + 1)
+        return value.replace(year=value.year + 1, month=1, day=1)
+    return value.replace(month=value.month + 1, day=1)
+
+
+def _selected_period(request):
+    now = timezone.now()
+    today = timezone.localdate() if timezone.is_aware(now) else date.today()
+    raw_month = request.GET.get("month", "")
+    try:
+        month_start = datetime.strptime(raw_month, "%Y-%m").date().replace(day=1)
+    except (TypeError, ValueError):
+        month_start = today.replace(day=1)
+
+    period = request.GET.get("period")
+    if period not in {"1", "2"}:
+        period = "1" if today.day <= 15 else "2"
+    if period == "1":
+        period_start = month_start
+        period_end = month_start.replace(day=16)
+    else:
+        period_start = month_start.replace(day=16)
+        period_end = _next_month(month_start)
+
+    last_inclusive = date.fromordinal(period_end.toordinal() - 1)
+    return {
+        "month_start": month_start,
+        "period": period,
+        "period_start": period_start,
+        "period_end": period_end,
+        "month_value": month_start.strftime("%Y-%m"),
+        "month_label": f"{MONTH_NAMES[month_start.month]} {month_start.year}",
+        "period_label": f"{period_start:%d.%m.%Y}–{last_inclusive:%d.%m.%Y}",
+    }
 
 
 def _employee_contracts(employee):
     contracts = Contract.objects.filter(record__companys=employee.companys)
-    if status_matches(employee.status, "Юрист пирвичник"):
+    if status_matches(employee.status, PRIMARY_LAWYER_ROLE):
         return contracts.filter(
             Q(record__lawyer=employee)
             | Q(record__lawyer__isnull=True, record__employees_UPP=employee.username)
@@ -60,37 +88,177 @@ def _employee_contracts(employee):
     return contracts.none()
 
 
-def _monthly_salary_base(employee, month_start):
-    month_end = _next_month(month_start)
-    contracts = _employee_contracts(employee)
-    monthly_contracts = contracts.filter(
-        contract_date__gte=month_start,
-        contract_date__lt=month_end,
-    )
-    initial_payments = monthly_contracts.aggregate(total=Sum("initial_payment"))["total"] or Decimal("0")
-
-    period_start = datetime.combine(month_start, time.min)
-    period_end = datetime.combine(month_end, time.min)
-    paid_surcharges = Surcharge.objects.filter(
-        contract__in=contracts,
-        is_paid=True,
-    ).filter(
-        Q(paid_at__gte=period_start, paid_at__lt=period_end)
+def _paid_surcharges(contracts, period_start, period_end):
+    return Surcharge.objects.filter(contract__in=contracts, is_paid=True).filter(
+        Q(paid_at__date__gte=period_start, paid_at__date__lt=period_end)
         | Q(
             paid_at__isnull=True,
-            dat__gte=period_start,
-            dat__lt=period_end,
+            dat__date__gte=period_start,
+            dat__date__lt=period_end,
         )
     )
-    surcharge_payments = paid_surcharges.aggregate(total=Sum("cost"))["total"] or Decimal("0")
 
-    return {
-        "initial_payments": initial_payments,
-        "surcharge_payments": surcharge_payments,
-        "base_total": initial_payments + surcharge_payments,
-        "contracts_count": monthly_contracts.count(),
+
+def _period_salary_base(employee, period_start, period_end, include_details=False):
+    contracts = _employee_contracts(employee)
+    initial_payments = contracts.filter(
+        contract_date__gte=period_start,
+        contract_date__lt=period_end,
+    )
+    paid_surcharges = _paid_surcharges(contracts, period_start, period_end)
+
+    documents_initial = initial_payments.filter(record__representative=False).aggregate(
+        total=Sum("initial_payment")
+    )["total"] or Decimal("0")
+    representation_initial = initial_payments.filter(record__representative=True).aggregate(
+        total=Sum("initial_payment")
+    )["total"] or Decimal("0")
+    documents_surcharges = paid_surcharges.filter(
+        contract__record__representative=False
+    ).aggregate(total=Sum("cost"))["total"] or Decimal("0")
+    representation_surcharges = paid_surcharges.filter(
+        contract__record__representative=True
+    ).aggregate(total=Sum("cost"))["total"] or Decimal("0")
+
+    documents_total = documents_initial + documents_surcharges
+    representation_total = representation_initial + representation_surcharges
+    base_total = documents_total + representation_total
+    documents_salary = documents_total * DOCUMENT_RATE
+    representation_salary = representation_total * REPRESENTATION_RATE
+    result = {
+        "initial_payments": documents_initial + representation_initial,
+        "surcharge_payments": documents_surcharges + representation_surcharges,
+        "documents_total": documents_total,
+        "representation_total": representation_total,
+        "base_total": base_total,
+        "documents_salary": documents_salary,
+        "representation_salary": representation_salary,
+        "primary_salary": documents_salary + representation_salary,
+        "contracts_count": initial_payments.count(),
         "surcharges_count": paid_surcharges.count(),
     }
+
+    if include_details:
+        payment_rows = []
+        for contract in initial_payments.select_related("record").order_by("contract_date", "id"):
+            is_representation = contract.record.representative
+            rate = REPRESENTATION_RATE if is_representation else DOCUMENT_RATE
+            payment_rows.append({
+                "date": contract.contract_date,
+                "client": contract.record.name,
+                "contract_number": contract.number,
+                "payment_type": "Первоначальный взнос",
+                "is_representation": is_representation,
+                "amount": contract.initial_payment,
+                "rate": rate,
+                "salary": contract.initial_payment * rate,
+            })
+        for surcharge in paid_surcharges.select_related("contract__record").order_by("paid_at", "dat", "id"):
+            is_representation = surcharge.contract.record.representative
+            rate = REPRESENTATION_RATE if is_representation else DOCUMENT_RATE
+            amount = surcharge.cost or Decimal("0")
+            payment_rows.append({
+                "date": (surcharge.paid_at or surcharge.dat).date(),
+                "client": surcharge.contract.record.name,
+                "contract_number": surcharge.contract.number,
+                "payment_type": "Доплата",
+                "is_representation": is_representation,
+                "amount": amount,
+                "rate": rate,
+                "salary": amount * rate,
+            })
+        payment_rows.sort(key=lambda row: (row["date"], row["contract_number"]))
+        result["payment_rows"] = payment_rows
+    return result
+
+
+def _salary_calculation(employee, period_start, period_end, include_details=False):
+    salary_base = _period_salary_base(employee, period_start, period_end, include_details)
+    percent_value = employee.percent or Decimal("0")
+    bet_value = employee.bet or Decimal("0")
+
+    if employee.type_zp == "Процент":
+        salary = (
+            salary_base["primary_salary"]
+            if status_matches(employee.status, PRIMARY_LAWYER_ROLE)
+            else salary_base["base_total"] * percent_value
+        )
+        calculation_amount = salary_base["base_total"]
+    elif employee.type_zp in {"Ставка", "Оклад"}:
+        salary = bet_value
+        calculation_amount = bet_value
+    elif employee.type_zp == "Процент + Ставка":
+        percent_salary = (
+            salary_base["primary_salary"]
+            if status_matches(employee.status, PRIMARY_LAWYER_ROLE)
+            else salary_base["base_total"] * percent_value
+        )
+        salary = percent_salary + bet_value
+        calculation_amount = salary_base["base_total"]
+    else:
+        salary = Decimal("0")
+        calculation_amount = Decimal("0")
+
+    return {
+        **salary_base,
+        "salary": salary,
+        "calculation_amount": calculation_amount,
+        "percent_value": percent_value,
+        "bet_value": bet_value,
+    }
+
+
+@login_required
+def salary_list(request):
+    access_response = _salary_access_required(request)
+    if access_response:
+        return access_response
+    selected = _selected_period(request)
+    employees = User.objects.filter(
+        companys=request.user.companys,
+        is_active=True,
+    ).order_by("username", "id")
+    salary_rows = []
+    for employee in employees:
+        calculation = _salary_calculation(
+            employee, selected["period_start"], selected["period_end"]
+        )
+        salary_rows.append({"employee": employee, **calculation})
+    return render(request, "salary_list.html", {"salary_rows": salary_rows, **selected})
+
+
+@login_required
+def salary_export(request):
+    access_response = _salary_access_required(request)
+    if access_response:
+        return access_response
+
+    selected = _selected_period(request)
+    employees = User.objects.filter(
+        companys=request.user.companys,
+        is_active=True,
+    ).order_by("username", "id")
+    primary_lawyers = [
+        employee for employee in employees
+        if status_matches(employee.status, PRIMARY_LAWYER_ROLE)
+    ]
+
+    rows = []
+    for employee in primary_lawyers:
+        calculation = _salary_calculation(
+            employee, selected["period_start"], selected["period_end"]
+        )
+        rows.append({"name": employee.username, **calculation})
+    content = build_salary_workbook(
+        f"Оплата ЮПП за период {selected['period_label']}", rows
+    )
+    filename = f"salary_{selected['month_value']}_period_{selected['period']}.xlsx"
+    response = HttpResponse(
+        content,
+        content_type="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+    )
+    response["Content-Disposition"] = f'attachment; filename="{filename}"'
+    return response
 
 
 @login_required
@@ -123,7 +291,6 @@ def cost(request, pk):
             add_surcharge_form.save()
             messages.success(request, "Доплата добавлена")
             return redirect("record", pk=record.id)
-
     return render(
         request,
         "surcharge.html",
@@ -133,32 +300,26 @@ def cost(request, pk):
 
 @login_required
 def calculating_salaries(request, pk):
-    employee = get_object_or_404(User, id=pk, companys=request.user.companys)
-    month_start = _selected_month(request)
-    salary_base = _monthly_salary_base(employee, month_start)
-    percent_value = employee.percent or Decimal("0")
-    bet_value = employee.bet or Decimal("0")
-
-    if employee.type_zp == "Процент":
-        salary = salary_base["base_total"] * percent_value
-    elif employee.type_zp in {"Ставка", "Оклад"}:
-        salary = bet_value
-    elif employee.type_zp == "Процент + Ставка":
-        salary = salary_base["base_total"] * percent_value + bet_value
-    else:
-        return HttpResponse("Неизвестный тип зарплаты", status=400)
-
+    access_response = _salary_access_required(request)
+    if access_response:
+        return access_response
+    employee = get_object_or_404(User, id=pk, companys=request.user.companys, is_active=True)
+    selected = _selected_period(request)
+    calculation = _salary_calculation(
+        employee,
+        selected["period_start"],
+        selected["period_end"],
+        include_details=True,
+    )
     return render(
         request,
         "user_inform.html",
         {
             "employee": employee,
-            "zp": salary,
-            "percent_value": percent_value,
-            "bet_value": bet_value,
-            "month_value": month_start.strftime("%Y-%m"),
-            "month_label": f"{MONTH_NAMES[month_start.month]} {month_start.year}",
-            **salary_base,
+            "is_primary_lawyer": status_matches(employee.status, PRIMARY_LAWYER_ROLE),
+            "zp": calculation["salary"],
+            **selected,
+            **calculation,
         },
     )
 
@@ -186,7 +347,6 @@ def mark_surcharge_paid(request, pk):
     if not status_matches(request.user.status, "Администратор", "Менеджер"):
         messages.warning(request, "Подтвердить внесение доплаты может только администратор или менеджер")
         return redirect("all_leads")
-
     surcharge = get_object_or_404(
         Surcharge.objects.select_related("contract__record"),
         id=pk,

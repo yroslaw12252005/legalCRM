@@ -185,6 +185,9 @@ $(document).ready(function() {
                 <li>
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
                 </li>
+                <li>
+                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'salary_list' %}">Зарплата</a></span>
+                </li>
             {% endif %}
 
             {% if user.status == "Администратор" %}
@@ -193,6 +196,9 @@ $(document).ready(function() {
                 </li>
                 <li>
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
+                </li>
+                <li>
+                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'salary_list' %}">Зарплата</a></span>
                 </li>
                 {% if not user.companys.is_solo %}
                     <li>

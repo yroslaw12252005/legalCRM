@@ -1,0 +1,62 @@
+{% extends "base.html" %}
+
+{% block content %}
+<style>
+  .salary-page { max-width: 1100px; margin: 2rem auto; padding: 0 1rem 2rem; color: #17253f; font-family: "Segoe UI", system-ui, sans-serif; }
+  .salary-page h1 { margin: 0 0 .35rem; font-size: 2rem; }
+  .salary-page__subtitle { margin: 0 0 1.4rem; color: #687386; }
+  .salary-filter { display: flex; flex-wrap: wrap; gap: .75rem; align-items: end; margin-bottom: 1.2rem; padding: 1rem; border: 1px solid #e1e6ed; border-radius: 16px; background: #fff; }
+  .salary-filter label { display: grid; gap: .35rem; color: #687386; font-size: .82rem; }
+  .salary-filter input, .salary-filter select, .salary-filter button, .salary-export { min-height: 42px; padding: 0 .9rem; border-radius: 10px; font: inherit; }
+  .salary-filter input, .salary-filter select { border: 1px solid #d7dee8; background: #fff; }
+  .salary-filter button, .salary-export { border: 0; color: #fff; background: #172d50; font-weight: 700; cursor: pointer; text-decoration: none; display: inline-flex; align-items: center; }
+  .salary-export { margin-left: auto; background: #227447; }
+  .salary-table-wrap { overflow-x: auto; border: 1px solid #e1e6ed; border-radius: 16px; background: #fff; }
+  .salary-table { width: 100%; border-collapse: collapse; }
+  .salary-table th, .salary-table td { padding: 1rem; text-align: left; border-bottom: 1px solid #e8ecf1; }
+  .salary-table th { color: #687386; background: #f7f9fb; font-size: .78rem; text-transform: uppercase; letter-spacing: .04em; }
+  .salary-table tbody tr:last-child td { border-bottom: 0; }
+  .salary-table tbody tr:hover { background: #f8fafc; }
+  .salary-table a { color: #172d50; font-weight: 700; text-decoration: none; }
+  .salary-money { white-space: nowrap; font-variant-numeric: tabular-nums; }
+  @media (max-width: 720px) { .salary-export { margin-left: 0; width: 100%; justify-content: center; } }
+</style>
+
+<main class="salary-page">
+  <h1>Зарплата</h1>
+  <p class="salary-page__subtitle">Расчёт за период {{ period_label }}</p>
+
+  <form class="salary-filter" method="get">
+    <label>Месяц
+      <input type="month" name="month" value="{{ month_value }}" required>
+    </label>
+    <label>Период
+      <select name="period">
+        <option value="1" {% if period == "1" %}selected{% endif %}>1–15</option>
+        <option value="2" {% if period == "2" %}selected{% endif %}>16–конец месяца</option>
+      </select>
+    </label>
+    <button type="submit">Сформировать</button>
+    <a class="salary-export" href="{% url 'salary_export' %}?month={{ month_value }}&amp;period={{ period }}">Скачать ведомость Excel</a>
+  </form>
+
+  <div class="salary-table-wrap">
+    <table class="salary-table">
+      <thead>
+        <tr><th>Имя</th><th>Расчётная сумма</th><th>ЗП за выбранный период</th></tr>
+      </thead>
+      <tbody>
+        {% for row in salary_rows %}
+          <tr>
+            <td><a href="{% url 'user_inform' row.employee.id %}?month={{ month_value }}&amp;period={{ period }}">{{ row.employee.username }}</a><br><small>{{ row.employee.status }}</small></td>
+            <td class="salary-money">{{ row.calculation_amount|floatformat:2 }} ₽</td>
+            <td class="salary-money"><strong>{{ row.salary|floatformat:2 }} ₽</strong></td>
+          </tr>
+        {% empty %}
+          <tr><td colspan="3">В компании нет активных сотрудников.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</main>
+{% endblock content %}
