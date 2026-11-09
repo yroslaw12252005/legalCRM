@@ -1,13 +1,15 @@
 from django.contrib.auth import authenticate
+from django.apps import apps as django_apps
 from django.test import TestCase
 from django.urls import reverse
+from importlib import import_module
 
 from company.models import Companys
 from felial.models import Felial
 from leads.models import Record
 
 from .models import User
-from .forms import AddSuperEmployeesForm
+from .forms import AddEmployeesForm, AddSuperEmployeesForm
 
 
 class EmailAuthenticationTests(TestCase):
@@ -108,6 +110,89 @@ class UsernameValidationTests(TestCase):
         self.assertTrue(form.is_valid(), form.errors)
         user = form.save()
         self.assertEqual(user.username, "Иван Иванов")
+
+
+class EmployeeSalaryFormTests(TestCase):
+    def setUp(self):
+        self.company = Companys.objects.create(title="Компания зарплаты")
+        self.branch = Felial.objects.create(
+            title="Главный",
+            cites="Москва",
+            companys=self.company,
+        )
+        self.admin = User.objects.create_user(
+            username="salary_form_admin",
+            email="salary-form-admin@example.com",
+            password="test-pass-123",
+            status="Администратор",
+            companys=self.company,
+            felial=self.branch,
+        )
+
+    def form_data(self, **overrides):
+        data = {
+            "username": "Новый сотрудник",
+            "email": "new-salary@example.com",
+            "status": "Менеджер",
+            "felial": str(self.branch.id),
+            "type_zp": User.SALARY_PERCENT,
+            "percent": "10",
+            "bet": "",
+            "password1": "safe-test-pass-123",
+            "password2": "safe-test-pass-123",
+        }
+        data.update(overrides)
+        return data
+
+    def test_percent_salary_requires_only_percent(self):
+        form = AddEmployeesForm(data=self.form_data(), user=self.admin)
+        self.assertTrue(form.is_valid(), form.errors)
+        employee = form.save(commit=False)
+        self.assertEqual(employee.percent, 10)
+        self.assertIsNone(employee.bet)
+
+    def test_fixed_salary_requires_monthly_salary_and_clears_percent(self):
+        form = AddEmployeesForm(
+            data=self.form_data(type_zp=User.SALARY_FIXED, percent="25", bet="80000"),
+            user=self.admin,
+        )
+        self.assertTrue(form.is_valid(), form.errors)
+        employee = form.save(commit=False)
+        self.assertIsNone(employee.percent)
+        self.assertEqual(employee.bet, 80000)
+
+    def test_combined_salary_requires_both_values(self):
+        form = AddEmployeesForm(
+            data=self.form_data(type_zp=User.SALARY_COMBINED, percent="", bet="80000"),
+            user=self.admin,
+        )
+        self.assertFalse(form.is_valid())
+        self.assertIn("percent", form.errors)
+
+    def test_salary_type_choices_match_ui(self):
+        form = AddEmployeesForm(user=self.admin)
+        self.assertEqual(
+            list(form.fields["type_zp"].choices),
+            list(User.SALARY_TYPE_CHOICES),
+        )
+
+    def test_salary_migration_preserves_old_coefficient_and_type(self):
+        employee = User.objects.create_user(
+            username="legacy_salary_employee",
+            email="legacy-salary@example.com",
+            password="test-pass-123",
+            status="Менеджер",
+            companys=self.company,
+            felial=self.branch,
+            type_zp="Процент + Ставка",
+            percent="0.125",
+            bet="80000",
+        )
+        migration = import_module("accounts.migrations.0010_salary_settings")
+        migration.normalize_salary_settings(django_apps, None)
+        employee.refresh_from_db()
+        self.assertEqual(employee.type_zp, User.SALARY_COMBINED)
+        self.assertEqual(employee.percent, 12.5)
 
 
 class EmployeeDeactivationTests(TestCase):

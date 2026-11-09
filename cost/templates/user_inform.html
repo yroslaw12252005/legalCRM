@@ -50,30 +50,21 @@
   <section class="salary-summary">
     <div class="salary-total"><span>Зарплата за {{ period_label }}</span><strong>{{ zp|floatformat:2 }} ₽</strong></div>
     <div class="summary-meta">
-      <div><span>Тип ЗП</span><strong>{{ employee.type_zp|default:"Не задан" }}</strong></div>
+      <div><span>Тип ЗП</span><strong>{{ salary_type|default:"Не задан" }}</strong></div>
       <div><span>Расчётная сумма</span><strong>{{ calculation_amount|floatformat:2 }} ₽</strong></div>
     </div>
   </section>
 
-  {% if is_representative_employee %}
-    <section class="salary-cards">
-      <article class="salary-card"><span>Поступило за период</span><strong>{{ base_total|floatformat:2 }} ₽</strong><small>Только по переданным представителю заявкам</small></article>
-      <article class="salary-card"><span>Процент представителя</span><strong>20%</strong><small>От фактически поступивших денег</small></article>
-      <article class="salary-card"><span>Начислено</span><strong>{{ zp|floatformat:2 }} ₽</strong><small>За выбранный период</small></article>
-    </section>
-  {% elif is_primary_lawyer %}
-    <section class="salary-cards">
-      <article class="salary-card"><span>Без передачи представителю</span><strong>{{ documents_total|floatformat:2 }} ₽</strong><small>10% = {{ documents_salary|floatformat:2 }} ₽</small></article>
-      <article class="salary-card"><span>Передано представителю</span><strong>{{ representation_total|floatformat:2 }} ₽</strong><small>9% = {{ representation_salary|floatformat:2 }} ₽</small></article>
-      <article class="salary-card"><span>Касса за период</span><strong>{{ base_total|floatformat:2 }} ₽</strong><small>Взносы и подтверждённые доплаты</small></article>
-    </section>
-  {% else %}
-    <section class="salary-cards">
-      <article class="salary-card"><span>Внесено при заключении</span><strong>{{ initial_payments|floatformat:2 }} ₽</strong></article>
-      <article class="salary-card"><span>Подтверждённые доплаты</span><strong>{{ surcharge_payments|floatformat:2 }} ₽</strong></article>
-      <article class="salary-card"><span>Касса за период</span><strong>{{ base_total|floatformat:2 }} ₽</strong></article>
-    </section>
-  {% endif %}
+  <section class="salary-cards">
+    <article class="salary-card"><span>Поступило за период</span><strong>{{ base_total|floatformat:2 }} ₽</strong><small>Первоначальные взносы и подтверждённые доплаты</small></article>
+    {% if uses_percent %}
+      <article class="salary-card"><span>Процент сотрудника</span><strong>{{ percent_value|floatformat:3 }}%</strong><small>Начислено {{ percent_salary|floatformat:2 }} ₽</small></article>
+    {% endif %}
+    {% if uses_fixed %}
+      <article class="salary-card"><span>Месячный оклад</span><strong>{{ bet_value|floatformat:2 }} ₽</strong><small>За период: {{ period_fixed_salary|floatformat:2 }} ₽</small></article>
+    {% endif %}
+    <article class="salary-card"><span>Итого за период</span><strong>{{ zp|floatformat:2 }} ₽</strong><small>Без премий, штрафов и авансов</small></article>
+  </section>
 
   <h2>Поступления</h2>
   <div class="detail-wrap">
@@ -84,12 +75,12 @@
           <tr>
             <td>{{ payment.date|date:"d.m.Y" }}</td><td>{{ payment.client }}</td><td>№{{ payment.contract_number }}</td><td>{{ payment.payment_type }}</td>
             <td>{% if payment.is_representation == None %}—{% elif payment.is_representation %}Передано представителю{% else %}Не передано{% endif %}</td>
-            <td>{{ payment.amount|floatformat:2 }} ₽</td><td>{% widthratio payment.rate 1 100 %}%</td><td><strong>{{ payment.salary|floatformat:2 }} ₽</strong></td>
+            <td>{{ payment.amount|floatformat:2 }} ₽</td><td>{{ payment.rate|floatformat:3 }}%</td><td><strong>{{ payment.salary|floatformat:2 }} ₽</strong></td>
           </tr>
         {% empty %}<tr><td colspan="8">За выбранный период поступлений нет.</td></tr>{% endfor %}
       </tbody>
     </table>
   </div>
-  <div class="salary-note">Учитываются только заявки, переданные представителю. Первоначальный взнос учитывается по дате договора, доплата — по дате подтверждения фактического внесения. Премии, штрафы и авансы в расчёт не входят.</div>
+  <div class="salary-note">Учитываются только заявки, переданные представителю. Для менеджеров и директоров база ограничена их филиалом. Первоначальный взнос учитывается по дате договора, доплата — по дате подтверждения фактического внесения. Месячный оклад делится на два периода.</div>
 </main>
 {% endblock content %}

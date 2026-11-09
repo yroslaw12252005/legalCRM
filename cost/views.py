@@ -25,9 +25,23 @@ MONTH_NAMES = (
 SALARY_ACCESS_ROLES = ("Администратор", "Менеджер")
 PRIMARY_LAWYER_ROLE = "Юрист пирвичник"
 REPRESENTATIVE_EMPLOYEE_ROLES = ("Представитель", "ОП")
-DOCUMENT_RATE = Decimal("0.10")
-REPRESENTATION_RATE = Decimal("0.09")
-PRIMARY_EMPLOYEE_RATE = Decimal("0.20")
+BRANCH_SALARY_ROLES = (
+    "Администратор",
+    "Менеджер",
+    "Директор",
+    "Директор КЦ",
+    "Директор ЮПП",
+    "Директор представителей",
+)
+EXPORT_SALARY_ROLES = (
+    PRIMARY_LAWYER_ROLE,
+    *REPRESENTATIVE_EMPLOYEE_ROLES,
+    "Менеджер",
+    "Директор",
+    "Директор КЦ",
+    "Директор ЮПП",
+    "Директор представителей",
+)
 
 
 def _has_salary_access(user):
@@ -92,6 +106,10 @@ def _employee_contracts(employee):
         )
     if status_matches(employee.status, "Оператор"):
         return contracts.filter(record__employees_KC=employee.username)
+    if status_matches(employee.status, *BRANCH_SALARY_ROLES):
+        if not employee.felial_id:
+            return contracts.none()
+        return contracts.filter(record__felial_id=employee.felial_id)
     return contracts.none()
 
 
@@ -115,33 +133,15 @@ def _period_salary_base(employee, period_start, period_end, include_details=Fals
     )
     paid_surcharges = _paid_surcharges(contracts, period_start, period_end)
 
-    documents_initial = initial_payments.filter(record__representative=False).aggregate(
+    initial_total = initial_payments.aggregate(
         total=Sum("initial_payment")
     )["total"] or Decimal("0")
-    representation_initial = initial_payments.filter(record__representative=True).aggregate(
-        total=Sum("initial_payment")
-    )["total"] or Decimal("0")
-    documents_surcharges = paid_surcharges.filter(
-        contract__record__representative=False
-    ).aggregate(total=Sum("cost"))["total"] or Decimal("0")
-    representation_surcharges = paid_surcharges.filter(
-        contract__record__representative=True
-    ).aggregate(total=Sum("cost"))["total"] or Decimal("0")
-
-    documents_total = documents_initial + documents_surcharges
-    representation_total = representation_initial + representation_surcharges
-    base_total = documents_total + representation_total
-    documents_salary = documents_total * DOCUMENT_RATE
-    representation_salary = representation_total * REPRESENTATION_RATE
+    surcharge_total = paid_surcharges.aggregate(total=Sum("cost"))["total"] or Decimal("0")
+    base_total = initial_total + surcharge_total
     result = {
-        "initial_payments": documents_initial + representation_initial,
-        "surcharge_payments": documents_surcharges + representation_surcharges,
-        "documents_total": documents_total,
-        "representation_total": representation_total,
+        "initial_payments": initial_total,
+        "surcharge_payments": surcharge_total,
         "base_total": base_total,
-        "documents_salary": documents_salary,
-        "representation_salary": representation_salary,
-        "primary_salary": documents_salary + representation_salary,
         "contracts_count": initial_payments.count(),
         "surcharges_count": paid_surcharges.count(),
     }
@@ -149,31 +149,23 @@ def _period_salary_base(employee, period_start, period_end, include_details=Fals
     if include_details:
         payment_rows = []
         for contract in initial_payments.select_related("record").order_by("contract_date", "id"):
-            is_representation = contract.record.representative
-            rate = REPRESENTATION_RATE if is_representation else DOCUMENT_RATE
             payment_rows.append({
                 "date": contract.contract_date,
                 "client": contract.record.name,
                 "contract_number": contract.number,
                 "payment_type": "Первоначальный взнос",
-                "is_representation": is_representation,
+                "is_representation": contract.record.representative,
                 "amount": contract.initial_payment,
-                "rate": rate,
-                "salary": contract.initial_payment * rate,
             })
         for surcharge in paid_surcharges.select_related("contract__record").order_by("paid_at", "dat", "id"):
-            is_representation = surcharge.contract.record.representative
-            rate = REPRESENTATION_RATE if is_representation else DOCUMENT_RATE
             amount = surcharge.cost or Decimal("0")
             payment_rows.append({
                 "date": (surcharge.paid_at or surcharge.dat).date(),
                 "client": surcharge.contract.record.name,
                 "contract_number": surcharge.contract.number,
                 "payment_type": "Доплата",
-                "is_representation": is_representation,
+                "is_representation": surcharge.contract.record.representative,
                 "amount": amount,
-                "rate": rate,
-                "salary": amount * rate,
             })
         payment_rows.sort(key=lambda row: (row["date"], row["contract_number"]))
         result["payment_rows"] = payment_rows
@@ -184,43 +176,35 @@ def _salary_calculation(employee, period_start, period_end, include_details=Fals
     salary_base = _period_salary_base(employee, period_start, period_end, include_details)
     percent_value = employee.percent or Decimal("0")
     bet_value = employee.bet or Decimal("0")
-
-    if status_matches(employee.status, *REPRESENTATIVE_EMPLOYEE_ROLES):
-        received_total = salary_base["base_total"]
-        salary = received_total * PRIMARY_EMPLOYEE_RATE
-        if include_details:
-            for payment in salary_base["payment_rows"]:
-                payment["rate"] = PRIMARY_EMPLOYEE_RATE
-                payment["salary"] = payment["amount"] * PRIMARY_EMPLOYEE_RATE
-        return {
-            **salary_base,
-            "salary": salary,
-            "calculation_amount": received_total,
-            "percent_value": PRIMARY_EMPLOYEE_RATE,
-            "bet_value": bet_value,
-        }
-
-    if employee.type_zp == "Процент":
-        salary = (
-            salary_base["primary_salary"]
-            if status_matches(employee.status, PRIMARY_LAWYER_ROLE)
-            else salary_base["base_total"] * percent_value
-        )
-        calculation_amount = salary_base["base_total"]
-    elif employee.type_zp in {"Ставка", "Оклад"}:
-        salary = bet_value
-        calculation_amount = bet_value
-    elif employee.type_zp == "Процент + Ставка":
-        percent_salary = (
-            salary_base["primary_salary"]
-            if status_matches(employee.status, PRIMARY_LAWYER_ROLE)
-            else salary_base["base_total"] * percent_value
-        )
-        salary = percent_salary + bet_value
+    salary_type = {
+        "Ставка": User.SALARY_FIXED,
+        "Процент + Ставка": User.SALARY_COMBINED,
+        "Оклад+Процент": User.SALARY_COMBINED,
+    }.get(employee.type_zp, employee.type_zp)
+    uses_percent = salary_type in {User.SALARY_PERCENT, User.SALARY_COMBINED}
+    uses_fixed = salary_type in {User.SALARY_FIXED, User.SALARY_COMBINED}
+    period_fixed_salary = bet_value / Decimal("2") if uses_fixed else Decimal("0")
+    percent_salary = (
+        salary_base["base_total"] * percent_value / Decimal("100")
+        if uses_percent
+        else Decimal("0")
+    )
+    salary = period_fixed_salary + percent_salary
+    if salary_type == User.SALARY_FIXED:
+        calculation_amount = period_fixed_salary
+    elif uses_percent:
         calculation_amount = salary_base["base_total"]
     else:
-        salary = Decimal("0")
         calculation_amount = Decimal("0")
+
+    if include_details:
+        for payment in salary_base["payment_rows"]:
+            payment["rate"] = percent_value if uses_percent else Decimal("0")
+            payment["salary"] = (
+                payment["amount"] * percent_value / Decimal("100")
+                if uses_percent
+                else Decimal("0")
+            )
 
     return {
         **salary_base,
@@ -228,6 +212,11 @@ def _salary_calculation(employee, period_start, period_end, include_details=Fals
         "calculation_amount": calculation_amount,
         "percent_value": percent_value,
         "bet_value": bet_value,
+        "salary_type": salary_type,
+        "uses_percent": uses_percent,
+        "uses_fixed": uses_fixed,
+        "period_fixed_salary": period_fixed_salary,
+        "percent_salary": percent_salary,
     }
 
 
@@ -261,31 +250,19 @@ def salary_export(request):
         companys=request.user.companys,
         is_active=True,
     ).order_by("username", "id")
-    primary_lawyers = [
+    payroll_employees = [
         employee for employee in employees
-        if status_matches(employee.status, PRIMARY_LAWYER_ROLE)
+        if status_matches(employee.status, *EXPORT_SALARY_ROLES)
     ]
-    representative_employees = [
-        employee for employee in employees
-        if status_matches(employee.status, *REPRESENTATIVE_EMPLOYEE_ROLES)
-    ]
-
-    lawyer_rows = []
-    for employee in primary_lawyers:
+    payroll_rows = []
+    for employee in payroll_employees:
         calculation = _salary_calculation(
             employee, selected["period_start"], selected["period_end"]
         )
-        lawyer_rows.append({"name": employee.username, **calculation})
-    representative_rows = []
-    for employee in representative_employees:
-        calculation = _salary_calculation(
-            employee, selected["period_start"], selected["period_end"]
-        )
-        representative_rows.append({"name": employee.username, **calculation})
+        payroll_rows.append({"name": employee.username, "status": employee.status, **calculation})
     content = build_salary_workbook(
         f"Ведомость за период {selected['period_label']}",
-        lawyer_rows,
-        representative_rows,
+        payroll_rows,
     )
     filename = f"salary_{selected['month_value']}_period_{selected['period']}.xlsx"
     response = HttpResponse(
@@ -351,10 +328,6 @@ def calculating_salaries(request, pk):
         "user_inform.html",
         {
             "employee": employee,
-            "is_primary_lawyer": status_matches(employee.status, PRIMARY_LAWYER_ROLE),
-            "is_representative_employee": status_matches(
-                employee.status, *REPRESENTATIVE_EMPLOYEE_ROLES
-            ),
             "zp": calculation["salary"],
             **selected,
             **calculation,

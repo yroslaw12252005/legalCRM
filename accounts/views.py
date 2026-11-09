@@ -65,7 +65,7 @@ def register_employees(request):
 
         messages.error(request, "Ошибка при регистрации")
 
-    return render(request, "register_employees.html", {"form": form})
+    return render(request, "register_employees.html", {"form": form, "is_editing": False})
 
 
 @login_required
@@ -77,15 +77,15 @@ def update_employees(request, pk):
     employee = get_object_or_404(User, id=pk, companys=request.user.companys)
 
     if request.method == "POST":
-        form = EmployeeUpdateForm(request.POST, instance=employee)
+        form = EmployeeUpdateForm(request.POST, instance=employee, user=request.user)
         if form.is_valid():
             updated = form.save()
             messages.success(request, f"Сотрудник '{updated.username}' обновлен")
             return redirect("all_leads")
     else:
-        form = EmployeeUpdateForm(instance=employee)
+        form = EmployeeUpdateForm(instance=employee, user=request.user)
 
-    return render(request, "register_employees.html", {"form": form})
+    return render(request, "register_employees.html", {"form": form, "is_editing": True})
 
 
 @login_required

@@ -1,11 +1,20 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
+from django.core.validators import MaxValueValidator, MinValueValidator
 from company.models import Companys
 from felial.models import Felial
 from .validators import username_with_spaces_validator
 
 
 class User(AbstractUser):
+    SALARY_PERCENT = "Процент"
+    SALARY_FIXED = "Оклад"
+    SALARY_COMBINED = "Оклад + Процент"
+    SALARY_TYPE_CHOICES = (
+        (SALARY_PERCENT, "Процент"),
+        (SALARY_FIXED, "Оклад"),
+        (SALARY_COMBINED, "Оклад + процент"),
+    )
     username = models.CharField(
         "имя пользователя",
         max_length=150,
@@ -30,7 +39,27 @@ class User(AbstractUser):
         on_delete=models.SET_NULL,
         null = True
     )
-    percent = models.DecimalField(null=True, max_digits=6, decimal_places=3)
-    bet = models.DecimalField(null=True, max_digits=12, decimal_places=6)
-    type_zp = models.CharField(null=True, max_length=30)
+    percent = models.DecimalField(
+        "Процент",
+        null=True,
+        blank=True,
+        max_digits=6,
+        decimal_places=3,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
+    )
+    bet = models.DecimalField(
+        "Месячный оклад",
+        null=True,
+        blank=True,
+        max_digits=12,
+        decimal_places=2,
+        validators=[MinValueValidator(0)],
+    )
+    type_zp = models.CharField(
+        "Тип ЗП",
+        null=True,
+        blank=True,
+        max_length=30,
+        choices=SALARY_TYPE_CHOICES,
+    )
 

@@ -49,7 +49,10 @@
         {% for row in salary_rows %}
           <tr>
             <td><a href="{% url 'user_inform' row.employee.id %}?month={{ month_value }}&amp;period={{ period }}">{{ row.employee.username }}</a><br><small>{{ row.employee.status }}</small></td>
-            <td class="salary-money">{{ row.calculation_amount|floatformat:2 }} ₽</td>
+            <td class="salary-money">
+              {{ row.calculation_amount|floatformat:2 }} ₽
+              {% if row.uses_percent and row.uses_fixed %}<br><small>+ оклад за период {{ row.period_fixed_salary|floatformat:2 }} ₽</small>{% endif %}
+            </td>
             <td class="salary-money"><strong>{{ row.salary|floatformat:2 }} ₽</strong></td>
           </tr>
         {% empty %}

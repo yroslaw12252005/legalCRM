@@ -8,6 +8,32 @@ from felial.models import Felial
 User = get_user_model()
 
 
+class SalaryFieldsMixin:
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.fields["type_zp"].required = True
+        self.fields["percent"].required = False
+        self.fields["bet"].required = False
+
+    def clean(self):
+        cleaned_data = super().clean()
+        salary_type = cleaned_data.get("type_zp")
+        percent = cleaned_data.get("percent")
+        salary = cleaned_data.get("bet")
+
+        uses_percent = salary_type in {User.SALARY_PERCENT, User.SALARY_COMBINED}
+        uses_salary = salary_type in {User.SALARY_FIXED, User.SALARY_COMBINED}
+        if uses_percent and percent is None:
+            self.add_error("percent", "Укажите процент сотрудника")
+        if uses_salary and salary is None:
+            self.add_error("bet", "Укажите месячный оклад сотрудника")
+        if not uses_percent:
+            cleaned_data["percent"] = None
+        if not uses_salary:
+            cleaned_data["bet"] = None
+        return cleaned_data
+
+
 class UniqueEmailMixin:
     def clean_email(self):
         email = (self.cleaned_data.get("email") or "").strip().lower()
@@ -19,7 +45,7 @@ class UniqueEmailMixin:
         return email
 
 
-class AddEmployeesForm(UniqueEmailMixin, UserCreationForm):
+class AddEmployeesForm(SalaryFieldsMixin, UniqueEmailMixin, UserCreationForm):
     email = forms.EmailField(
         label="",
         widget=forms.TextInput(attrs={"class": "form-control", "placeholder": "Email"}),
@@ -48,11 +74,7 @@ class AddEmployeesForm(UniqueEmailMixin, UserCreationForm):
 
     type_zp = forms.ChoiceField(
         label="Тип ЗП",
-        choices=(
-            ("Процент", "Процент"),
-            ("Ставка", "Ставка"),
-            ("Процент + Ставка", "Процент + Ставка"),
-        ),
+        choices=User.SALARY_TYPE_CHOICES,
         widget=forms.Select(attrs={"class": "form-control", "style": "margin-bottom: 12px;"}),
     )
 
@@ -93,8 +115,12 @@ class AddEmployeesForm(UniqueEmailMixin, UserCreationForm):
         )
         labels = {
             "type_zp": "Тип ЗП",
-            "percent": "%",
-            "bet": "Ставка",
+            "percent": "Процент, %",
+            "bet": "Месячный оклад",
+        }
+        widgets = {
+            "percent": forms.NumberInput(attrs={"class": "form-control", "min": "0", "max": "100", "step": "0.001"}),
+            "bet": forms.NumberInput(attrs={"class": "form-control", "min": "0", "step": "0.01"}),
         }
 
 
@@ -124,12 +150,18 @@ class AddSuperEmployeesForm(UniqueEmailMixin, UserCreationForm):
         fields = ("username", "email", "password1", "password2")
 
 
-class EmployeeUpdateForm(UniqueEmailMixin, forms.ModelForm):
+class EmployeeUpdateForm(SalaryFieldsMixin, UniqueEmailMixin, forms.ModelForm):
     password = forms.CharField(
         label="Новый пароль",
         required=False,
         widget=forms.PasswordInput(attrs={"class": "form-control"}),
     )
+
+    def __init__(self, *args, **kwargs):
+        user = kwargs.pop("user", None)
+        super().__init__(*args, **kwargs)
+        if user:
+            self.fields["felial"].queryset = Felial.objects.filter(companys=user.companys)
 
     class Meta:
         model = User
@@ -143,6 +175,11 @@ class EmployeeUpdateForm(UniqueEmailMixin, forms.ModelForm):
             "bet",
             "password",
         )
+        widgets = {
+            "type_zp": forms.Select(attrs={"class": "form-control"}),
+            "percent": forms.NumberInput(attrs={"class": "form-control", "min": "0", "max": "100", "step": "0.001"}),
+            "bet": forms.NumberInput(attrs={"class": "form-control", "min": "0", "step": "0.01"}),
+        }
 
     def save(self, commit=True):
         user = super().save(commit=False)

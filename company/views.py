@@ -207,7 +207,7 @@ def reg_admin_user(request, id_company):
             add_user.status = 'Администратор'
             add_user.percent = 0
             add_user.bet = 0
-            add_user.type_zp = "Ставка"
+            add_user.type_zp = User.SALARY_FIXED
             if company.is_solo:
                 main_branch, _ = Felial.objects.get_or_create(
                     companys=company,
