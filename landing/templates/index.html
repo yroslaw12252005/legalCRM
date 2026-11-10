@@ -1,220 +1,286 @@
-<!DOCTYPE html>
+{% load static %}
+<!doctype html>
 <html lang="ru">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>vseCRM.ru - LegalCRM — Управление задачами для юристов</title>
-    <style>
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-            font-family: 'Roboto', sans-serif;
-        }
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>rossCRM — CRM-система для юридического бизнеса</title>
+  <meta name="description" content="rossCRM — CRM для юридических компаний: заявки, клиенты, договоры, календарь, сотрудники, платежи и аналитика в единой системе.">
+  <meta name="keywords" content="CRM, СРМ, CRM-система, CRM для юристов, автоматизация юридического бизнеса, оптимизация бизнеса, учёт клиентов и заявок">
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1">
+  <meta name="theme-color" content="#1f2937">
+  <link rel="canonical" href="{{ canonical_url }}">
 
-        body {
-            background: #f8f9fa;
-            color: #2d3436;
-        }
+  <meta property="og:type" content="website">
+  <meta property="og:locale" content="ru_RU">
+  <meta property="og:site_name" content="rossCRM">
+  <meta property="og:title" content="rossCRM — CRM-система для юридического бизнеса">
+  <meta property="og:description" content="Управляйте заявками, клиентами, договорами, сотрудниками и финансами юридической компании в едином пространстве.">
+  <meta property="og:url" content="{{ canonical_url }}">
+  <meta name="twitter:card" content="summary">
+  <meta name="twitter:title" content="rossCRM — CRM для юридического бизнеса">
+  <meta name="twitter:description" content="Единая система для управления заявками, клиентами, договорами, командой и поступлениями.">
 
-        .header {
-            background: #ffffff;
-            padding: 1.5rem 8%;
-            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
-            display: flex;
-            justify-content: flex-end;
-            gap: 1.5rem;
-        }
-
-        .nav-button {
-            padding: 12px 28px;
-            border: none;
-            border-radius: 6px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: 0.3s;
-        }
-
-        .register {
-            background: #2d3436;
-            color: white;
-        }
-
-        .login {
-            background: transparent;
-            border: 2px solid #2d3436;
-            color: #2d3436;
-        }
-
-        .hero {
-            text-align: center;
-            padding: 100px 8% 80px;
-            background: linear-gradient(45deg, #ffffff 50%, #f8f9fa 50%);
-        }
-
-        h1 {
-            font-size: 3.5rem;
-            margin-bottom: 1.5rem;
-            color: #2d3436;
-        }
-
-        .subtitle {
-            font-size: 1.4rem;
-            color: #636e72;
-            max-width: 800px;
-            margin: 0 auto 40px;
-            line-height: 1.6;
-        }
-
-        .pricing {
-            margin-bottom: 60px;
-        }
-
-        .price {
-            font-size: 2.8rem;
-            font-weight: 700;
-            margin-bottom: 1rem;
-            color: #2d3436;
-            letter-spacing: -1px;
-        }
-
-        .trial {
-            font-size: 1.2rem;
-            color: #0984e3;
-            font-weight: 500;
-            background: rgba(9, 132, 227, 0.1);
-            padding: 8px 20px;
-            border-radius: 20px;
-            display: inline-block;
-        }
-
-        .features {
-            display: grid;
-            grid-template-columns: repeat(3, 1fr);
-            gap: 2rem;
-            padding: 4rem 8%;
-            background: #ffffff;
-        }
-
-        .feature-card {
-            padding: 2rem;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
-            transition: transform 0.3s;
-        }
-
-        .feature-card:hover {
-            transform: translateY(-5px);
-        }
-
-        .feature-icon {
-            font-size: 2.5rem;
-            margin-bottom: 1.5rem;
-            color: #0984e3;
-        }
-
-        h3 {
-            margin-bottom: 1rem;
-            font-size: 1.4rem;
-        }
-
-        .feature-text {
-            color: #636e72;
-            line-height: 1.6;
-        }
-
-        @media (max-width: 768px) {
-            .header {
-                justify-content: stretch;
-                flex-direction: column;
-                padding: 1rem 5%;
-            }
-
-            .nav-button {
-                width: 100%;
-                text-align: center;
-            }
-
-            .hero {
-                padding: 72px 5% 56px;
-            }
-
-            .features {
-                grid-template-columns: 1fr;
-                padding: 2.5rem 5%;
-            }
-
-            h1 {
-                font-size: 2.5rem;
-            }
-
-            .price {
-                font-size: 2.2rem;
-            }
-
-            .trial {
-                font-size: 1rem;
-            }
-
-            .subtitle {
-                font-size: 1.05rem;
-            }
-        }
-    </style>
-    <link href="https://fonts.googleapis.com/css2?family=Roboto:wght@400;500;700&display=swap" rel="stylesheet">
-    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css" rel="stylesheet">
+  <link rel="stylesheet" href="{% static 'landing/rosscrm.css' %}">
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "{{ canonical_url|escapejs }}#organization",
+        "name": "rossCRM",
+        "url": "{{ canonical_url|escapejs }}"
+      },
+      {
+        "@type": "SoftwareApplication",
+        "@id": "{{ canonical_url|escapejs }}#software",
+        "name": "rossCRM",
+        "applicationCategory": "BusinessApplication",
+        "operatingSystem": "Web",
+        "inLanguage": "ru",
+        "url": "{{ canonical_url|escapejs }}",
+        "description": "CRM-система для автоматизации работы юридических компаний.",
+        "featureList": [
+          "Управление заявками и клиентами",
+          "Договоры и документы",
+          "Календарь и задачи",
+          "Учёт поступлений и расчёт зарплаты",
+          "Филиалы и сотрудники",
+          "Интеграция с Tilda"
+        ],
+        "publisher": {"@id": "{{ canonical_url|escapejs }}#organization"}
+      },
+      {
+        "@type": "FAQPage",
+        "mainEntity": [
+          {
+            "@type": "Question",
+            "name": "Для кого подходит rossCRM?",
+            "acceptedAnswer": {"@type": "Answer", "text": "rossCRM создана для юридических компаний, филиальных сетей и самостоятельных специалистов, которым нужен системный учёт заявок, клиентов, договоров и работы команды."}
+          },
+          {
+            "@type": "Question",
+            "name": "Можно ли работать нескольким отделам?",
+            "acceptedAnswer": {"@type": "Answer", "text": "Да. В системе предусмотрены роли для администраторов, менеджеров, операторов, юристов первичного приёма, директоров и представителей."}
+          },
+          {
+            "@type": "Question",
+            "name": "Есть ли интеграция с сайтом?",
+            "acceptedAnswer": {"@type": "Answer", "text": "В rossCRM предусмотрена интеграция с формами Tilda для автоматического создания заявок."}
+          }
+        ]
+      }
+    ]
+  }
+  </script>
 </head>
 <body>
-    <nav class="header">
-        <a href="{% url 'all_leads' %}" class="nav-button login">Авторизоваться</a>
-        <a href="{% url 'reg_company'%}" class="nav-button register">Зарегистрировать компанию</a>
-    </nav>
+  <a class="skip-link" href="#main-content">Перейти к содержанию</a>
 
-    <section class="hero">
-        <h1>LegalCRM</h1>
-        <p class="subtitle">
-            Профессиональная CRM-платформа для автоматизации юридической практики.
-            Управляйте делами, клиентами и документами в едином цифровом пространстве.
-        </p>
-<!--
-        <div class="pricing">
-            <div class="price">7 000 ₽/месяц</div>
-            <div class="trial">Пробный период 1 месяц</div>
-        </div>-->
+  <header class="site-header">
+    <div class="container header-inner">
+      <a class="brand" href="#top" aria-label="rossCRM — на главную">
+        <span class="brand-mark" aria-hidden="true">R</span>
+        <span><b>ross</b><strong>CRM</strong></span>
+      </a>
+
+      <nav class="desktop-nav" aria-label="Основная навигация">
+        <a href="#capabilities">Возможности</a>
+        <a href="#workflow">Как работает</a>
+        <a href="#teams">Для команды</a>
+        <a href="#faq">Вопросы</a>
+      </nav>
+
+      <div class="header-actions">
+        <a class="button button-ghost" href="{% url 'all_leads' %}">Войти</a>
+        <a class="button button-primary button-small" href="{% url 'reg_company' %}">Начать работу</a>
+      </div>
+    </div>
+  </header>
+
+  <main id="main-content">
+    <section class="hero" id="top">
+      <div class="hero-glow" aria-hidden="true"></div>
+      <div class="container hero-grid">
+        <div class="hero-copy">
+          <p class="eyebrow"><span></span> CRM для юридического бизнеса</p>
+          <h1>Юридическая компания.<br><em>В полном порядке.</em></h1>
+          <p class="hero-lead">rossCRM объединяет заявки, клиентов, договоры, календарь, сотрудников и поступления. Руководитель видит процессы, а команда понимает, что делать дальше.</p>
+          <div class="hero-actions">
+            <a class="button button-primary" href="{% url 'reg_company' %}">Создать компанию</a>
+            <a class="button button-light" href="#capabilities">Посмотреть возможности</a>
+          </div>
+          <ul class="hero-points" aria-label="Ключевые преимущества">
+            <li><span>✓</span> Единая база клиентов</li>
+            <li><span>✓</span> Контроль по филиалам</li>
+            <li><span>✓</span> Роли и права доступа</li>
+          </ul>
+        </div>
+
+        <div class="product-stage" aria-label="Пример рабочего пространства rossCRM">
+          <div class="stage-label">Рабочее пространство</div>
+          <div class="app-window">
+            <div class="app-topbar">
+              <div class="window-dots"><i></i><i></i><i></i></div>
+              <div class="app-search">Поиск по клиентам</div>
+              <div class="app-avatar">АК</div>
+            </div>
+            <div class="app-layout">
+              <aside class="app-sidebar" aria-hidden="true">
+                <div class="mini-logo">R</div>
+                <span class="active"></span><span></span><span></span><span></span><span></span>
+              </aside>
+              <div class="app-content">
+                <div class="app-heading"><div><small>Сегодня</small><b>Рабочий обзор</b></div><button>+ Заявка</button></div>
+                <div class="metric-grid">
+                  <article><small>Новые заявки</small><b>В работе</b><i class="blue"></i></article>
+                  <article><small>Записи в офис</small><b>На сегодня</b><i class="gold"></i></article>
+                  <article><small>Задачи</small><b>По срокам</b><i class="green"></i></article>
+                </div>
+                <div class="workspace-grid">
+                  <div class="lead-table">
+                    <div class="table-title"><b>Последние заявки</b><span>Все заявки</span></div>
+                    <div class="lead-row"><i class="person p1">АМ</i><span><b>Анна М.</b><small>Первичная консультация</small></span><em class="status new">Новая</em></div>
+                    <div class="lead-row"><i class="person p2">ИС</i><span><b>Игорь С.</b><small>Документы приняты</small></span><em class="status work">В работе</em></div>
+                    <div class="lead-row"><i class="person p3">ОВ</i><span><b>Ольга В.</b><small>Передано представителю</small></span><em class="status court">Договор</em></div>
+                  </div>
+                  <div class="today-card">
+                    <div class="today-head"><b>Календарь</b><span>●</span></div>
+                    <div class="date-line"><strong>10</strong><span>Ноябрь<br><small>Вторник</small></span></div>
+                    <div class="event"><i></i><span><b>Запись в офис</b><small>Консультация</small></span></div>
+                    <div class="event gold-event"><i></i><span><b>Созвон</b><small>По договору</small></span></div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
     </section>
 
-    <section class="features">
-        <div class="feature-card">
-            <i class="feature-icon fas fa-balance-scale"></i>
-            <h3>Управление делами</h3>
-            <p class="feature-text">
-                Полный контроль над всеми процессами, сроками и задачами
-            </p>
-        </div>
-
-        <div class="feature-card">
-            <i class="feature-icon fas fa-file-contract"></i>
-            <h3>Документооборот</h3>
-            <p class="feature-text">
-                Облачное хранилище с расширенной безопасностью и привязкак всех документов к каждому клиенту
-            </p>
-        </div>
-
-        <div class="feature-card">
-            <i class="feature-icon fas fa-chart-line"></i>
-            <h3>Аналитика</h3>
-            <p class="feature-text">
-                Персонализированные дашборды, отчетность
-                по эффективности
-            </p>
-        </div>
+    <section class="signal-bar" aria-label="Основные направления автоматизации">
+      <div class="container signal-list">
+        <span>Заявки</span><i></i><span>Клиенты</span><i></i><span>Договоры</span><i></i><span>Команда</span><i></i><span>Финансы</span><i></i><span>Аналитика</span>
+      </div>
     </section>
-    
-    <footer style="background: #2d3436; color: #fff; padding: 2.5rem 8% 2rem; text-align: center; margin-top: 0;">
-        <div style="font-size: 1.2rem; font-weight: 500; margin-bottom: 0.7rem;"></div>
-        <div style="margin-bottom: 0.5rem;"></div>
-        <div style="margin-bottom: 0.5rem;"><a href="tel:89912259529" style="color: #74b9ff; text-decoration: none;"></a></div>
-        <div style="font-size: 0.95rem; color: #b2bec3; margin-top: 1.2rem;">&copy; vseCRM.ru, 2025</div>
-    </footer>
+
+    <section class="section problem-section">
+      <div class="container split-heading">
+        <div>
+          <p class="eyebrow dark"><span></span> Порядок вместо ручного контроля</p>
+          <h2>Когда бизнес растёт,<br>таблиц уже недостаточно</h2>
+        </div>
+        <p>CRM-система превращает разрозненные звонки, переписки и файлы в управляемый процесс. Каждое обращение получает ответственного, статус и понятный следующий шаг.</p>
+      </div>
+      <div class="container problem-grid">
+        <article><span>01</span><h3>Заявки не теряются</h3><p>Новые обращения собраны в одном месте, распределяются между сотрудниками и проходят по заданным статусам.</p></article>
+        <article><span>02</span><h3>Сроки видны заранее</h3><p>Записи в офис, созвоны, задачи и события помогают команде работать по плану.</p></article>
+        <article><span>03</span><h3>Руководитель видит картину</h3><p>Филиалы, сотрудники, поступления и загрузка находятся в едином рабочем контуре.</p></article>
+      </div>
+    </section>
+
+    <section class="section capabilities" id="capabilities">
+      <div class="container section-heading centered">
+        <p class="eyebrow dark"><span></span> Возможности rossCRM</p>
+        <h2>Всё необходимое для работы<br>юридической компании</h2>
+        <p>Модули связаны между собой: информация о клиенте сопровождает заявку от первого обращения до договора и дальнейшей работы.</p>
+      </div>
+      <div class="container feature-grid">
+        <article class="feature-card feature-main">
+          <div class="feature-icon">↗</div><span class="feature-number">01</span>
+          <h3>Заявки и клиенты</h3><p>Единая карточка обращения, статусы, ответственные сотрудники, комментарии, история изменений и быстрый поиск.</p>
+          <div class="mini-pipeline" aria-hidden="true"><span>Новая</span><i></i><span>В работе</span><i></i><span>Договор</span></div>
+        </article>
+        <article class="feature-card"><div class="feature-icon">▣</div><span class="feature-number">02</span><h3>Договоры и документы</h3><p>Суммы, первоначальные платежи, график доплат и файлы клиента доступны из одной карточки.</p></article>
+        <article class="feature-card"><div class="feature-icon">□</div><span class="feature-number">03</span><h3>Календарь и задачи</h3><p>Записи в офис, созвоны, судебные события и личные задачи собраны по датам и сотрудникам.</p></article>
+        <article class="feature-card"><div class="feature-icon">₽</div><span class="feature-number">04</span><h3>Поступления и зарплата</h3><p>Фиксация фактических оплат и расчёт зарплаты сотрудников за выбранный период по заданным условиям.</p></article>
+        <article class="feature-card"><div class="feature-icon">⌂</div><span class="feature-number">05</span><h3>Филиалы и команда</h3><p>Разделение данных по компаниям и филиалам, роли сотрудников и доступ к нужному рабочему контуру.</p></article>
+        <article class="feature-card feature-accent"><div class="feature-icon">◎</div><span class="feature-number">06</span><h3>Контроль и аналитика</h3><p>Рабочие показатели помогают оценивать движение заявок, загрузку и финансовую активность бизнеса.</p><div class="chart-bars" aria-hidden="true"><i></i><i></i><i></i><i></i><i></i><i></i></div></article>
+      </div>
+    </section>
+
+    <section class="section workflow" id="workflow">
+      <div class="container workflow-shell">
+        <div class="workflow-intro">
+          <p class="eyebrow"><span></span> От обращения до результата</p>
+          <h2>Один понятный маршрут клиента</h2>
+          <p>rossCRM связывает работу отделов. Данные не приходится переносить вручную между таблицами и чатами.</p>
+          <a class="text-link" href="{% url 'reg_company' %}">Настроить рабочее пространство <span>→</span></a>
+        </div>
+        <ol class="steps">
+          <li><span>01</span><div><h3>Получите заявку</h3><p>Создайте обращение вручную или получите его через интеграцию с Tilda.</p></div></li>
+          <li><span>02</span><div><h3>Назначьте ответственного</h3><p>Передайте заявку оператору, юристу первичного приёма или представителю.</p></div></li>
+          <li><span>03</span><div><h3>Ведите клиента</h3><p>Фиксируйте встречи, комментарии, договоры, документы и поступления.</p></div></li>
+          <li><span>04</span><div><h3>Контролируйте процесс</h3><p>Следите за статусами, задачами, календарями и результатами команды.</p></div></li>
+        </ol>
+      </div>
+    </section>
+
+    <section class="section teams" id="teams">
+      <div class="container section-heading">
+        <p class="eyebrow dark"><span></span> Единая система для всей команды</p>
+        <h2>Каждому — свой рабочий контур.<br>Руководителю — общая картина.</h2>
+      </div>
+      <div class="container role-grid">
+        <article><div class="role-top"><span>01</span><i>Р</i></div><h3>Руководитель</h3><p>Контролирует филиалы, сотрудников, движение заявок и финансовые показатели.</p><ul><li>Обзор компании</li><li>Управление командой</li><li>Расчёт зарплаты</li></ul></article>
+        <article class="role-featured"><div class="role-top"><span>02</span><i>Ю</i></div><h3>Юрист</h3><p>Работает с закреплёнными клиентами, встречами, договорами, документами и доплатами.</p><ul><li>Карточка клиента</li><li>Календарь и задачи</li><li>Договорная работа</li></ul></article>
+        <article><div class="role-top"><span>03</span><i>О</i></div><h3>Отделы и представители</h3><p>Получают только необходимые заявки и видят информацию в рамках своей роли.</p><ul><li>Распределение обращений</li><li>Статусы и комментарии</li><li>Рабочие события</li></ul></article>
+      </div>
+    </section>
+
+    <section class="section integrations">
+      <div class="container integrations-grid">
+        <div>
+          <p class="eyebrow dark"><span></span> Связанные инструменты</p>
+          <h2>Меньше ручных действий.<br>Больше времени на клиентов.</h2>
+          <p>Встроенные модули и интеграции помогают собрать ежедневную работу юридического бизнеса в одной CRM.</p>
+        </div>
+        <div class="integration-list">
+          <article><i>T</i><span><b>Tilda</b><small>Заявки с форм сайта</small></span><em>Интеграция</em></article>
+          <article><i>☎</i><span><b>Записи разговоров</b><small>Материалы коммуникаций</small></span><em>Контроль</em></article>
+          <article><i>◫</i><span><b>Календари</b><small>Офис, созвоны и инстанции</small></span><em>Планирование</em></article>
+          <article><i>◇</i><span><b>База знаний</b><small>Материалы для сотрудников</small></span><em>Обучение</em></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section seo-section">
+      <div class="container seo-card">
+        <div><span class="big-letter">R</span><p class="eyebrow"><span></span> Оптимизация юридического бизнеса</p><h2>CRM-система, которая поддерживает порядок каждый день</h2></div>
+        <div class="seo-copy"><p><strong>rossCRM</strong> помогает юридической компании выстроить единый процесс работы с обращениями. Руководителю не нужно собирать информацию из отдельных таблиц, календарей и переписок — ключевые данные связаны с клиентом и доступны в системе.</p><p>Автоматизация освобождает команду от повторного ввода данных, упрощает контроль сроков и делает движение каждой заявки прозрачнее. Система подходит как для компании с отделами и филиалами, так и для самостоятельной юридической практики.</p></div>
+      </div>
+    </section>
+
+    <section class="section faq" id="faq">
+      <div class="container faq-grid">
+        <div><p class="eyebrow dark"><span></span> Частые вопросы</p><h2>Коротко о главном</h2><p>Ответы о работе CRM для юридического бизнеса.</p></div>
+        <div class="faq-list">
+          <details open><summary>Для кого подходит rossCRM?<span>+</span></summary><p>Для юридических компаний, филиальных сетей и самостоятельных специалистов, которым нужен системный учёт заявок, клиентов, договоров и работы команды.</p></details>
+          <details><summary>Можно ли работать нескольким отделам?<span>+</span></summary><p>Да. В системе предусмотрены роли для администраторов, менеджеров, операторов, юристов первичного приёма, директоров и представителей.</p></details>
+          <details><summary>Как учитываются разные филиалы?<span>+</span></summary><p>Сотрудники и заявки привязываются к компании и филиалу. Это позволяет разделять рабочие данные и формировать расчёты в нужном контуре.</p></details>
+          <details><summary>Есть ли интеграция с сайтом?<span>+</span></summary><p>Да. Формы Tilda можно подключить к rossCRM, чтобы новые обращения автоматически создавались в системе.</p></details>
+          <details><summary>Можно ли начать с одной учётной записи?<span>+</span></summary><p>Да. Для самостоятельного специалиста предусмотрен режим одной учётной записи, а при развитии бизнеса можно перейти к работе с отделами.</p></details>
+        </div>
+      </div>
+    </section>
+
+    <section class="final-cta">
+      <div class="cta-glow" aria-hidden="true"></div>
+      <div class="container cta-inner">
+        <div><p class="eyebrow"><span></span> rossCRM</p><h2>Соберите юридический бизнес<br>в единой системе</h2></div>
+        <div><p>Создайте компанию и настройте рабочее пространство под свою команду.</p><a class="button button-gold" href="{% url 'reg_company' %}">Начать работу <span>→</span></a></div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="container footer-grid">
+      <div><a class="brand footer-brand" href="#top"><span class="brand-mark">R</span><span><b>ross</b><strong>CRM</strong></span></a><p>CRM-система для управления юридическим бизнесом.</p></div>
+      <nav aria-label="Навигация в подвале"><b>Продукт</b><a href="#capabilities">Возможности</a><a href="#workflow">Как работает</a><a href="#teams">Для команды</a></nav>
+      <nav aria-label="Действия в подвале"><b>Аккаунт</b><a href="{% url 'all_leads' %}">Войти</a><a href="{% url 'reg_company' %}">Регистрация компании</a></nav>
+    </div>
+    <div class="container footer-bottom"><span>© {{ current_year }} rossCRM</span><span>Автоматизация юридического бизнеса</span></div>
+  </footer>
 </body>
 </html>

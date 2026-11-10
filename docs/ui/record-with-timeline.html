@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LegalCRM — карточка клиента с лентой дела</title>
+  <link rel="stylesheet" href="record-with-timeline.css">
+</head>
+<body>
+  <aside class="crm-sidebar">
+    <div class="crm-user">
+      <small>ID компании: 17</small>
+      <strong>Администратор</strong>
+      <a href="#">admin@company.ru</a>
+    </div>
+    <div class="month-buttons"><button>Предыдущий месяц</button><button>Следующий месяц</button></div>
+    <div class="mini-calendar">
+      <div><button>‹</button><strong>Ноябрь 2026</strong><button>›</button></div>
+      <div class="week"><span>Пн</span><span>Вт</span><span>Ср</span><span>Чт</span><span>Пт</span><span>Сб</span><span>Вс</span></div>
+      <div class="days"><span>2</span><span>3</span><span>4</span><span>5</span><span>6</span><span>7</span><b>9</b></div>
+    </div>
+    <div class="wallet"><span>₽</span><div><small>Баланс компании</small><strong>125 000,00 ₽</strong></div><i>›</i></div>
+    <nav class="crm-menu">
+      <a class="create" href="#">＋</a>
+      <a href="#">Первичка</a>
+      <a class="active" href="#">Все заявки</a>
+      <a href="#">Список задач</a>
+      <a href="#">Зарплата</a>
+      <a href="#">Пользователи</a>
+      <a href="#">Биржа заявок</a>
+      <a href="#">База знаний</a>
+      <a href="#">Записи разговоров</a>
+    </nav>
+  </aside>
+
+  <main class="crm-content">
+    <div class="mockup-notice"><strong>Безопасный макет</strong><span>Рабочий шаблон карточки и маршруты CRM не изменены</span></div>
+
+    <header class="crm-toolbar">
+      <input type="text" placeholder="Поиск по имени, телефону, описанию, ID или № договора">
+      <select><option>Все операторы</option></select>
+      <select><option>Все юристы ЮПП</option></select>
+      <select><option>Статус заявки</option></select>
+      <button>Применить</button>
+    </header>
+
+    <section class="record-card">
+      <div class="record-title-row">
+        <div>
+          <a class="back-link" href="#">← Все заявки</a>
+          <h1>Иван Петров</h1>
+          <a class="portal-link" href="#">legalcrm.ru/lk/48f2...a190</a>
+        </div>
+        <div class="record-title-actions">
+          <span class="lead-number">Заявка №1842</span>
+          <span class="status-badge">Договор</span>
+          <button class="button primary">Редактировать</button>
+        </div>
+      </div>
+
+      <div class="overview-grid">
+        <div class="description-card">
+          <span class="label">Описание</span>
+          <p>Необходима процедура банкротства физического лица. Есть исполнительное производство и задолженность перед тремя банками.</p>
+        </div>
+        <div class="quick-facts">
+          <div><span>Телефон</span><strong>+7 999 123-45-67</strong></div>
+          <div><span>Тематика</span><strong>Банкротство</strong></div>
+          <div><span>Источник</span><strong>Tilda</strong></div>
+          <div><span>Последнее изменение</span><strong>Сегодня, 12:40</strong></div>
+        </div>
+      </div>
+
+      <div class="department-comments">
+        <article><span>Комментарии КЦ</span><p>Первичный контакт проведён. Клиент готов приехать с документами.</p><small>Дмитрий Орлов · 6 ноября</small></article>
+        <article><span>Комментарии ЮПП</span><p>Предварительно подходит под процедуру. Требуется проверить исполнительные производства.</p><small>Анна Соколова · сегодня</small></article>
+        <article><span>Комментарии ОП</span><p class="empty">Комментариев пока нет</p></article>
+      </div>
+
+      <section class="next-action">
+        <div class="next-action-icon">!</div>
+        <div><span>Следующее обязательное действие</span><strong>Получить выписку из БКИ и проверить комплект документов</strong><small>Анна Соколова · обещано клиенту 8 ноября</small></div>
+        <div class="next-action-date"><span>Срок</span><strong>Сегодня, 18:00</strong></div>
+        <button class="button dark">Выполнено</button>
+      </section>
+
+      <div class="record-tabs">
+        <button>Обзор</button>
+        <button class="active">Лента дела <b>12</b></button>
+        <button>Договоры <b>1</b></button>
+        <button>Документы <b>6</b></button>
+        <button>Записи разговоров <b>3</b></button>
+      </div>
+
+      <div class="timeline-layout">
+        <section class="embedded-timeline">
+          <div class="timeline-heading">
+            <div><h2>Лента дела</h2><p>Только значимые события, решения и обещания клиенту</p></div>
+            <div class="timeline-actions"><select><option>Все события</option></select><button class="button primary">+ Событие</button></div>
+          </div>
+
+          <div class="day-label">Сегодня, 9 ноября</div>
+
+          <article class="event event-important">
+            <div class="event-marker amber">✓</div>
+            <div class="event-body">
+              <div class="event-meta"><span class="tag amber-tag">Документы</span><time>12:40</time><i>Анна Соколова · юрист</i></div>
+              <h3>Получена часть комплекта документов</h3>
+              <p>Паспорт и кредитные договоры проверены. Не хватает выписки из БКИ и справки о доходах.</p>
+              <div class="file-row"><span>PDF</span><div><strong>Паспорт_Петров.pdf</strong><small>2,4 МБ · загружено клиентом</small></div><b>Проверен</b></div>
+            </div>
+          </article>
+
+          <article class="event">
+            <div class="event-marker blue">↗</div>
+            <div class="event-body">
+              <div class="event-meta"><span class="tag blue-tag">Звонок</span><time>10:15</time><i>Мария Крылова · КЦ</i></div>
+              <h3>Исходящий звонок · 6 минут</h3>
+              <p>Клиент подтвердил, что загрузит недостающие документы до конца дня.</p>
+              <div class="client-promise"><span>Обещание клиенту</span><strong>Проверить комплект и дать ответ до 10 ноября, 14:00</strong></div>
+            </div>
+          </article>
+
+          <div class="day-label">7 ноября</div>
+
+          <article class="event compact">
+            <div class="event-marker green">₽</div>
+            <div class="event-body"><div class="event-meta"><span class="tag green-tag">Оплата</span><time>16:28</time></div><h3>Первоначальный платёж 50 000 ₽ подтверждён</h3><p>Договор №1048 · подтвердил Сергей Волков</p></div>
+          </article>
+
+          <article class="event compact">
+            <div class="event-marker violet">⇄</div>
+            <div class="event-body handoff">
+              <div class="event-meta"><span class="tag violet-tag">Передача</span><time>15:05</time></div>
+              <h3>Дело передано из КЦ в юридический отдел</h3>
+              <div class="handoff-people"><span>Передал <b>Дмитрий Орлов</b></span><span>Приняла <b>Анна Соколова</b></span></div>
+              <ul><li><b>Обещано:</b> правовая оценка за два рабочих дня</li><li><b>Риск:</b> не указан номер исполнительного производства</li></ul>
+            </div>
+          </article>
+
+          <article class="event system-event">
+            <div class="event-marker gray">●</div>
+            <div class="event-body"><div class="event-meta"><span class="tag gray-tag">Система</span><time>14:52</time></div><p><strong>Статус изменён:</strong> «Запись в офис» → «Договор»</p></div>
+          </article>
+
+          <button class="load-more">Показать более ранние события</button>
+        </section>
+
+        <aside class="record-side-column">
+          <section class="info-card">
+            <div class="info-heading"><h2>Ответственные</h2><button>Изменить</button></div>
+            <dl><div><dt>КЦ</dt><dd>Мария Крылова</dd></div><div><dt>ЮПП</dt><dd>Анна Соколова</dd></div><div><dt>Представитель</dt><dd>Не назначен</dd></div></dl>
+          </section>
+          <section class="info-card">
+            <div class="info-heading"><h2>Документы</h2><span>3 из 6</span></div>
+            <div class="progress"><i></i></div>
+            <ul class="document-list"><li class="complete">✓ <span>Паспорт</span></li><li class="complete">✓ <span>Кредитные договоры</span></li><li class="complete">✓ <span>СНИЛС и ИНН</span></li><li class="late">! <span>Выписка из БКИ</span><b>сегодня</b></li><li>· <span>Справка о доходах</span></li><li>· <span>Исполнительные производства</span></li></ul>
+            <button class="outline-button">Открыть документы</button>
+          </section>
+          <section class="info-card">
+            <div class="info-heading"><h2>Договор №1048</h2><span class="paid">50%</span></div>
+            <dl><div><dt>Сумма</dt><dd>100 000 ₽</dd></div><div><dt>Внесено</dt><dd>50 000 ₽</dd></div><div><dt>Следующая доплата</dt><dd class="warn">15 ноября</dd></div></dl>
+          </section>
+        </aside>
+      </div>
+
+      <div class="bottom-actions"><button class="button secondary">Вернуться к списку</button><button class="button primary">Запись в офис</button><button class="button warning">Назначить созвон</button><button class="button danger">Передать представителям</button></div>
+    </section>
+  </main>
+</body>
+</html>

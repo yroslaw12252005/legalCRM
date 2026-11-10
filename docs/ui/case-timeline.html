@@ -1,0 +1,177 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>LegalCRM — лента дела</title>
+  <link rel="stylesheet" href="case-timeline.css">
+</head>
+<body>
+  <main class="page-shell">
+    <nav class="breadcrumbs" aria-label="Навигация">
+      <a href="#">Все заявки</a><span>/</span><a href="#">Иван Петров</a><span>/</span><strong>Лента дела</strong>
+    </nav>
+
+    <header class="case-header">
+      <div class="case-heading">
+        <div class="client-avatar">ИП</div>
+        <div>
+          <div class="eyebrow">Дело № 1842</div>
+          <h1>Иван Петров</h1>
+          <p>Банкротство физического лица · Москва</p>
+        </div>
+      </div>
+      <div class="header-actions">
+        <span class="case-status"><span></span>В работе</span>
+        <button class="button button-secondary">Карточка клиента</button>
+        <button class="button button-primary">+ Добавить событие</button>
+      </div>
+    </header>
+
+    <section class="attention-strip" aria-label="Следующее действие">
+      <div class="attention-icon">!</div>
+      <div class="attention-copy">
+        <span>Следующее обязательное действие</span>
+        <strong>Получить от клиента выписку из БКИ и проверить комплект документов</strong>
+        <small>Ответственный: Анна Соколова · обещано клиенту 8 ноября</small>
+      </div>
+      <div class="attention-date">
+        <span>Срок</span>
+        <strong>Сегодня, 18:00</strong>
+      </div>
+      <button class="button button-dark">Отметить выполненным</button>
+    </section>
+
+    <div class="workspace">
+      <section class="timeline-panel">
+        <div class="panel-toolbar">
+          <div>
+            <h2>Лента дела</h2>
+            <p>Значимые события, решения и обещания клиенту</p>
+          </div>
+          <div class="filters" aria-label="Фильтры событий">
+            <button class="filter active">Все</button>
+            <button class="filter">Коммуникации</button>
+            <button class="filter">Документы</button>
+            <button class="filter">Сроки</button>
+            <button class="filter">Оплаты</button>
+          </div>
+        </div>
+
+        <div class="date-divider"><span>Сегодня, 9 ноября</span></div>
+
+        <article class="timeline-item priority">
+          <div class="timeline-rail"><span class="event-icon event-icon-amber">✓</span></div>
+          <div class="event-card">
+            <div class="event-topline">
+              <div><span class="event-type amber">Задача</span><time>12:40</time></div>
+              <button class="event-menu" aria-label="Действия">•••</button>
+            </div>
+            <h3>Клиент прислал часть запрошенных документов</h3>
+            <p>Получены паспорт и кредитные договоры. Не хватает выписки из БКИ и справки о доходах за последние 6 месяцев.</p>
+            <div class="document-row">
+              <span class="file-mark">PDF</span>
+              <div><strong>Паспорт_Петров.pdf</strong><small>2,4 МБ · загружено клиентом</small></div>
+              <span class="document-state success">Проверен</span>
+            </div>
+            <div class="event-footer">
+              <span class="employee"><b class="avatar violet">АС</b>Анна Соколова · юрист</span>
+              <button class="text-button">Открыть документы →</button>
+            </div>
+          </div>
+        </article>
+
+        <article class="timeline-item">
+          <div class="timeline-rail"><span class="event-icon event-icon-blue">↗</span></div>
+          <div class="event-card">
+            <div class="event-topline">
+              <div><span class="event-type blue">Связь с клиентом</span><time>10:15</time></div>
+              <button class="event-menu" aria-label="Действия">•••</button>
+            </div>
+            <h3>Исходящий звонок · 6 минут</h3>
+            <p>Объяснили порядок подготовки заявления. Клиент подтвердил, что загрузит недостающие документы до конца дня.</p>
+            <div class="promise">
+              <span>Обещание клиенту</span>
+              <strong>Проверить комплект и дать обратную связь не позднее 10 ноября, 14:00</strong>
+            </div>
+            <div class="event-footer">
+              <span class="employee"><b class="avatar blue-avatar">МК</b>Мария Крылова · оператор</span>
+              <button class="text-button">Прослушать запись 06:12</button>
+            </div>
+          </div>
+        </article>
+
+        <div class="date-divider"><span>7 ноября</span></div>
+
+        <article class="timeline-item compact">
+          <div class="timeline-rail"><span class="event-icon event-icon-green">₽</span></div>
+          <div class="event-card">
+            <div class="event-topline"><div><span class="event-type green">Оплата</span><time>16:28</time></div></div>
+            <h3>Первоначальный платёж подтверждён</h3>
+            <p>50 000 ₽ по договору № 1048. Подтвердил Сергей Волков.</p>
+          </div>
+        </article>
+
+        <article class="timeline-item compact">
+          <div class="timeline-rail"><span class="event-icon event-icon-violet">⇄</span></div>
+          <div class="event-card handoff-card">
+            <div class="event-topline"><div><span class="event-type violet-tag">Передача дела</span><time>15:05</time></div></div>
+            <h3>Дело принято юридическим отделом</h3>
+            <div class="handoff-grid">
+              <div><span>Передал</span><strong>Дмитрий Орлов · КЦ</strong></div>
+              <div><span>Приняла</span><strong>Анна Соколова · ЮПП</strong></div>
+            </div>
+            <ul class="handoff-list">
+              <li><span>Контекст</span>Клиенту нужна процедура банкротства без залогового имущества.</li>
+              <li><span>Обещано</span>Первичная правовая оценка в течение двух рабочих дней.</li>
+              <li><span>Риск</span>Есть исполнительное производство, номер пока не предоставлен.</li>
+            </ul>
+          </div>
+        </article>
+
+        <article class="timeline-item compact muted-item">
+          <div class="timeline-rail"><span class="event-icon event-icon-gray">●</span></div>
+          <div class="event-card">
+            <div class="event-topline"><div><span class="event-type gray">Система</span><time>14:52</time></div></div>
+            <p class="system-copy"><strong>Статус изменён:</strong> «Запись в офис» → «Договор»</p>
+          </div>
+        </article>
+
+        <button class="show-more">Показать более ранние события</button>
+      </section>
+
+      <aside class="case-sidebar">
+        <section class="side-card">
+          <div class="side-card-heading"><h2>Состояние дела</h2><button>Изменить</button></div>
+          <dl class="facts">
+            <div><dt>Стадия</dt><dd>Сбор документов</dd></div>
+            <div><dt>Ответственный</dt><dd>Анна Соколова</dd></div>
+            <div><dt>Последний контакт</dt><dd>Сегодня, 10:15</dd></div>
+            <div><dt>Следующее обновление</dt><dd class="warning-text">До 10 ноября</dd></div>
+          </dl>
+        </section>
+
+        <section class="side-card">
+          <div class="side-card-heading"><h2>Комплект документов</h2><span>3 из 6</span></div>
+          <div class="progress"><span style="width:50%"></span></div>
+          <ul class="checklist">
+            <li class="done"><span>✓</span>Паспорт</li>
+            <li class="done"><span>✓</span>Кредитные договоры</li>
+            <li class="done"><span>✓</span>СНИЛС и ИНН</li>
+            <li class="waiting"><span>!</span>Выписка из БКИ <b>сегодня</b></li>
+            <li><span>·</span>Справка о доходах</li>
+            <li><span>·</span>Исполнительные производства</li>
+          </ul>
+          <button class="side-action">Открыть полный комплект</button>
+        </section>
+
+        <section class="side-card deadline-card">
+          <div class="side-card-heading"><h2>Ближайшие сроки</h2><span class="count-badge">2</span></div>
+          <div class="deadline"><time>10 ноя</time><div><strong>Обратная связь клиенту</strong><span>Анна Соколова · 14:00</span></div></div>
+          <div class="deadline"><time>14 ноя</time><div><strong>Подготовить заявление</strong><span>Юридический отдел</span></div></div>
+        </section>
+      </aside>
+    </div>
+  </main>
+</body>
+</html>
