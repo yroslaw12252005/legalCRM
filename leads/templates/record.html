@@ -480,7 +480,7 @@
                 {% endif %}
             </div>
             {% if can_edit_status %}
-            <form method="post">
+            <form method="post" class="crm-form crm-form--compact">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="update_status">
                 {{form_status.as_p}}
@@ -503,7 +503,7 @@
                 </div>
             </div>
             {% if can_edit_topic %}
-            <form method="post">
+            <form method="post" class="crm-form crm-form--compact">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="update_topic">
                 {{ form_topic.as_p }}
@@ -630,17 +630,17 @@
             <div class="stat-item">
                 <div class="stat-label">Прикрепленные операторы</div>
                 <div class="stat-value" style="color: #94a3b8;">{{ record.employees_KC }}</div>
-                <form method="post" style="display: flex;     flex-direction: column;">{% csrf_token %}{{form_employees_KC.as_p}}<input type="submit" class="btn btn-primary" style="margin-top: 0.8rem;" value="Прикрепить оператора"></form>
+                <form method="post" class="crm-form crm-form--compact">{% csrf_token %}{{form_employees_KC.as_p}}<input type="submit" class="btn btn-primary" value="Прикрепить оператора"></form>
             </div>
             {% endif %}
             {% if user.status == "Директор ЮПП" or user.status == "Администратор"%}
             <div class="stat-item">
                 <div class="stat-label">Прикрепленные юристы</div>
                 <div class="stat-value" style="color: #94a3b8;">{{ record.lawyer_display_name }}</div>
-                <form method="post"  style="display: flex;     flex-direction: column;">
+                <form method="post" class="crm-form crm-form--compact">
                                   {% csrf_token %}
                                   {{form_employees_UPP.as_p}}
-                                  <input type="submit" class="btn btn-primary" style="margin-top: 0.8rem;" value="Прикрепить юриста">
+                                  <input type="submit" class="btn btn-primary" value="Прикрепить юриста">
                     </form>
             </div>
              {% endif %}
@@ -648,10 +648,10 @@
             <div class="stat-item">
                 <div class="stat-label">Прикрепленные представители</div>
                 <div class="stat-value" style="color: #94a3b8;">{{ record.employees_REP }}</div>
-                <form method="post"  style="display: flex;     flex-direction: column;">
+                <form method="post" class="crm-form crm-form--compact">
                                   {% csrf_token %}
                                   {{form_employees_REP.as_p}}
-                                  <input type="submit" class="btn btn-primary" style="margin-top: 0.8rem;" value="Прикрепить представителя">
+                                  <input type="submit" class="btn btn-primary" value="Прикрепить представителя">
                     </form>
             </div>
              {% endif %}
@@ -661,7 +661,7 @@
         <div class="drag-area">
             <div class="icon">📁</div>
             <header>Загрузка документов</header>
-            <form method="POST" enctype="multipart/form-data">
+            <form method="POST" enctype="multipart/form-data" class="crm-form crm-form--compact">
                 {% csrf_token %}
                 {{ upload_file_form.as_p }}
                 <button type="submit">Загрузить</button>

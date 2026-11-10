@@ -2,21 +2,26 @@
 
 {% load static %}
 {% block content %}
-<link rel="stylesheet" href="{% static 'css/add_lead.css' %}" />
-<div class="row" style="justify-content: center;">
-    <div class="pole">
-        <h3 class="add_lead_title">Добавить заявку</h3>
+<div class="crm-form-page">
+    <section class="crm-form-card">
+        <header class="crm-form-header">
+          <span class="crm-form-eyebrow">Заявки</span>
+          <h1 class="crm-form-title">Новая заявка</h1>
+          <p class="crm-form-subtitle">Заполните контактные данные клиента и назначьте ответственных сотрудников.</p>
+        </header>
         {% if user.status == "Администратор" %}
         <div style="margin-bottom: 16px;">
             <a href="{% url 'import_records_from_excel' %}" class="btn btn-outline-primary">Загрузить заявки из Excel</a>
         </div>
         {% endif %}
-        <form action="{% url 'add_record' %}" class="form_add_lead" method="post">
+        <form action="{% url 'add_record' %}" class="crm-form" method="post">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit" class="btn btn-success">Создать заявку</button>
+            <div class="crm-form-actions">
+              <button type="submit" class="btn btn-primary">Создать заявку</button>
+            </div>
         </form>
-    </div>
+    </section>
 </div>
 
 {% endblock content %}

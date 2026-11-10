@@ -10,7 +10,7 @@
     <div class="card-body">
       <h4 class="mb-3">Удалить материал?</h4>
       <p class="mb-4">Материал: <strong>{{ material.title }}</strong></p>
-      <form method="post">
+      <form method="post" class="crm-form crm-form--compact">
         {% csrf_token %}
         <button type="submit" class="btn btn-danger">Удалить</button>
       </form>

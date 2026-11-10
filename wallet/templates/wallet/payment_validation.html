@@ -10,7 +10,7 @@
         <h1>Валидация платежа</h1>
         <p class="validation-lead">Выберите компанию и укажите сумму, которая фактически поступила на счёт.</p>
 
-        <form method="post" class="validation-form">
+        <form method="post" class="validation-form crm-form">
             {% csrf_token %}
             {% if form.non_field_errors %}<div class="form-error">{{ form.non_field_errors }}</div>{% endif %}
             {% for field in form %}

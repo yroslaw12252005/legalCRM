@@ -1,62 +1,58 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="col-md-8 offset-md-2">
-    <h1>Редактирование заявки #{{ record.id }}</h1>
+<div class="crm-form-page">
+    <header class="crm-form-header">
+      <span class="crm-form-eyebrow">Заявка №{{ record.id }}</span>
+      <h1 class="crm-form-title">Редактирование заявки</h1>
+      <p class="crm-form-subtitle">Измените доступные данные и сохраните нужный раздел.</p>
+    </header>
 
     {% if can_edit_main %}
-        <div class="card mb-4">
-            <div class="card-body">
+        <div class="crm-form-card mb-4">
                 <h4>Основные данные заявки</h4>
-                <form method="post">
+                <form method="post" class="crm-form">
                     {% csrf_token %}
                     <input type="hidden" name="action" value="update_record">
                     {{ edit_form.as_p }}
-                    <button type="submit" class="btn btn-success">Сохранить имя и описание</button>
+                    <div class="crm-form-actions"><button type="submit" class="btn btn-primary">Сохранить основные данные</button></div>
                 </form>
-            </div>
         </div>
     {% endif %}
 
     {% if can_edit_comment_kc %}
-    <div class="card mb-4">
-        <div class="card-body">
+    <div class="crm-form-card mb-4">
             <h4>Комментарии КЦ</h4>
-            <form method="post">
+            <form method="post" class="crm-form">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="update_comment_kc">
                 {{ comment_kc_form.as_p }}
-                <button type="submit" class="btn btn-primary">Сохранить комментарии КЦ</button>
+                <div class="crm-form-actions"><button type="submit" class="btn btn-primary">Сохранить комментарии КЦ</button></div>
             </form>
-        </div>
     </div>
     {% endif %}
 
     {% if can_edit_comment_upp %}
-    <div class="card mb-4">
-        <div class="card-body">
+    <div class="crm-form-card mb-4">
             <h4>Комментарии ЮПП</h4>
-            <form method="post">
+            <form method="post" class="crm-form">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="update_comment_upp">
                 {{ comment_upp_form.as_p }}
-                <button type="submit" class="btn btn-primary">Сохранить комментарии ЮПП</button>
+                <div class="crm-form-actions"><button type="submit" class="btn btn-primary">Сохранить комментарии ЮПП</button></div>
             </form>
-        </div>
     </div>
     {% endif %}
 
     {% if can_edit_comment_op %}
-    <div class="card mb-4">
-        <div class="card-body">
+    <div class="crm-form-card mb-4">
             <h4>Комментарии ОП</h4>
-            <form method="post">
+            <form method="post" class="crm-form">
                 {% csrf_token %}
                 <input type="hidden" name="action" value="update_comment_op">
                 {{ comment_op_form.as_p }}
-                <button type="submit" class="btn btn-primary">Сохранить комментарии ОП</button>
+                <div class="crm-form-actions"><button type="submit" class="btn btn-primary">Сохранить комментарии ОП</button></div>
             </form>
-        </div>
     </div>
     {% endif %}
 

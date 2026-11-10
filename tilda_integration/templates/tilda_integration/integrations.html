@@ -35,7 +35,7 @@
 
   <div class="tilda-card">
     <h3>Новое подключение</h3>
-    <form method="post" action="{% url 'tilda_integration_create' %}" class="tilda-form">
+    <form method="post" action="{% url 'tilda_integration_create' %}" class="tilda-form crm-form">
       {% csrf_token %}
       {{ form.as_p }}
       <button class="tilda-btn" type="submit">Создать подключение</button>

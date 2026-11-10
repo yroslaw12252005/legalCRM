@@ -2,12 +2,20 @@
 
 {% load static %}
 {% block content %}
-
-    <form action="{% url 'add_felial' %}" method="post">
+<div class="crm-form-page crm-form-page--compact">
+  <section class="crm-form-card">
+    <header class="crm-form-header">
+      <span class="crm-form-eyebrow">Структура компании</span>
+      <h1 class="crm-form-title">Новый филиал</h1>
+      <p class="crm-form-subtitle">Добавьте название и город филиала.</p>
+    </header>
+    <form action="{% url 'add_felial' %}" method="post" class="crm-form">
         {% csrf_token %}
         {{form.as_p}}
-        <button type="submit" class="btn btn-success">Создать Филиал</button>
+        <div class="crm-form-actions">
+          <button type="submit" class="btn btn-primary">Создать филиал</button>
+        </div>
     </form>
-
-
+  </section>
+</div>
 {% endblock content %}

@@ -1,15 +1,21 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container" style="max-width: 640px; padding-top: 32px;">
-    <h1>Мой профиль</h1>
-    <p>Здесь можно изменить имя, email для входа и пароль.</p>
-
-    <form method="post">
+<div class="crm-form-page crm-form-page--compact">
+  <section class="crm-form-card">
+    <header class="crm-form-header">
+      <span class="crm-form-eyebrow">Профиль</span>
+      <h1 class="crm-form-title">Мои данные</h1>
+      <p class="crm-form-subtitle">Измените имя, email для входа или пароль.</p>
+    </header>
+    <form method="post" class="crm-form">
         {% csrf_token %}
         {{ form.non_field_errors }}
         {{ form.as_p }}
-        <button type="submit" class="btn btn-primary">Сохранить</button>
+        <div class="crm-form-actions">
+          <button type="submit" class="btn btn-primary">Сохранить изменения</button>
+        </div>
     </form>
+  </section>
 </div>
 {% endblock %}

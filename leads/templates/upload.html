@@ -1,22 +1,27 @@
 {% extends "base.html" %}
 {% load static %}
 {% block content %}
-<div class="row" style="justify-content: center;">
-    <div class="pole" style="max-width: 640px;">
-        <h3 class="add_lead_title">Загрузка заявок через Excel</h3>
-        <p style="margin-bottom: 16px; color: #4b5563;">
+<div class="crm-form-page crm-form-page--compact">
+    <section class="crm-form-card">
+        <header class="crm-form-header">
+          <span class="crm-form-eyebrow">Импорт</span>
+          <h1 class="crm-form-title">Загрузка заявок из Excel</h1>
+          <p class="crm-form-subtitle">
             Шаблон должен содержать столбцы <strong>Имя</strong> и <strong>Телефон</strong>.
             Остальные поля останутся базовыми, а статус каждой заявки автоматически станет <strong>Новая</strong>.
-        </p>
+          </p>
+        </header>
         <div style="display: flex; gap: 12px; flex-wrap: wrap; margin-bottom: 18px;">
             <a href="{% url 'download_excel_template' %}" class="btn btn-outline-primary">Скачать шаблон Excel</a>
             <a href="{% url 'add_record' %}" class="btn btn-outline-secondary">Вернуться к созданию заявки</a>
         </div>
-        <form method="post" enctype="multipart/form-data">
+        <form method="post" enctype="multipart/form-data" class="crm-form">
             {% csrf_token %}
             {{ form.as_p }}
-            <button type="submit" class="btn btn-success">Загрузить заявки</button>
+            <div class="crm-form-actions">
+              <button type="submit" class="btn btn-primary">Загрузить заявки</button>
+            </div>
         </form>
-    </div>
+    </section>
 </div>
 {% endblock content %}

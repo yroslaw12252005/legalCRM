@@ -8,7 +8,7 @@
 
   <h3 class="mb-3">{% if material %}Редактировать материал{% else %}Добавить материал{% endif %}</h3>
 
-  <form method="post" enctype="multipart/form-data" class="card card-body">
+  <form method="post" enctype="multipart/form-data" class="card card-body crm-form">
     {% csrf_token %}
     <div class="mb-3">
       {{ form.title.label_tag }}
@@ -38,7 +38,7 @@
         <div class="text-danger small">{{ form.category.errors }}</div>
       {% endif %}
     </div>
-    <button type="submit" class="btn btn-primary">Сохранить</button>
+    <div class="crm-form-actions"><button type="submit" class="btn btn-primary">Сохранить</button></div>
   </form>
 </div>
 {% endblock content %}

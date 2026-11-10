@@ -8,7 +8,7 @@
 
   <h3 class="mb-3">Добавить категорию</h3>
 
-  <form method="post" class="card card-body">
+  <form method="post" class="card card-body crm-form">
     {% csrf_token %}
     <div class="mb-3">
       {{ form.name.label_tag }}
@@ -17,7 +17,7 @@
         <div class="text-danger small">{{ form.name.errors }}</div>
       {% endif %}
     </div>
-    <button type="submit" class="btn btn-primary">Сохранить</button>
+    <div class="crm-form-actions"><button type="submit" class="btn btn-primary">Сохранить</button></div>
   </form>
 </div>
 {% endblock content %}

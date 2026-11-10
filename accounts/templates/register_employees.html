@@ -2,15 +2,14 @@
 
 
 {% block content %}
-{% load static %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous">
-<link rel="stylesheet" href="{% static 'css/reg_employees.css' %}" />
-
-<div class="col-md-6 offset-md-3">
-  <h1>{% if is_editing %}Редактирование сотрудника{% else %}Регистрация сотрудника{% endif %}</h1>
-	<br>
-
-	<form action="#" method="post">
+<div class="crm-form-page">
+  <section class="crm-form-card">
+    <header class="crm-form-header">
+      <span class="crm-form-eyebrow">Сотрудники</span>
+      <h1 class="crm-form-title">{% if is_editing %}Редактирование сотрудника{% else %}Новый сотрудник{% endif %}</h1>
+      <p class="crm-form-subtitle">Укажите данные для входа, роль и условия расчёта зарплаты.</p>
+    </header>
+	<form action="#" method="post" class="crm-form">
 		{% csrf_token %}
 
 		{% if form.errors %}
@@ -26,11 +25,12 @@
 
 		{{form.as_p}}
 
-		<button type="submit" class="btn btn-success">{% if is_editing %}Сохранить{% else %}Зарегистрировать{% endif %}</button>
+		<div class="crm-form-actions">
+          <button type="submit" class="btn btn-primary">{% if is_editing %}Сохранить изменения{% else %}Создать сотрудника{% endif %}</button>
+        </div>
 	</form>
-
+  </section>
 </div>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js" integrity="sha384-qKXV1j0HvMUeCBQ+QVp7JcfGl760yU08IQ+GpUo5hlbpg51QRiuqHAJz8+BrxE/N" crossorigin="anonymous"></script>
 <script>
 document.addEventListener("DOMContentLoaded", function () {
   const typeField = document.getElementById("id_type_zp");

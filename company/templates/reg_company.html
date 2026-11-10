@@ -1,26 +1,52 @@
 {% load static %}
-<link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous">
-
-<link rel="stylesheet" href="{% static 'css/reg_company.css' %}" />
-<form action="{% url 'reg_company' %}" class="form_add_lead" method="post">
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Создание компании — rossCRM</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-aFq/bzH65dt+w6FI2ooMVUpc+21e0SRygnTpmBvdBgSdnuTN7QbdgL+OapgHtvPp" crossorigin="anonymous">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'css/forms.css' %}">
+</head>
+<body class="crm-auth-page">
+  <main class="crm-form-page">
+    <section class="crm-form-card">
+      <header class="crm-form-header">
+        <span class="crm-form-eyebrow">Начало работы</span>
+        <h1 class="crm-form-title">Создание компании</h1>
+        <p class="crm-form-subtitle">Выберите подходящий формат работы. Его можно будет учитывать при настройке сотрудников и распределении заявок.</p>
+      </header>
+      <form action="{% url 'reg_company' %}" class="crm-form" method="post">
         {% csrf_token %}
         {{ form.non_field_errors }}
-        <p>{{ form.title.label_tag }} {{ form.title }} {{ form.title.errors }}</p>
+        <div class="crm-form-field">
+          {{ form.title.label_tag }}
+          {{ form.title }}
+          {{ form.title.errors }}
+        </div>
         <fieldset>
-                <legend>{{ form.work_mode.label }}</legend>
-                {% for option in form.work_mode %}
-                <label style="display:block; margin:12px 0; padding:14px; border:1px solid #ddd; border-radius:10px;">
-                        {{ option.tag }}
-                        <strong>{{ option.choice_label }}</strong><br>
-                        {% if option.data.value == "solo" %}
-                        <small>Одна администраторская учётка, автоматическое назначение лидов и календаря.</small>
-                        {% else %}
-                        <small>Филиалы, отделы, сотрудники и ручное распределение лидов.</small>
-                        {% endif %}
-                </label>
-                {% endfor %}
-                {{ form.work_mode.errors }}
+          <legend>{{ form.work_mode.label }}</legend>
+          <div class="crm-choice-list">
+            {% for option in form.work_mode %}
+              <label class="crm-choice-card">
+                {{ option.tag }}
+                <strong>{{ option.choice_label }}</strong>
+                {% if option.data.value == "solo" %}
+                  <small>Одна администраторская учётная запись, автоматическое назначение заявок и событий календаря.</small>
+                {% else %}
+                  <small>Филиалы, отделы, сотрудники и ручное распределение заявок.</small>
+                {% endif %}
+              </label>
+            {% endfor %}
+          </div>
+          {{ form.work_mode.errors }}
         </fieldset>
-        <button type="submit" class="btn btn-success">Создать компанию</button>
-</form>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha2/dist/js/bootstrap.bundle.min.js" integrity="sha384-qKXV1j0HvMUeCBQ+QVp7JcfGl760yU08IQ+GpUo5hlbpg51QRiuqHAJz8+BrxE/N" crossorigin="anonymous"></script>
+        <div class="crm-form-actions">
+          <button type="submit" class="btn btn-primary">Продолжить</button>
+        </div>
+      </form>
+    </section>
+  </main>
+</body>
+</html>

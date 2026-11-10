@@ -11,17 +11,20 @@
   .schedule-summary { padding:12px 14px; border-radius:10px; background:#eff6ff; color:#1e3a8a; margin:12px 0; }
   @media (max-width:700px) { .surcharge-fields { grid-template-columns:1fr; } }
 </style>
-<div style="display:flex; justify-content:center; padding:40px 16px;">
-  <div class="pole contract-form-card">
-    <h3>{{ page_title }}</h3>
-    <p>Клиент: <strong>{{ record }}</strong></p>
-    <form method="post" class="form" id="contractForm">
+<div class="crm-form-page contract-form-card">
+  <section class="crm-form-card">
+    <header class="crm-form-header">
+      <span class="crm-form-eyebrow">Договор</span>
+      <h1 class="crm-form-title">{{ page_title }}</h1>
+      <p class="crm-form-subtitle">Клиент: <strong>{{ record }}</strong></p>
+    </header>
+    <form method="post" class="crm-form" id="contractForm">
       {% csrf_token %}
       {{ form.as_p }}
 
-      <hr>
-      <h4>Доплаты</h4>
-      <p>Первоначальный взнос и все доплаты вместе должны быть равны сумме договора.</p>
+      <hr class="crm-form-divider">
+      <h2 class="crm-form-section-title">График доплат</h2>
+      <p class="crm-form-subtitle">Первоначальный взнос и все доплаты вместе должны быть равны сумме договора.</p>
       {{ surcharge_formset.management_form }}
       {% if surcharge_formset.non_form_errors %}
         <div class="alert alert-danger">{{ surcharge_formset.non_form_errors }}</div>
@@ -40,12 +43,12 @@
       </template>
       <button type="button" class="btn btn-primary" id="addSurcharge">Добавить доплату</button>
 
-      <div style="margin-top:20px; display:flex; gap:10px; flex-wrap:wrap;">
-        <button type="submit" class="btn btn-success">Сохранить</button>
-        <a href="{% url 'record' record.id %}" class="btn btn-secondary">Отмена</a>
+      <div class="crm-form-actions">
+        <button type="submit" class="btn btn-primary">Сохранить договор</button>
+        <a href="{% url 'record' record.id %}" class="btn btn-outline-secondary">Отмена</a>
       </div>
     </form>
-  </div>
+  </section>
 </div>
 <script>
   (function () {
