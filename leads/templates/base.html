@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="{% static 'css/base.css' %}" />
   <link rel="stylesheet" href="{% static 'css/forms.css' %}" />
   </head>
-  <body>
+  <body{% if not user.is_authenticated %} class="crm-login-body"{% endif %}>
         {% if messages%}
         {% for message in messages %}
         <div class="alert alert-warning alert-dismissible fade show" role="alert" style="z-index: 100;">
@@ -19,9 +19,11 @@
         {% endfor %}
         {% endif %}
 
-            {% include "navbar.html" %}
-{% include "header.html" %}
-        <main class="crm-main-content">
+        {% if user.is_authenticated %}
+          {% include "navbar.html" %}
+          {% include "header.html" %}
+        {% endif %}
+        <main class="{% if user.is_authenticated %}crm-main-content{% else %}crm-public-content{% endif %}">
 
             {% block content %}
 

@@ -1,14 +1,59 @@
-<div class="col-md-6 offset-md-3">
-        <h5>Добро пожаловать в legaCRM - <br>CRM для настоящих юристов</h5>
-        <form action="{% url 'all_leads' %}" method="post">
-            {% csrf_token %}
-            <div class="mb-3">
-            <input type="email" class="form-control" name="email" placeholder="Email" autocomplete="email" required>
-            </div>
-            <div class="mb-3">
-            <input type="password" class="form-control" name="password" placeholder="Пароль" required>
-            </div>
-            <button type="submit" class="btn btn-success">Зайти</button>
-            <a href="#">Зарегестрировать компанию</a>
-        </form>
-</div>
+<section class="crm-login-shell" aria-labelledby="login-title">
+  <div class="crm-login-brand-panel">
+    <a class="crm-login-logo" href="{% url 'index' %}" aria-label="rossCRM — главная">
+      <span class="crm-login-logo-mark" aria-hidden="true">R</span>
+      <span>rossCRM</span>
+    </a>
+    <div class="crm-login-brand-copy">
+      <span class="crm-login-kicker">CRM для юридического бизнеса</span>
+      <h1>Все процессы компании в одном пространстве</h1>
+      <p>Заявки, сотрудники, календарь, договоры и расчёт зарплаты — с понятным контролем на каждом этапе.</p>
+      <ul class="crm-login-benefits">
+        <li><span aria-hidden="true">✓</span> Единая база клиентов и обращений</li>
+        <li><span aria-hidden="true">✓</span> Разграничение доступа сотрудников</li>
+        <li><span aria-hidden="true">✓</span> Контроль событий и оплат</li>
+      </ul>
+    </div>
+    <a class="crm-login-about" href="{% url 'index' %}">Узнать больше о rossCRM <span aria-hidden="true">→</span></a>
+  </div>
+
+  <div class="crm-login-form-panel">
+    <div class="crm-login-form-wrap">
+      <span class="crm-form-eyebrow">Личный кабинет</span>
+      <h2 class="crm-form-title" id="login-title">Вход в rossCRM</h2>
+      <p class="crm-form-subtitle">Введите email и пароль, указанные при регистрации.</p>
+
+      <form action="{% url 'all_leads' %}" class="crm-form crm-login-form" method="post">
+        {% csrf_token %}
+        <div class="crm-form-field">
+          <label for="login-email">Email</label>
+          <input id="login-email" type="email" name="email" placeholder="name@company.ru" autocomplete="email" inputmode="email" required autofocus>
+        </div>
+        <div class="crm-form-field">
+          <label for="login-password">Пароль</label>
+          <div class="crm-password-field">
+            <input id="login-password" type="password" name="password" placeholder="Введите пароль" autocomplete="current-password" required>
+            <button class="crm-password-toggle" type="button" aria-controls="login-password" aria-label="Показать пароль">Показать</button>
+          </div>
+        </div>
+        <button type="submit" class="btn btn-primary crm-login-submit">Войти</button>
+      </form>
+
+      <p class="crm-login-register">Нет учётной записи? <a href="{% url 'reg_company' %}">Зарегистрировать компанию</a></p>
+    </div>
+  </div>
+</section>
+
+<script>
+  (function () {
+    const toggle = document.querySelector('.crm-password-toggle');
+    const password = document.getElementById('login-password');
+    if (!toggle || !password) return;
+    toggle.addEventListener('click', function () {
+      const isVisible = password.type === 'text';
+      password.type = isVisible ? 'password' : 'text';
+      toggle.textContent = isVisible ? 'Показать' : 'Скрыть';
+      toggle.setAttribute('aria-label', isVisible ? 'Показать пароль' : 'Скрыть пароль');
+    });
+  }());
+</script>

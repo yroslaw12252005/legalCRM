@@ -523,18 +523,6 @@
 {% endif %}
 
 {% else %}
-    <div class="col-md-6 offset-md-3 pole">
-        <h3>Добро пожаловать в yblochkoCRM</h3>
-        <form action="{% url 'all_leads' %}" class="authenticated" method="post">
-            {% csrf_token %}
-            <div class="mb-3">
-                <input type="email" class="form-control" name="email" placeholder="Email" autocomplete="email" required>
-            </div>
-            <div class="mb-3">
-                <input type="password" class="form-control" name="password" placeholder="Пароль" required>
-            </div>
-            <button type="submit" class="btn btn-success">Зайти</button>
-        </form>
-    </div>
+    {% include "authentication.html" %}
 {% endif %}
 {% endblock content %}

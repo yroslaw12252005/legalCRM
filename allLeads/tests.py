@@ -11,6 +11,19 @@ from leads.models import Record
 from smart_calendar.models import Booking
 
 
+class AuthenticationPageTests(TestCase):
+    def test_guest_sees_branded_email_login(self):
+        response = self.client.get(reverse("all_leads"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Вход в rossCRM")
+        self.assertContains(response, 'class="crm-login-shell"')
+        self.assertContains(response, 'name="email"')
+        self.assertContains(response, 'autocomplete="current-password"')
+        self.assertContains(response, reverse("reg_company"))
+        self.assertNotContains(response, "yblochkoCRM")
+
+
 class AllLeadsBulkActionsTests(TestCase):
     def setUp(self):
         self.company = Companys.objects.create(title="Company")
