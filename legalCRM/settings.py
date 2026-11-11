@@ -151,7 +151,7 @@ USE_L10N = True  # Локализация форматов дат/чисел
 USE_TZ = True  # Использовать часовой пояс
 
 
-CSRF_TRUSTED_ORIGINS = ["https://msk.rosscrm.ru","https://87.249.53.222",'https://127.0.0.1']
+CSRF_TRUSTED_ORIGINS = ["https://msk.rosscrm.ru","https://rosscrm.ru","https://87.249.53.222",'https://127.0.0.1']
 
 
 # Static files (CSS, JavaScript, Images)
