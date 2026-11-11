@@ -12,8 +12,7 @@ class LandingPageTests(TestCase):
         self.assertContains(response, '<link rel="canonical"', html=False)
         self.assertContains(response, 'type="application/ld+json"', html=False)
         self.assertContains(response, "FAQPage")
-        self.assertNotContains(response, "LegalCRM")
-        self.assertNotContains(response, "vseCRM")
+        self.assertContains(response, 'img/logorossCRM.jpg')
 
     def test_landing_links_to_login_and_company_registration(self):
         response = self.client.get(reverse("index"))

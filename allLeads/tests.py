@@ -21,7 +21,7 @@ class AuthenticationPageTests(TestCase):
         self.assertContains(response, 'name="email"')
         self.assertContains(response, 'autocomplete="current-password"')
         self.assertContains(response, reverse("reg_company"))
-        self.assertNotContains(response, "yblochkoCRM")
+        self.assertContains(response, "img/logorossCRM.jpg")
 
 
 class AllLeadsBulkActionsTests(TestCase):
