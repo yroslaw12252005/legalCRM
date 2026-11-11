@@ -102,3 +102,118 @@ class CompanyWorkModeTests(TestCase):
         self.assertEqual(admin.status, "Администратор")
         self.assertTrue(admin.check_password("new-safe-pass-456"))
         self.assertEqual(int(self.client.session["_auth_user_id"]), admin.id)
+
+
+class CompanyManagementTests(TestCase):
+    def setUp(self):
+        self.service_company = Companys.objects.create(title="Служебная компания")
+        self.target_company = Companys.objects.create(title="Компания клиента")
+        self.manager = User.objects.create_user(
+            username="Yrik",
+            email="yrik@gmail.com",
+            password="manager-pass-123",
+            status="Администратор",
+            companys=self.service_company,
+        )
+        self.target_admin = User.objects.create_user(
+            username="Администратор клиента",
+            email="admin-client@example.com",
+            password="old-admin-pass-123",
+            status="Администратор",
+            companys=self.target_company,
+        )
+
+    def test_manager_sees_company_actions_and_admin(self):
+        self.client.force_login(self.manager)
+
+        response = self.client.get(reverse("companys"))
+
+        self.assertEqual(response.status_code, 200)
+        self.assertContains(response, "Компания клиента")
+        self.assertContains(response, "admin-client@example.com")
+        self.assertContains(response, "Восстановить пароль")
+        self.assertContains(response, "Удалить компанию")
+
+    def test_manager_can_reset_company_admin_password(self):
+        self.client.force_login(self.manager)
+
+        response = self.client.post(
+            reverse("reset_company_admin_password", args=[self.target_company.id]),
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        credentials = response.context["reset_credentials"]
+        self.assertEqual(credentials["email"], self.target_admin.email)
+        self.assertEqual(len(credentials["password"]), 16)
+        self.target_admin.refresh_from_db()
+        self.assertTrue(self.target_admin.check_password(credentials["password"]))
+        self.assertFalse(self.target_admin.check_password("old-admin-pass-123"))
+
+        next_response = self.client.get(reverse("companys"))
+        self.assertIsNone(next_response.context["reset_credentials"])
+        self.assertNotContains(next_response, credentials["password"])
+
+    def test_manager_can_delete_another_company(self):
+        record = Record.objects.create(
+            name="Клиент удаляемой компании",
+            companys=self.target_company,
+        )
+        self.client.force_login(self.manager)
+
+        response = self.client.post(
+            reverse("delete_company", args=[self.target_company.id]),
+        )
+
+        self.assertRedirects(response, reverse("companys"))
+        self.assertFalse(Companys.objects.filter(pk=self.target_company.id).exists())
+        self.assertFalse(User.objects.filter(pk=self.target_admin.id).exists())
+        self.assertFalse(Record.objects.filter(pk=record.id).exists())
+
+    def test_manager_cannot_delete_own_company(self):
+        self.client.force_login(self.manager)
+
+        response = self.client.post(
+            reverse("delete_company", args=[self.service_company.id]),
+        )
+
+        self.assertRedirects(response, reverse("companys"))
+        self.assertTrue(Companys.objects.filter(pk=self.service_company.id).exists())
+        self.assertTrue(User.objects.filter(pk=self.manager.id).exists())
+
+    def test_manager_can_reset_own_admin_password_without_logout(self):
+        self.client.force_login(self.manager)
+
+        response = self.client.post(
+            reverse("reset_company_admin_password", args=[self.service_company.id]),
+            follow=True,
+        )
+
+        self.assertEqual(response.status_code, 200)
+        credentials = response.context["reset_credentials"]
+        self.manager.refresh_from_db()
+        self.assertTrue(self.manager.check_password(credentials["password"]))
+        self.assertEqual(int(self.client.session["_auth_user_id"]), self.manager.id)
+
+    def test_other_user_cannot_manage_companies(self):
+        outsider = User.objects.create_user(
+            username="Не служебный пользователь",
+            email="outsider@example.com",
+            password="outsider-pass-123",
+            status="Администратор",
+            companys=self.target_company,
+        )
+        self.client.force_login(outsider)
+
+        list_response = self.client.get(reverse("companys"))
+        reset_response = self.client.post(
+            reverse("reset_company_admin_password", args=[self.target_company.id]),
+        )
+        delete_response = self.client.post(
+            reverse("delete_company", args=[self.target_company.id]),
+        )
+
+        self.assertEqual(list_response.status_code, 403)
+        self.assertEqual(reset_response.status_code, 403)
+        self.assertEqual(delete_response.status_code, 403)
+        self.assertTrue(Companys.objects.filter(pk=self.target_company.id).exists())

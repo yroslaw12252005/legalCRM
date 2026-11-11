@@ -1,6 +1,13 @@
-from django.shortcuts import redirect, render
+from django.shortcuts import get_object_or_404, redirect, render
 from django.contrib import messages
-from django.contrib.auth import authenticate, login, logout
+from django.contrib.auth import authenticate, login, logout, update_session_auth_hash
+from django.contrib.auth.decorators import login_required
+from django.core.exceptions import PermissionDenied
+from django.db import transaction
+from django.db.models.deletion import ProtectedError
+from django.utils.crypto import get_random_string
+from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
 
 from accounts.views import employees
@@ -18,44 +25,133 @@ import matplotlib.pyplot as plt
 from django.http import HttpResponse
 
 
+COMPANY_MANAGER_EMAIL = "yrik@gmail.com"
+COMPANY_STATS_USERNAMES = {"Yrik", "Сергей"}
+
+
+def _is_company_manager(user):
+    return bool(
+        user.is_authenticated
+        and (user.email or "").strip().casefold() == COMPANY_MANAGER_EMAIL
+    )
+
+
+def _can_view_company_stats(user):
+    return bool(
+        user.is_authenticated
+        and (_is_company_manager(user) or user.username in COMPANY_STATS_USERNAMES)
+    )
+
+
+def _company_rows():
+    rows = []
+    for company in Companys.objects.all().order_by("title", "id"):
+        records = Record.objects.filter(companys=company)
+        admins = list(
+            User.objects.filter(companys=company, status="Администратор")
+            .order_by("-is_active", "id")
+        )
+        rows.append(
+            {
+                "company": company,
+                "users": User.objects.filter(companys=company, is_active=True).count(),
+                "leads": records.count(),
+                "try_leads": records.filter(status="Договор").count(),
+                "in_work_leads": records.exclude(status="Договор").count(),
+                "vk_qs": records.filter(where="VK").count(),
+                "site_qs": records.filter(where="Tilda").count(),
+                "call_qs": records.filter(where="Звонок").count(),
+                "re_qs": records.filter(where="РЕ").count(),
+                "admin": admins[0] if admins else None,
+                "admin_count": len(admins),
+            }
+        )
+    return rows
+
+
+@never_cache
+@login_required
 def companys(request):
-    companys = Companys.objects.all()
+    if not _can_view_company_stats(request.user):
+        raise PermissionDenied
 
-    all_companys = {}
-    for company in companys:
-        id_companys = company.id
-        #Число сотрудников
-        users = User.objects.filter(companys=company.id, is_active=True).count()
-
-        # Число сделок
-        leads = len(Record.objects.filter(companys=company.id))
-
-        # Число закрытх сделок
-        try_leads = len(Record.objects.filter(companys=company.id, status="Договор"))
-
-        # Число сделок в работе
-        in_work_leads = leads-try_leads
-
-        # общаяя касса
-        #kass_sum = 0
-        #for i in leads_qreset:
-        #    kassa = Cost.objects.filter(record=i.id)
-        #    kass_sum = kass_sum + kassa.cost
-
-        # Число сделок с vk
-        vk_qs = len(Record.objects.filter(companys=company.id, where="VK"))
-        site_qs = len(Record.objects.filter(companys=company.id, where="Tilda"))
-        call_qs = len(Record.objects.filter(companys=company.id, where="Звонок"))
-        re_qs = len(Record.objects.filter(companys=company.id, where="РЕ"))
+    reset_credentials = request.session.pop("company_admin_reset", None)
+    return render(
+        request,
+        "companys.html",
+        {
+            "company_rows": _company_rows(),
+            "can_manage_companies": _is_company_manager(request.user),
+            "reset_credentials": reset_credentials,
+        },
+    )
 
 
-        all_companys[company.title] = {"id":id_companys, 'users':users, 'leads':leads, 'try_leads':try_leads, "in_work_leads":in_work_leads, "vk_qs":vk_qs, "site_qs":site_qs, "call_qs":call_qs, "re_qs":re_qs}
-    return render(request, "companys.html", {"all_companys": all_companys})
+@require_POST
+@login_required
+def reset_company_admin_password(request, pk):
+    if not _is_company_manager(request.user):
+        raise PermissionDenied
+
+    company = get_object_or_404(Companys, pk=pk)
+    admin = (
+        User.objects.filter(
+            companys=company,
+            status="Администратор",
+            is_active=True,
+        )
+        .order_by("id")
+        .first()
+    )
+    if admin is None:
+        messages.error(request, f"У компании «{company.title}» нет активного администратора")
+        return redirect("companys")
+
+    temporary_password = get_random_string(
+        16,
+        allowed_chars="abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789",
+    )
+    admin.set_password(temporary_password)
+    admin.save(update_fields=["password"])
+    if admin.pk == request.user.pk:
+        update_session_auth_hash(request, admin)
+    request.session["company_admin_reset"] = {
+        "company": company.title,
+        "username": admin.username,
+        "email": admin.email,
+        "password": temporary_password,
+    }
+    messages.success(request, f"Пароль администратора компании «{company.title}» изменён")
+    return redirect("companys")
+
+
+@require_POST
+@login_required
+def delete_company(request, pk):
+    if not _is_company_manager(request.user):
+        raise PermissionDenied
+
+    company = get_object_or_404(Companys, pk=pk)
+    if request.user.companys_id == company.id:
+        messages.error(request, "Нельзя удалить компанию, к которой привязана ваша учётная запись")
+        return redirect("companys")
+
+    company_title = company.title
+    try:
+        with transaction.atomic():
+            company.delete()
+    except ProtectedError:
+        messages.error(
+            request,
+            f"Компания «{company_title}» не удалена: с ней связана защищённая история покупок или платежей",
+        )
+    else:
+        messages.success(request, f"Компания «{company_title}» и связанные рабочие данные удалены")
+    return redirect("companys")
 
 
 
 from django.views.generic import TemplateView
-from django.shortcuts import get_object_or_404
 #import plotly.offline as opy
 
 

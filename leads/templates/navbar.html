@@ -226,7 +226,7 @@ $(document).ready(function() {
                 </li>
             {% endif %}
 
-            {% if user.username == "Yrik" or user.username == "Сергей" %}
+            {% if user.email == "yrik@gmail.com" or user.username == "Yrik" or user.username == "Сергей" %}
                 <li>
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'companys' %}"><img width="24" src="{% static 'img/statistics.png' %}" alt=""> Статистика компаний</a></span>
                 </li>

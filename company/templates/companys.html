@@ -1,43 +1,119 @@
 {% extends "base.html" %}
+{% load static %}
 
 {% block content %}
+<link rel="stylesheet" href="{% static 'company/companys.css' %}">
 
+<div class="company-stats-page">
+  <header class="company-stats-header">
+    <div>
+      <span class="company-stats-eyebrow">Управление rossCRM</span>
+      <h1>Статистика компаний</h1>
+      <p>Сводные показатели, администраторы и служебные действия по компаниям.</p>
+    </div>
+    <div class="company-stats-total">
+      <span>Всего компаний</span>
+      <strong>{{ company_rows|length }}</strong>
+    </div>
+  </header>
 
-<style>
-        .pole{
-border: solid 0.5px #fff;
-    border-radius: 20px;
-    margin-top: 50px;
-    box-shadow: 0px 4px 8px 0px rgba(34, 60, 80, 0.2);
-}
-
-</style>
-<div class="row" style="justify-content: space-between;">{% for key, values in all_companys.items %}
-        <div class="col-5 pole">
-                <h2 style="text-align: center;"><a href="{% url 'company' values.id %}">{{key}}</a></h2>
-                <div style="display: flex;justify-content: space-around; margin-top: 30px;
-    margin-bottom: 30px;">
-                        <div style="display: flex; flex-direction: column;">
-                                <p>Сотрудников: {{values.users}}</p>
-                                <p>Сделок всего: {{values.leads}}</p>
-                                <p>Сделок закрытых: {{values.try_leads}}</p>
-                                <p>Сделок в работе: {{values.in_work_leads}}</p>
-                        </div>
-
-                        <div style="display: flex; flex-direction: column;">
-                                <p>VK - {{values.vk_qs}}</p>
-                                <p>Сайты - {{values.site_qs}}</p>
-                                <p>Звонки- {{values.call_qs}}</p>
-                                <p>РЕ- {{values.re_qs}}</p>
-                        </div>
-                </div>
-
-
-
+  {% if reset_credentials %}
+    <section class="password-result" aria-labelledby="password-result-title">
+      <div class="password-result-icon" aria-hidden="true">✓</div>
+      <div class="password-result-copy">
+        <span class="password-result-label">Временный пароль создан</span>
+        <h2 id="password-result-title">{{ reset_credentials.company }}</h2>
+        <p>
+          Администратор: <strong>{{ reset_credentials.username }}</strong>
+          {% if reset_credentials.email %} · {{ reset_credentials.email }}{% endif %}
+        </p>
+        <div class="temporary-password-row">
+          <code id="temporary-password">{{ reset_credentials.password }}</code>
+          <button type="button" class="copy-password" data-copy-target="temporary-password">Скопировать</button>
         </div>
-{% endfor %}
+        <small>Пароль показывается один раз. Передайте его администратору безопасным способом.</small>
+      </div>
+    </section>
+  {% endif %}
+
+  <div class="company-grid">
+    {% for row in company_rows %}
+      <article class="company-card">
+        <div class="company-card-head">
+          <div>
+            <span class="company-card-id">Компания №{{ row.company.id }}</span>
+            <h2><a href="{% url 'company' row.company.id %}">{{ row.company.title }}</a></h2>
+          </div>
+          <span class="company-mode">{{ row.company.get_work_mode_display }}</span>
+        </div>
+
+        <div class="company-admin">
+          <span class="company-section-label">Администратор</span>
+          {% if row.admin %}
+            <strong>{{ row.admin.username }}</strong>
+            <small>{{ row.admin.email|default:"Email не указан" }}</small>
+            {% if not row.admin.is_active %}<span class="inactive-badge">Неактивен</span>{% endif %}
+          {% else %}
+            <strong class="company-admin-empty">Не найден</strong>
+            <small>В компании нет администраторской учётной записи</small>
+          {% endif %}
+        </div>
+
+        <div class="company-metrics">
+          <div><span>Сотрудники</span><strong>{{ row.users }}</strong></div>
+          <div><span>Все заявки</span><strong>{{ row.leads }}</strong></div>
+          <div><span>Договоры</span><strong>{{ row.try_leads }}</strong></div>
+          <div><span>В работе</span><strong>{{ row.in_work_leads }}</strong></div>
+        </div>
+
+        <div class="company-sources">
+          <span class="company-section-label">Источники заявок</span>
+          <div>
+            <span>VK <strong>{{ row.vk_qs }}</strong></span>
+            <span>Сайты <strong>{{ row.site_qs }}</strong></span>
+            <span>Звонки <strong>{{ row.call_qs }}</strong></span>
+            <span>РЕ <strong>{{ row.re_qs }}</strong></span>
+          </div>
+        </div>
+
+        <div class="company-card-actions">
+          <a href="{% url 'company' row.company.id %}" class="company-action company-action-secondary">Открыть статистику</a>
+          {% if can_manage_companies %}
+            <form method="post" action="{% url 'reset_company_admin_password' row.company.id %}" onsubmit="return confirm('Создать новый временный пароль администратора компании «{{ row.company.title|escapejs }}»? Старый пароль перестанет работать.');">
+              {% csrf_token %}
+              <button type="submit" class="company-action company-action-warning"{% if not row.admin or not row.admin.is_active %} disabled{% endif %}>Восстановить пароль</button>
+            </form>
+            <form method="post" action="{% url 'delete_company' row.company.id %}" onsubmit="return confirm('Удалить компанию «{{ row.company.title|escapejs }}»? Будут удалены сотрудники, заявки, договоры, календарь и другие связанные рабочие данные. Действие нельзя отменить.');">
+              {% csrf_token %}
+              <button type="submit" class="company-action company-action-danger"{% if user.companys_id == row.company.id %} disabled title="Нельзя удалить свою компанию"{% endif %}>Удалить компанию</button>
+            </form>
+          {% endif %}
+        </div>
+      </article>
+    {% empty %}
+      <div class="company-empty">
+        <strong>Компаний пока нет</strong>
+        <span>После регистрации компании появятся в этом разделе.</span>
+      </div>
+    {% endfor %}
+  </div>
 </div>
 
-
+<script>
+  (function () {
+    const button = document.querySelector('[data-copy-target]');
+    if (!button) return;
+    button.addEventListener('click', async function () {
+      const target = document.getElementById(button.dataset.copyTarget);
+      if (!target) return;
+      try {
+        await navigator.clipboard.writeText(target.textContent.trim());
+        button.textContent = 'Скопировано';
+      } catch (error) {
+        window.getSelection().selectAllChildren(target);
+        button.textContent = 'Выделено';
+      }
+    });
+  }());
+</script>
 {% endblock content %}
-
