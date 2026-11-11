@@ -1,0 +1,24 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Доступ приостановлен — rossCRM</title>
+  <link rel="icon" type="image/jpeg" href="{% static 'img/logorossCRM.jpg' %}">
+  <link rel="stylesheet" href="{% static 'css/base.css' %}">
+  <link rel="stylesheet" href="{% static 'accounts/account_blocked.css' %}">
+</head>
+<body class="subscription-blocked-body">
+  <main class="subscription-blocked-page">
+    <section class="subscription-blocked-card">
+      <div class="subscription-blocked-icon" aria-hidden="true">!</div>
+      <span class="subscription-blocked-eyebrow">rossCRM</span>
+      <h1>Ваш аккаунт заблокирован</h1>
+      <p>Доступ компании к системе временно приостановлен. Для выяснения причины напишите в техническую поддержку:</p>
+      <a class="subscription-support-link" href="mailto:info@rossurist.ru">info@rossurist.ru</a>
+      <a class="subscription-logout-link" href="{% url 'logout' %}">Выйти из аккаунта</a>
+    </section>
+  </main>
+</body>
+</html>

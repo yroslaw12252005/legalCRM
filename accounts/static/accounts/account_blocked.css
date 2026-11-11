@@ -1,0 +1,40 @@
+.subscription-blocked-body {
+  min-height: 100vh;
+  background: radial-gradient(circle at top left, #dbeafe 0, transparent 38%), #f8fafc;
+}
+
+.subscription-blocked-page {
+  display: grid;
+  min-height: 100vh;
+  padding: 24px;
+  place-items: center;
+}
+
+.subscription-blocked-card {
+  width: min(100%, 560px);
+  padding: clamp(30px, 6vw, 54px);
+  border: 1px solid #dbe5f0;
+  border-radius: 26px;
+  background: rgba(255, 255, 255, 0.94);
+  box-shadow: 0 24px 70px rgba(15, 23, 42, 0.12);
+  text-align: center;
+}
+
+.subscription-blocked-icon {
+  display: grid;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 20px;
+  border-radius: 20px;
+  color: #fff;
+  background: #dc2626;
+  font-size: 34px;
+  font-weight: 900;
+  place-items: center;
+}
+
+.subscription-blocked-eyebrow { color: #2563eb; font-size: 13px; font-weight: 800; letter-spacing: .12em; text-transform: uppercase; }
+.subscription-blocked-card h1 { margin: 8px 0 14px; color: #0f172a; font-size: clamp(30px, 6vw, 44px); }
+.subscription-blocked-card p { margin: 0 auto 18px; color: #64748b; font-size: 17px; }
+.subscription-support-link { display: block; color: #2563eb; font-size: 20px; font-weight: 800; }
+.subscription-logout-link { display: inline-flex; margin-top: 28px; padding: 11px 18px; border: 1px solid #cbd5e1; border-radius: 12px; color: #334155; font-weight: 700; }

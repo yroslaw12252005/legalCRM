@@ -23,6 +23,7 @@
         {% if user.is_authenticated %}
           {% include "navbar.html" %}
           {% include "header.html" %}
+          {% include "includes/subscription_warning.html" %}
         {% endif %}
         <main class="{% if user.is_authenticated %}crm-main-content{% else %}crm-public-content{% endif %}">
 

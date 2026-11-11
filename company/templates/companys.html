@@ -59,6 +59,47 @@
           {% endif %}
         </div>
 
+        <section class="company-subscription{% if row.company.is_subscription_blocked %} company-subscription--blocked{% endif %}">
+          <div class="company-subscription-head">
+            <span class="company-section-label">Подписка</span>
+            {% if row.company.is_subscription_blocked %}
+              <span class="subscription-state subscription-state--blocked">Заблокирована</span>
+            {% else %}
+              <span class="subscription-state subscription-state--active">Активна</span>
+            {% endif %}
+          </div>
+          <p>
+            {% if row.company.subscription_expires_at %}
+              Действует до <strong>{{ row.company.subscription_expires_at|date:"d.m.Y" }}</strong> включительно
+            {% else %}
+              <strong>Срок не установлен</strong>
+            {% endif %}
+          </p>
+          {% if can_manage_companies %}
+            <form class="subscription-date-form" method="post" action="{% url 'update_company_subscription' row.company.id %}">
+              {% csrf_token %}
+              <label for="subscription-date-{{ row.company.id }}">Дата окончания</label>
+              <div>
+                <input id="subscription-date-{{ row.company.id }}" type="date" name="subscription_expires_at" value="{{ row.company.subscription_expires_at|date:'Y-m-d' }}">
+                <button type="submit" class="company-action company-action-primary">Сохранить</button>
+              </div>
+            </form>
+            <div class="subscription-lock-actions">
+              {% if row.company.is_subscription_blocked %}
+                <form method="post" action="{% url 'unblock_company' row.company.id %}">
+                  {% csrf_token %}
+                  <button type="submit" class="company-action company-action-success">Разблокировать компанию</button>
+                </form>
+              {% else %}
+                <form method="post" action="{% url 'block_company' row.company.id %}" onsubmit="return confirm('Заблокировать доступ всем пользователям компании «{{ row.company.title|escapejs }}»?');">
+                  {% csrf_token %}
+                  <button type="submit" class="company-action company-action-danger">Заблокировать компанию</button>
+                </form>
+              {% endif %}
+            </div>
+          {% endif %}
+        </section>
+
         <div class="company-metrics">
           <div><span>Сотрудники</span><strong>{{ row.users }}</strong></div>
           <div><span>Все заявки</span><strong>{{ row.leads }}</strong></div>

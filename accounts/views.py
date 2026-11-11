@@ -2,6 +2,7 @@
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
+from django.views.decorators.cache import never_cache
 
 from .forms import AddEmployeesForm, EmployeeUpdateForm, SoloProfileUpdateForm
 from .models import User
@@ -59,6 +60,7 @@ def register_employees(request):
         if form.is_valid():
             add_user = form.save(commit=False)
             add_user.companys = request.user.companys
+            add_user.is_account_blocked = request.user.companys.is_subscription_blocked
             add_user.save()
             messages.success(request, "Пользователь зарегистрирован")
             return redirect("all_leads")
@@ -104,3 +106,9 @@ def update_profile(request):
         return redirect("update_profile")
 
     return render(request, "profile_edit.html", {"form": form})
+
+
+@never_cache
+@login_required
+def account_blocked(request):
+    return render(request, "account_blocked.html", status=403)

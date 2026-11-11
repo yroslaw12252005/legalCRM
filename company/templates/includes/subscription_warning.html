@@ -1,0 +1,16 @@
+{% if subscription_warning_days %}
+  <aside class="subscription-warning" role="alert">
+    <div class="subscription-warning__icon" aria-hidden="true">!</div>
+    <div>
+      <strong>
+        Подписка истечёт через {{ subscription_warning_days }}
+        {% if subscription_warning_days == 1 %}день{% else %}дня{% endif %}
+      </strong>
+      <span>
+        Доступ оплачен до {{ subscription_expires_at|date:"d.m.Y" }} включительно.
+        Для продления напишите на
+        <a href="mailto:{{ subscription_support_email }}">{{ subscription_support_email }}</a>.
+      </span>
+    </div>
+  </aside>
+{% endif %}

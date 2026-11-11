@@ -6,6 +6,8 @@ from django.core.exceptions import PermissionDenied
 from django.db import transaction
 from django.db.models.deletion import ProtectedError
 from django.utils.crypto import get_random_string
+from django.utils import timezone
+from django.utils.dateparse import parse_date
 from django.views.decorators.cache import never_cache
 from django.views.decorators.http import require_POST
 from django.views.generic import TemplateView
@@ -17,6 +19,11 @@ from leads.models import Record
 from felial.models import Felial
 
 from .forms import RegCompany
+from .subscriptions import (
+    enforce_company_subscription,
+    is_subscription_manager,
+    set_company_blocked,
+)
 from accounts.forms import AddEmployeesForm,  AddSuperEmployeesForm
 
 import io
@@ -30,10 +37,7 @@ COMPANY_STATS_USERNAMES = {"Yrik", "Сергей"}
 
 
 def _is_company_manager(user):
-    return bool(
-        user.is_authenticated
-        and (user.email or "").strip().casefold() == COMPANY_MANAGER_EMAIL
-    )
+    return is_subscription_manager(user)
 
 
 def _can_view_company_stats(user):
@@ -46,6 +50,7 @@ def _can_view_company_stats(user):
 def _company_rows():
     rows = []
     for company in Companys.objects.all().order_by("title", "id"):
+        enforce_company_subscription(company)
         records = Record.objects.filter(companys=company)
         admins = list(
             User.objects.filter(companys=company, status="Администратор")
@@ -147,6 +152,62 @@ def delete_company(request, pk):
         )
     else:
         messages.success(request, f"Компания «{company_title}» и связанные рабочие данные удалены")
+    return redirect("companys")
+
+
+@require_POST
+@login_required
+def update_company_subscription(request, pk):
+    if not _is_company_manager(request.user):
+        raise PermissionDenied
+
+    company = get_object_or_404(Companys, pk=pk)
+    raw_date = request.POST.get("subscription_expires_at", "").strip()
+    expires_at = parse_date(raw_date) if raw_date else None
+    if raw_date and expires_at is None:
+        messages.error(request, "Укажите корректную дату окончания подписки")
+        return redirect("companys")
+
+    company.subscription_expires_at = expires_at
+    company.save(update_fields=["subscription_expires_at"])
+    if expires_at:
+        messages.success(
+            request,
+            f"Подписка компании «{company.title}» установлена до {expires_at:%d.%m.%Y} включительно",
+        )
+    else:
+        messages.success(request, f"Срок подписки компании «{company.title}» очищен")
+    return redirect("companys")
+
+
+@require_POST
+@login_required
+def block_company(request, pk):
+    if not _is_company_manager(request.user):
+        raise PermissionDenied
+
+    company = get_object_or_404(Companys, pk=pk)
+    set_company_blocked(company, True)
+    messages.success(request, f"Компания «{company.title}» заблокирована")
+    return redirect("companys")
+
+
+@require_POST
+@login_required
+def unblock_company(request, pk):
+    if not _is_company_manager(request.user):
+        raise PermissionDenied
+
+    company = get_object_or_404(Companys, pk=pk)
+    if company.subscription_expires_at and company.subscription_expires_at < timezone.now().date():
+        messages.error(
+            request,
+            "Сначала установите новую дату окончания подписки, затем разблокируйте компанию",
+        )
+        return redirect("companys")
+
+    set_company_blocked(company, False)
+    messages.success(request, f"Компания «{company.title}» разблокирована")
     return redirect("companys")
 
 
@@ -304,6 +365,7 @@ def reg_admin_user(request, id_company):
             add_user.percent = 0
             add_user.bet = 0
             add_user.type_zp = User.SALARY_FIXED
+            add_user.is_account_blocked = company.is_subscription_blocked
             if company.is_solo:
                 main_branch, _ = Felial.objects.get_or_create(
                     companys=company,

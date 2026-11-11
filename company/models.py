@@ -15,6 +15,15 @@ class Companys(models.Model):
         default=MODE_TEAM,
         verbose_name="Формат работы",
     )
+    subscription_expires_at = models.DateField(
+        null=True,
+        blank=True,
+        verbose_name="Подписка действует до",
+    )
+    is_subscription_blocked = models.BooleanField(
+        default=False,
+        verbose_name="Компания заблокирована",
+    )
 
     @property
     def is_solo(self):

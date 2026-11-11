@@ -32,6 +32,7 @@
 .payment-link svg { width:20px; height:20px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
 .receipt-note { display:flex; align-items:flex-start; gap:10px; margin-top:16px; padding:14px; border-radius:14px; color:#775431; background:#fff6eb; text-align:left; font-size:12px; line-height:1.5; }
 .receipt-note svg { flex:0 0 19px; width:19px; height:19px; fill:none; stroke:currentColor; stroke-width:1.8; stroke-linecap:round; stroke-linejoin:round; }
+.receipt-note a { color:#8a4b08; font-weight:800; text-decoration:underline; }
 .operations-card { overflow:hidden; }
 .operations-head { display:flex; align-items:center; justify-content:space-between; gap:18px; padding:27px 28px 22px; border-bottom:1px solid var(--wallet-line); }
 .validate-button { min-height:44px; padding:0 16px; color:#fff; background:var(--wallet-gold); font-size:13px; }

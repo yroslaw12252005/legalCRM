@@ -103,6 +103,39 @@ header.crm-header-offset {
   min-width: 0;
 }
 
+.subscription-warning {
+  display: flex;
+  gap: 14px;
+  align-items: center;
+  width: calc(100% - var(--crm-sidebar-width) - (var(--crm-content-gap) * 2));
+  margin: 14px var(--crm-content-gap) 0 calc(var(--crm-sidebar-width) + var(--crm-content-gap));
+  padding: 15px 18px;
+  border: 1px solid rgba(245, 158, 11, 0.38);
+  border-radius: 15px;
+  color: #78350f;
+  background: rgba(254, 243, 199, 0.82);
+  box-shadow: 0 9px 24px rgba(146, 64, 14, 0.08);
+  backdrop-filter: blur(10px);
+}
+
+.subscription-warning__icon {
+  display: grid;
+  flex: 0 0 36px;
+  width: 36px;
+  height: 36px;
+  border-radius: 11px;
+  color: #fff;
+  background: #d97706;
+  font-size: 20px;
+  font-weight: 900;
+  place-items: center;
+}
+
+.subscription-warning strong,
+.subscription-warning span { display: block; }
+.subscription-warning span { margin-top: 2px; font-size: 13px; }
+.subscription-warning a { color: #92400e; font-weight: 800; text-decoration: underline; }
+
 .crm-container,
 .desktop-toolbar-wrap {
   width: 100%;
@@ -253,6 +286,11 @@ table,
 }
 
 @media (max-width: 991.98px) {
+  .subscription-warning {
+    width: calc(100% - 24px);
+    margin: 14px 12px -72px;
+  }
+
   main.crm-main-content {
     margin-left: 0;
     width: 100%;
@@ -282,6 +320,12 @@ table,
 }
 
 @media (max-width: 575.98px) {
+  .subscription-warning {
+    width: calc(100% - 20px);
+    margin: 12px 10px -64px;
+    align-items: flex-start;
+  }
+
   main.crm-main-content {
     margin-top: 80px;
     padding-left: 10px;

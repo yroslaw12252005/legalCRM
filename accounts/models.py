@@ -62,4 +62,8 @@ class User(AbstractUser):
         max_length=30,
         choices=SALARY_TYPE_CHOICES,
     )
+    is_account_blocked = models.BooleanField(
+        "Учётная запись заблокирована",
+        default=False,
+    )
 

@@ -207,6 +207,32 @@
   color: #b91c1c !important;
 }
 
+.company-subscription {
+  display: grid;
+  gap: 10px;
+  margin: 14px 22px 0;
+  padding: 15px;
+  border: 1px solid #bfdbfe;
+  border-radius: 14px;
+  background: #f8fbff;
+}
+
+.company-subscription--blocked { border-color: #fecaca; background: #fff7f7; }
+.company-subscription-head { display: flex; gap: 10px; align-items: center; justify-content: space-between; }
+.company-subscription p { margin: 0; color: #64748b; font-size: 13px; }
+.company-subscription p strong { color: #0f172a; }
+.subscription-state { padding: 4px 9px; border-radius: 999px; font-size: 11px; font-weight: 800; }
+.subscription-state--active { color: #166534; background: #dcfce7; }
+.subscription-state--blocked { color: #991b1b; background: #fee2e2; }
+.subscription-date-form { display: grid !important; gap: 5px; }
+.subscription-date-form label { color: #475569; font-size: 12px; font-weight: 700; }
+.subscription-date-form > div { display: flex; gap: 8px; }
+.subscription-date-form input { min-width: 0; flex: 1; padding: 8px 10px; }
+.subscription-lock-actions { display: flex; }
+.subscription-lock-actions form { display: block; }
+.company-action-primary { color: #fff; background: #2563eb; }
+.company-action-success { color: #166534; background: #dcfce7; }
+
 .company-metrics {
   display: grid;
   grid-template-columns: repeat(4, minmax(0, 1fr));
@@ -368,4 +394,6 @@
   .copy-password {
     width: 100%;
   }
+
+  .subscription-date-form > div { align-items: stretch; flex-direction: column; }
 }
