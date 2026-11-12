@@ -9,7 +9,7 @@ from leads.models import Record
 from wallet.models import CompanyWallet
 from wallet.services import withdraw
 
-from .models import LeadPurchase, LeadStreamSettings, MarketplaceLead
+from .models import MIN_LEAD_PRICE, LeadPurchase, LeadStreamSettings, MarketplaceLead
 
 
 def distribute_marketplace_leads(lead_ids, company):
@@ -34,8 +34,8 @@ def distribute_marketplace_leads(lead_ids, company):
             raise ValidationError("Компания не настроила параметры потока")
         if not stream_settings.is_enabled:
             raise ValidationError("У выбранной компании поток выключен")
-        if stream_settings.lead_price <= 0:
-            raise ValidationError("Компания не указала стоимость одного лида")
+        if stream_settings.lead_price < MIN_LEAD_PRICE:
+            raise ValidationError("Минимальная стоимость заявки — 300 ₽")
 
         total = (stream_settings.lead_price * len(leads)).quantize(Decimal("0.01"))
         if stream_settings.remaining_budget < total:

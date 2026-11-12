@@ -9,6 +9,9 @@ from leads.models import Record
 from wallet.models import WalletTransaction
 
 
+MIN_LEAD_PRICE = Decimal("300.00")
+
+
 class LeadStreamSettings(models.Model):
     company = models.OneToOneField(
         Companys,
@@ -30,7 +33,12 @@ class LeadStreamSettings(models.Model):
         max_digits=12,
         decimal_places=2,
         default=Decimal("0.00"),
-        validators=[MinValueValidator(Decimal("0.00"))],
+        validators=[
+            MinValueValidator(
+                MIN_LEAD_PRICE,
+                message="Минимальная стоимость заявки — 300 ₽",
+            )
+        ],
     )
     spent_amount = models.DecimalField(
         "Потрачено",
@@ -47,7 +55,10 @@ class LeadStreamSettings(models.Model):
         verbose_name_plural = "Параметры потоков"
         constraints = [
             models.CheckConstraint(condition=models.Q(budget__gte=0), name="stream_budget_gte_zero"),
-            models.CheckConstraint(condition=models.Q(lead_price__gte=0), name="stream_lead_price_gte_zero"),
+            models.CheckConstraint(
+                condition=models.Q(lead_price=0) | models.Q(lead_price__gte=MIN_LEAD_PRICE),
+                name="stream_lead_price_zero_or_gte_300",
+            ),
             models.CheckConstraint(condition=models.Q(spent_amount__gte=0), name="stream_spent_gte_zero"),
         ]
 

@@ -64,6 +64,7 @@
             <div class="flow-field">
               <label for="{{ stream_form.lead_price.id_for_label }}">Цена одного лида</label>
               {{ stream_form.lead_price }}
+              <small class="flow-field-hint">Минимальная стоимость — 300 ₽</small>
               {% if stream_form.lead_price.errors %}<small class="flow-error">{{ stream_form.lead_price.errors|striptags }}</small>{% endif %}
             </div>
               

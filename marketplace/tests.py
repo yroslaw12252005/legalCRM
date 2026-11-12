@@ -13,6 +13,7 @@ from leads.models import Record
 from wallet.models import CompanyWallet, WalletTransaction
 
 from .models import LeadPurchase, LeadStreamSettings, MarketplaceLead
+from .forms import LeadStreamSettingsForm
 from .excel import build_excel_template_bytes
 from .services import distribute_marketplace_leads
 
@@ -93,6 +94,35 @@ class MarketplaceDistributionTests(TestCase):
 
         with self.assertRaisesMessage(ValidationError, "уже распределены"):
             distribute_marketplace_leads([self.lead_1.id], self.company)
+
+    def test_stream_form_rejects_lead_price_below_300(self):
+        form = LeadStreamSettingsForm(
+            data={
+                "work_start": "09:00",
+                "work_end": "20:00",
+                "budget": "1000.00",
+                "lead_price": "299.99",
+                "is_enabled": "on",
+            },
+            instance=self.settings,
+        )
+
+        self.assertFalse(form.is_valid())
+        self.assertIn("Минимальная стоимость заявки — 300 ₽", form.errors["lead_price"])
+
+    def test_stream_budget_can_be_lower_than_lead_price(self):
+        form = LeadStreamSettingsForm(
+            data={
+                "work_start": "09:00",
+                "work_end": "20:00",
+                "budget": "100.00",
+                "lead_price": "300.00",
+                "is_enabled": "on",
+            },
+            instance=self.settings,
+        )
+
+        self.assertTrue(form.is_valid(), form.errors)
 
 
 class MarketplacePermissionsTests(TestCase):

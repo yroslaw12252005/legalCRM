@@ -2,7 +2,7 @@ from django import forms
 
 from company.models import Companys
 
-from .models import LeadStreamSettings
+from .models import MIN_LEAD_PRICE, LeadStreamSettings
 
 
 class LeadStreamSettingsForm(forms.ModelForm):
@@ -13,7 +13,9 @@ class LeadStreamSettingsForm(forms.ModelForm):
             "work_start": forms.TimeInput(attrs={"type": "time", "class": "flow-input"}, format="%H:%M"),
             "work_end": forms.TimeInput(attrs={"type": "time", "class": "flow-input"}, format="%H:%M"),
             "budget": forms.NumberInput(attrs={"class": "flow-input", "step": "0.01", "min": "0"}),
-            "lead_price": forms.NumberInput(attrs={"class": "flow-input", "step": "0.01", "min": "0"}),
+            "lead_price": forms.NumberInput(
+                attrs={"class": "flow-input", "step": "0.01", "min": "300"}
+            ),
             "is_enabled": forms.CheckboxInput(attrs={"class": "flow-checkbox"}),
         }
 
@@ -23,8 +25,9 @@ class LeadStreamSettingsForm(forms.ModelForm):
         end = cleaned.get("work_end")
         if start and end and start >= end:
             self.add_error("work_end", "Время окончания должно быть позже времени начала")
-        if cleaned.get("is_enabled") and not cleaned.get("lead_price"):
-            self.add_error("lead_price", "Для включения потока укажите стоимость лида")
+        lead_price = cleaned.get("lead_price")
+        if lead_price is not None and lead_price < MIN_LEAD_PRICE:
+            self.add_error("lead_price", "Минимальная стоимость заявки — 300 ₽")
         if cleaned.get("is_enabled") and not cleaned.get("budget"):
             self.add_error("budget", "Для включения потока укажите бюджет")
         return cleaned
@@ -43,7 +46,7 @@ class LeadDistributionForm(forms.Form):
         super().__init__(*args, **kwargs)
         self.fields["company"].queryset = Companys.objects.filter(
             lead_stream_settings__is_enabled=True,
-            lead_stream_settings__lead_price__gt=0,
+            lead_stream_settings__lead_price__gte=MIN_LEAD_PRICE,
         ).select_related("lead_stream_settings", "wallet").order_by("title")
 
     def clean_lead_ids(self):

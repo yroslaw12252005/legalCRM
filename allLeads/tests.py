@@ -68,8 +68,10 @@ class AllLeadsBulkActionsTests(TestCase):
         self.assertEqual(response.status_code, 200)
         self.assertContains(response, "Биржа заявок")
         self.assertContains(response, "Потоковое получение лидов")
+        self.assertContains(response, 'min="300"')
+        self.assertIn("Минимальная стоимость — 300 ₽".encode("utf-8"), response.content)
         self.assertContains(response, "Активные аукционы")
-        self.assertContains(response, "Демонстрационный режим")
+        self.assertContains(response, "демонстрационном режиме")
 
     def test_admin_can_open_lead_exchange_lot_preview(self):
         self.client.force_login(self.admin)
