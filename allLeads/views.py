@@ -82,8 +82,7 @@ def _base_records_for_user(user):
         return Record.objects.filter(
             companys=user.companys,
             representative=True,
-            employees_REP=user.username,
-        )
+        ).filter(_representative_user_filter(user))
 
     return Record.objects.filter(companys=user.companys, felial=user.felial)
 
@@ -116,8 +115,9 @@ def _visible_records_for_user(records, user):
         return records.filter(representative=True)
 
     if user.status == STATUS_REPRESENTATIVE:
-
-        return records.filter(representative=True, employees_REP=user.username)
+        return records.filter(representative=True).filter(
+            _representative_user_filter(user)
+        )
 
     if user.status == STATUS_MANAGER:
 
@@ -283,8 +283,28 @@ def _lawyer_username_filter(username):
     )
 
 
+def _representative_user_filter(user):
+    return Q(representative_user=user) | Q(
+        representative_user__isnull=True,
+        employees_REP=user.username,
+    )
+
+
+def _representative_username_filter(username):
+    return Q(representative_user__username=username) | Q(
+        representative_user__isnull=True,
+        employees_REP=username,
+    )
+
+
 def _unassigned_lawyer_filter():
     return Q(lawyer__isnull=True) & _build_unassigned_employee_filter("employees_UPP")
+
+
+def _unassigned_representative_filter():
+    return Q(representative_user__isnull=True) & _build_unassigned_employee_filter(
+        "employees_REP"
+    )
 
 
 
@@ -376,7 +396,7 @@ def all_leads(request):
 
             | _lawyer_username_filter(selected_employee)
 
-            | Q(employees_REP=selected_employee)
+            | _representative_username_filter(selected_employee)
 
         )
 
@@ -394,9 +414,11 @@ def all_leads(request):
 
     if selected_lawyer_op:
         if selected_lawyer_op == UNASSIGNED_FILTER_VALUE:
-            get_records = get_records.filter(_build_unassigned_employee_filter("employees_REP"))
+            get_records = get_records.filter(_unassigned_representative_filter())
         else:
-            get_records = get_records.filter(employees_REP=selected_lawyer_op)
+            get_records = get_records.filter(
+                _representative_username_filter(selected_lawyer_op)
+            )
 
 
 
@@ -486,7 +508,7 @@ def all_leads(request):
 
 
 
-    get_records = get_records.select_related("lawyer").distinct().only(
+    get_records = get_records.select_related("lawyer", "representative_user").distinct().only(
         "id",
         "name",
         "phone",
@@ -500,6 +522,8 @@ def all_leads(request):
         "lawyer_id",
         "lawyer__username",
         "employees_REP",
+        "representative_user_id",
+        "representative_user__username",
         "paid_online",
     )
     paginator = Paginator(get_records, DEFAULT_RECORDS_PER_PAGE)
@@ -979,7 +1003,10 @@ def bulk_in_work(request):
 
 
 
-        updated_count = records_for_user.update(employees_REP=representative.username)
+        updated_count = records_for_user.update(
+            representative_user=representative,
+            employees_REP=representative.username,
+        )
 
         messages.success(request, f"Представитель прикреплен: {updated_count}")
 

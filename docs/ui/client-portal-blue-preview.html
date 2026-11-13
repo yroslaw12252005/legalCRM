@@ -1,0 +1,204 @@
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex,nofollow">
+  <title>Личный кабинет клиента — концепт</title>
+  <link rel="stylesheet" href="client-portal-blue-preview.css">
+</head>
+<body>
+  <div class="ambient ambient--one" aria-hidden="true"></div>
+  <div class="ambient ambient--two" aria-hidden="true"></div>
+
+  <header class="topbar">
+    <a class="brand" href="#top" aria-label="rossCRM — на главную">
+      <span class="brand__mark">R</span>
+      <span class="brand__name">ross<span>CRM</span></span>
+      <span class="brand__product">кабинет клиента</span>
+    </a>
+
+    <div class="topbar__actions">
+      <a class="support-link" href="mailto:info@rossurist.ru">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
+        <span>Поддержка</span>
+      </a>
+      <div class="user-chip">
+        <div class="user-chip__text">
+          <strong>Анна Смирнова</strong>
+          <span>Клиент</span>
+        </div>
+        <span class="user-chip__avatar">АС</span>
+      </div>
+    </div>
+  </header>
+
+  <main class="shell" id="top">
+    <section class="welcome">
+      <div>
+        <span class="welcome__eyebrow">Личный кабинет</span>
+        <h1>Добрый день, Анна!</h1>
+        <p>Вся информация по вашему делу — в одном спокойном и понятном пространстве.</p>
+      </div>
+      <a class="primary-button" href="#payment">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h3"/></svg>
+        Оплатить договор
+      </a>
+    </section>
+
+    <section class="dashboard" aria-label="Сводка по делу">
+      <article class="case-card card">
+        <div class="card__topline">
+          <div>
+            <span class="label">Текущее дело</span>
+            <h2>Договор № 148/24</h2>
+          </div>
+          <span class="status"><i></i> В работе</span>
+        </div>
+
+        <div class="case-card__subject">
+          <span>Направление</span>
+          <strong>Банкротство физических лиц</strong>
+        </div>
+
+        <div class="stage">
+          <div class="stage__head">
+            <span>Подготовка документов</span>
+            <strong>3 из 5 этапов</strong>
+          </div>
+          <div class="stage__track"><span></span></div>
+          <div class="stage__steps" aria-label="Этапы дела">
+            <span class="is-done">Заявка</span>
+            <span class="is-done">Договор</span>
+            <span class="is-current">Документы</span>
+            <span>Суд</span>
+            <span>Результат</span>
+          </div>
+        </div>
+
+        <div class="case-card__update">
+          <span class="case-card__update-icon">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 8v5l3 2"/><circle cx="12" cy="12" r="9"/></svg>
+          </span>
+          <div>
+            <span>Последнее обновление</span>
+            <strong>Сегодня, 11:40 · Юрист добавил комментарий</strong>
+          </div>
+        </div>
+      </article>
+
+      <aside class="lawyer-card card">
+        <div class="lawyer-card__heading">
+          <span class="label">Ваш юрист</span>
+          <span class="online" title="Сотрудник на связи"></span>
+        </div>
+        <div class="lawyer-card__person">
+          <div class="lawyer-card__avatar">ОК</div>
+          <div>
+            <h2>Ольга Крылова</h2>
+            <p>Ведущий юрист</p>
+          </div>
+        </div>
+        <blockquote>«Документы приняты. Сейчас готовим заявление и проверяем сведения перед подачей в суд».</blockquote>
+        <div class="lawyer-card__actions">
+          <a href="mailto:lawyer@example.com" class="secondary-button">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 15a4 4 0 0 1-4 4H8l-5 3V7a4 4 0 0 1 4-4h10a4 4 0 0 1 4 4z"/></svg>
+            Написать юристу
+          </a>
+          <a href="tel:+74950000000" class="icon-button" aria-label="Позвонить юристу">
+            <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M22 16.9v3a2 2 0 0 1-2.2 2 19.8 19.8 0 0 1-8.6-3.1 19.4 19.4 0 0 1-6-6A19.8 19.8 0 0 1 2.1 4.2 2 2 0 0 1 4.1 2h3a2 2 0 0 1 2 1.7c.1 1 .4 2 .7 2.8a2 2 0 0 1-.5 2.1L8.1 9.8a16 16 0 0 0 6 6l1.2-1.2a2 2 0 0 1 2.1-.5c.9.3 1.8.6 2.8.7a2 2 0 0 1 1.8 2.1z"/></svg>
+          </a>
+        </div>
+      </aside>
+    </section>
+
+    <section class="summary-grid">
+      <article class="metric card">
+        <span class="metric__icon metric__icon--blue">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 2h9l4 4v16H6z"/><path d="M14 2v5h5M9 13h7M9 17h5"/></svg>
+        </span>
+        <div><span>Документов</span><strong>12</strong><small>2 новых файла</small></div>
+        <a href="#documents" aria-label="Перейти к документам">→</a>
+      </article>
+      <article class="metric card">
+        <span class="metric__icon metric__icon--red">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="4" width="18" height="17" rx="3"/><path d="M8 2v4M16 2v4M3 9h18"/></svg>
+        </span>
+        <div><span>Ближайшее событие</span><strong>18 ноября</strong><small>Подача заявления</small></div>
+        <a href="#events" aria-label="Перейти к событиям">→</a>
+      </article>
+      <article class="metric card" id="payment">
+        <span class="metric__icon metric__icon--blue">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><rect x="3" y="5" width="18" height="14" rx="3"/><path d="M3 10h18M7 15h3"/></svg>
+        </span>
+        <div><span>Осталось оплатить</span><strong>45 000 ₽</strong><small>Ближайший платёж — 15 000 ₽</small></div>
+        <a class="metric__pay" href="#">Оплатить</a>
+      </article>
+    </section>
+
+    <section class="lower-grid">
+      <article class="documents card" id="documents">
+        <div class="section-title">
+          <div><span class="label">Материалы дела</span><h2>Последние документы</h2></div>
+          <a href="#">Все документы <span>→</span></a>
+        </div>
+        <div class="document-list">
+          <div class="document-row">
+            <span class="file-icon">PDF</span>
+            <div><strong>Проект заявления в суд.pdf</strong><span>Добавлен сегодня в 11:40 · 2,4 МБ</span></div>
+            <a href="#" aria-label="Скачать проект заявления">
+              <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+            </a>
+          </div>
+          <div class="document-row">
+            <span class="file-icon file-icon--doc">DOC</span>
+            <div><strong>Опись имущества.docx</strong><span>Добавлен 9 ноября · 840 КБ</span></div>
+            <a href="#" aria-label="Скачать опись имущества">
+              <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+            </a>
+          </div>
+          <div class="document-row">
+            <span class="file-icon file-icon--jpg">JPG</span>
+            <div><strong>Паспорт — разворот.jpg</strong><span>Добавлен 7 ноября · 1,1 МБ</span></div>
+            <a href="#" aria-label="Скачать копию паспорта">
+              <svg viewBox="0 0 24 24"><path d="M12 3v12m0 0 4-4m-4 4-4-4M5 21h14"/></svg>
+            </a>
+          </div>
+        </div>
+        <label class="upload-zone">
+          <input type="file" accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+          <span class="upload-zone__icon">
+            <svg viewBox="0 0 24 24"><path d="M12 16V4m0 0L8 8m4-4 4 4M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5"/></svg>
+          </span>
+          <span><strong>Загрузить документ</strong><small>PDF, DOC, JPG или PNG до 15 МБ</small></span>
+        </label>
+      </article>
+
+      <article class="events card" id="events">
+        <div class="section-title">
+          <div><span class="label">Ход работы</span><h2>Ближайшие события</h2></div>
+        </div>
+        <div class="timeline">
+          <div class="timeline__item is-next">
+            <time><strong>18</strong><span>ноя</span></time>
+            <div><span>Следующее событие</span><strong>Подача заявления в суд</strong><small>Ответственный: Ольга Крылова</small></div>
+          </div>
+          <div class="timeline__item">
+            <time><strong>25</strong><span>ноя</span></time>
+            <div><span>Запланировано</span><strong>Звонок с юристом</strong><small>12:30 · Онлайн</small></div>
+          </div>
+          <div class="timeline__item">
+            <time><strong>03</strong><span>дек</span></time>
+            <div><span>Платёж</span><strong>Доплата по договору</strong><small>15 000 ₽</small></div>
+          </div>
+        </div>
+      </article>
+    </section>
+
+    <footer>
+      <span>© 2026 rossCRM · Данные защищены</span>
+      <div><a href="mailto:info@rossurist.ru">info@rossurist.ru</a><a href="#">Политика конфиденциальности</a></div>
+    </footer>
+  </main>
+</body>
+</html>

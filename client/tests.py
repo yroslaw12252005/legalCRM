@@ -115,6 +115,45 @@ class ClientCabinetDocumentsTests(TestCase):
         self.assertContains(response, self.record.work_comment)
         self.assertContains(response, "Оплатить договор", count=1)
 
+    def test_client_cabinet_prefers_assigned_representative_after_transfer(self):
+        lawyer = User.objects.create_user(
+            username="primary_for_client",
+            first_name="Первичный",
+            last_name="Юрист",
+            status="Юрист пирвичник",
+            companys=self.company,
+            felial=self.branch,
+        )
+        representative = User.objects.create_user(
+            username="representative_for_client",
+            first_name="Судебный",
+            last_name="Представитель",
+            status="Представитель",
+            companys=self.company,
+            felial=self.branch,
+        )
+        self.record.lawyer = lawyer
+        self.record.employees_UPP = lawyer.username
+        self.record.representative = True
+        self.record.representative_user = representative
+        self.record.employees_REP = representative.username
+        self.record.save(
+            update_fields=[
+                "lawyer",
+                "employees_UPP",
+                "representative",
+                "representative_user",
+                "employees_REP",
+            ]
+        )
+
+        response = self.client.get(
+            reverse("client_portal", args=[self.record.client_access_token])
+        )
+
+        self.assertContains(response, "Судебный Представитель")
+        self.assertNotContains(response, "Первичный Юрист")
+
     @patch("client.views.document_storage.upload_bytes", new_callable=AsyncMock)
     def test_client_can_upload_document_to_own_record(self, mocked_upload):
         mocked_upload.return_value = True

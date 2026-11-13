@@ -102,7 +102,12 @@ def _employee_contracts(employee):
     if status_matches(employee.status, *REPRESENTATIVE_EMPLOYEE_ROLES):
         return contracts.filter(
             record__representative=True,
-            record__employees_REP=employee.username,
+        ).filter(
+            Q(record__representative_user=employee)
+            | Q(
+                record__representative_user__isnull=True,
+                record__employees_REP=employee.username,
+            )
         )
     if status_matches(employee.status, "Оператор"):
         return contracts.filter(record__employees_KC=employee.username)

@@ -217,12 +217,22 @@ class EmployeeDeactivationTests(TestCase):
             companys=self.company,
             felial=self.branch,
         )
+        self.representative = User.objects.create_user(
+            username="representative",
+            password="test-pass-123",
+            status="Представитель",
+            companys=self.company,
+            felial=self.branch,
+        )
         self.record = Record.objects.create(
             name="Клиент",
             companys=self.company,
             felial=self.branch,
             lawyer=self.lawyer,
             employees_UPP=self.lawyer.username,
+            representative=True,
+            representative_user=self.representative,
+            employees_REP=self.representative.username,
         )
 
     def test_delete_employee_deactivates_and_preserves_assignment(self):
@@ -236,3 +246,20 @@ class EmployeeDeactivationTests(TestCase):
         self.assertFalse(self.lawyer.is_active)
         self.assertEqual(self.record.lawyer_id, self.lawyer.id)
         self.assertEqual(self.record.employees_UPP, self.lawyer.username)
+
+    def test_delete_representative_deactivates_and_preserves_assignment(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse("delete_employee", args=[self.representative.id])
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.representative.refresh_from_db()
+        self.record.refresh_from_db()
+        self.assertFalse(self.representative.is_active)
+        self.assertEqual(
+            self.record.representative_user_id,
+            self.representative.id,
+        )
+        self.assertEqual(self.record.employees_REP, self.representative.username)

@@ -264,7 +264,7 @@
                 <td title="{{ record.lawyer_display_name }}">{{ record.lawyer_display_name|truncatechars:8 }}</td>
               {% endif %}
               {% if user.status == "Директор представителей" or user.status == "Администратор" or user.status == "Менеджер" or user.status == "Директор ЮПП" %}
-                <td title="{{ record.employees_REP }}">{{ record.employees_REP|truncatechars:8 }}</td>
+                <td title="{{ record.representative_display_name }}">{{ record.representative_display_name|truncatechars:8 }}</td>
               {% endif %}
             </tr>
           {% endfor %}

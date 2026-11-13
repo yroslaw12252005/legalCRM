@@ -29,7 +29,7 @@ def _initials(value, fallback="КЛ"):
 
 
 def _client_cabinet_records():
-    return Record.objects.select_related("lawyer").prefetch_related(
+    return Record.objects.select_related("lawyer", "representative_user").prefetch_related(
         "contracts__surcharges", "documents"
     )
 
@@ -37,11 +37,26 @@ def _client_cabinet_records():
 def _render_client_cabinet(request, record):
     contracts = list(record.contracts.all())
     documents = list(record.documents.all())
-    lawyer = record.lawyer
-    if lawyer is None and record.employees_UPP and record.employees_UPP != "Не прикреплён":
+    unassigned_values = {
+        "",
+        "Не прикреплён",
+        "Не прикреплённ",
+        "Не прикреплен",
+    }
+    has_legacy_representative = (
+        (record.employees_REP or "").strip() not in unassigned_values
+    )
+    use_representative = record.representative and (
+        record.representative_user_id or has_legacy_representative
+    )
+    lawyer = record.representative_user if use_representative else record.lawyer
+    legacy_employee = (
+        record.employees_REP if use_representative else record.employees_UPP
+    )
+    if lawyer is None and legacy_employee and legacy_employee not in unassigned_values:
         lawyer = User.objects.filter(
             companys_id=record.companys_id,
-            username=record.employees_UPP,
+            username=legacy_employee,
         ).first()
 
     lawyer_name = "Юрист ещё не назначен"
@@ -49,8 +64,8 @@ def _render_client_cabinet(request, record):
     if lawyer:
         lawyer_name = lawyer.get_full_name().strip() or lawyer.username
         lawyer_email = lawyer.email or ""
-    elif record.employees_UPP and record.employees_UPP != "Не прикреплён":
-        lawyer_name = record.employees_UPP
+    elif legacy_employee and legacy_employee not in unassigned_values:
+        lawyer_name = legacy_employee
 
     response = render(
         request,

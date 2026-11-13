@@ -184,6 +184,17 @@ class Employees_REPForm(forms.ModelForm):
         model = Record
         fields = ["employees_REP"]
 
+    def save(self, commit=True):
+        record = super().save(commit=False)
+        representative = self.cleaned_data.get("employees_REP")
+        record.representative_user = representative
+        record.employees_REP = (
+            representative.username if representative else "Не прикреплён"
+        )
+        if commit:
+            record.save()
+        return record
+
 
 class MultipleFileInput(forms.FileInput):
     allow_multiple_selected = True

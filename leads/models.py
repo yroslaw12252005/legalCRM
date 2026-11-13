@@ -42,6 +42,14 @@ class Record(models.Model):
         verbose_name="Прикреплённый юрист",
     )
     employees_REP = models.CharField(max_length=50, null=True, default="Не прикреплён")
+    representative_user = models.ForeignKey(
+        settings.AUTH_USER_MODEL,
+        on_delete=models.PROTECT,
+        null=True,
+        blank=True,
+        related_name="assigned_leads_as_representative",
+        verbose_name="Прикреплённый представитель",
+    )
     where = models.CharField(max_length=50, null=True)
     cost = models.DecimalField(max_digits=10, decimal_places=0, null=True)
     companys = models.ForeignKey(Companys, on_delete=models.CASCADE)
@@ -93,6 +101,21 @@ class Record(models.Model):
         if self.lawyer_id:
             return self.lawyer_id == user.pk
         return self.employees_UPP == user.username
+
+    @property
+    def representative_display_name(self):
+        """Return the FK representative name, falling back to the legacy snapshot."""
+        if self.representative_user_id:
+            return self.representative_user.username
+        return self.employees_REP or "Не прикреплён"
+
+    def is_assigned_to_representative(self, user):
+        """Support both migrated and unmatched legacy representative assignments."""
+        if not user or not getattr(user, "pk", None):
+            return False
+        if self.representative_user_id:
+            return self.representative_user_id == user.pk
+        return self.employees_REP == user.username
 
     class Meta:
         ordering = ["-updated_at", "-created_at", "-id"]

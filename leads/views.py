@@ -234,7 +234,11 @@ def can_manage_documents(user):
 
 
 def _record_for_user_or_404(request, pk):
-    return get_object_or_404(Record, id=pk, companys=request.user.companys)
+    return get_object_or_404(
+        Record.objects.select_related("lawyer", "representative_user"),
+        id=pk,
+        companys=request.user.companys,
+    )
 
 def _booking_for_user_or_404(request, pk):
     return get_object_or_404(Booking, id=pk, companys=request.user.companys)

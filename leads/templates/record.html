@@ -453,7 +453,7 @@
             </div>
             <div class="stat-item">
                 <div class="stat-label">Представитель</div>
-                <div >{{ record.employees_REP }}</div>
+                <div>{{ record.representative_display_name }}</div>
             </div>
             {% endif %}
            
@@ -647,7 +647,7 @@
             {% if user.status == "Директор представителей" and record.representative == 1 or user.status == "Администратор"%}
             <div class="stat-item">
                 <div class="stat-label">Прикрепленные представители</div>
-                <div class="stat-value" style="color: #94a3b8;">{{ record.employees_REP }}</div>
+                <div class="stat-value" style="color: #94a3b8;">{{ record.representative_display_name }}</div>
                 <form method="post" class="crm-form crm-form--compact">
                                   {% csrf_token %}
                                   {{form_employees_REP.as_p}}

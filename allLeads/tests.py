@@ -60,6 +60,30 @@ class AllLeadsBulkActionsTests(TestCase):
         self.record.refresh_from_db()
         self.assertEqual(self.record.status, "Онлайн")
 
+    def test_bulk_representative_assignment_writes_fk_and_snapshot(self):
+        representative = User.objects.create_user(
+            username="bulk_representative",
+            password="test-pass-123",
+            status="Представитель",
+            companys=self.company,
+            felial=self.felial,
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse("all_leads_bulk_in_work"),
+            data={
+                "action": "assign_representative",
+                "representative_id": representative.id,
+                "selected_records": [self.record.id],
+            },
+        )
+
+        self.assertEqual(response.status_code, 302)
+        self.record.refresh_from_db()
+        self.assertEqual(self.record.representative_user_id, representative.id)
+        self.assertEqual(self.record.employees_REP, representative.username)
+
     def test_admin_can_open_lead_exchange_placeholder(self):
         self.client.force_login(self.admin)
 
@@ -258,7 +282,10 @@ class AllLeadsFiltersTests(TestCase):
             felial=self.felial,
         )
         self.assigned_record.employees_REP = self.representative.username
-        self.assigned_record.save(update_fields=["employees_REP"])
+        self.assigned_record.representative_user = self.representative
+        self.assigned_record.save(
+            update_fields=["employees_REP", "representative_user"]
+        )
 
     def test_admin_can_filter_unassigned_operators(self):
         self.client.force_login(self.admin)
@@ -346,6 +373,18 @@ class AllLeadsFiltersTests(TestCase):
         self.assertQuerySetEqual(response.context["lawyers"], [self.lawyer])
         self.assertQuerySetEqual(response.context["representatives"], [self.representative])
         self.assertNotIn(secondary_lawyer, response.context["lawyers"])
+
+    def test_representative_access_survives_username_change(self):
+        self.assigned_record.representative = True
+        self.assigned_record.save(update_fields=["representative"])
+        self.representative.username = "renamed_representative"
+        self.representative.save(update_fields=["username"])
+        self.client.force_login(self.representative)
+
+        response = self.client.get(reverse("all_leads"))
+
+        self.assertContains(response, "Assigned Lead")
+        self.assertNotContains(response, "Unassigned Lead")
 
 
 class StatusPermissionsTests(TestCase):

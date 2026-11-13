@@ -62,6 +62,7 @@ class SalaryCalculationTests(TestCase):
         )
         self.representative_record = Record.objects.create(
             name="Клиент представителя", employees_REP=self.representative.username,
+            representative_user=self.representative,
             representative=True, companys=self.company, felial=self.branch,
         )
         self.not_transferred_contract = Contract.objects.create(
