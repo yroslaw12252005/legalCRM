@@ -2,6 +2,8 @@ from django.contrib.auth import authenticate
 from django.apps import apps as django_apps
 from django.test import TestCase
 from django.urls import reverse
+from django.utils import timezone
+from datetime import timedelta
 from importlib import import_module
 
 from company.models import Companys
@@ -10,6 +12,126 @@ from leads.models import Record
 
 from .models import User
 from .forms import AddEmployeesForm, AddSuperEmployeesForm
+
+
+class AdministratorOnboardingTests(TestCase):
+    def setUp(self):
+        self.company = Companys.objects.create(title="Обучение")
+        self.branch = Felial.objects.create(
+            title="Главный",
+            cites="Москва",
+            companys=self.company,
+        )
+        self.admin = User.objects.create_user(
+            username="onboarding_admin",
+            email="onboarding-admin@example.com",
+            password="test-pass-123",
+            status="Администратор",
+            companys=self.company,
+            felial=self.branch,
+        )
+        self.employee = User.objects.create_user(
+            username="onboarding_employee",
+            email="onboarding-employee@example.com",
+            password="test-pass-123",
+            status="Оператор",
+            companys=self.company,
+            felial=self.branch,
+        )
+
+    def test_new_admin_is_ready_for_automatic_onboarding(self):
+        self.assertTrue(self.admin.should_start_onboarding)
+        self.assertEqual(self.admin.onboarding_step, 0)
+
+    def test_data_migration_does_not_autostart_for_existing_users(self):
+        migration = import_module("accounts.migrations.0012_user_onboarding")
+
+        migration.mark_existing_users_as_onboarded(django_apps, None)
+
+        self.admin.refresh_from_db()
+        self.employee.refresh_from_db()
+        self.assertEqual(self.admin.onboarding_version, User.ONBOARDING_VERSION)
+        self.assertEqual(self.employee.onboarding_version, User.ONBOARDING_VERSION)
+        self.assertFalse(self.admin.should_start_onboarding)
+
+    def test_admin_can_save_progress_and_complete_onboarding(self):
+        self.client.force_login(self.admin)
+
+        progress_response = self.client.post(
+            reverse("update_onboarding"),
+            {"action": "progress", "step": 6},
+        )
+        self.assertEqual(progress_response.status_code, 200)
+        self.admin.refresh_from_db()
+        self.assertEqual(self.admin.onboarding_step, 6)
+
+        complete_response = self.client.post(
+            reverse("update_onboarding"),
+            {"action": "complete"},
+        )
+        self.assertEqual(complete_response.status_code, 200)
+        self.admin.refresh_from_db()
+        self.assertEqual(self.admin.onboarding_version, User.ONBOARDING_VERSION)
+        self.assertFalse(self.admin.should_start_onboarding)
+        self.assertIsNotNone(self.admin.onboarding_completed_at)
+
+    def test_admin_can_defer_onboarding_for_one_day(self):
+        self.client.force_login(self.admin)
+        before = timezone.now() + timedelta(hours=23)
+
+        response = self.client.post(
+            reverse("update_onboarding"),
+            {"action": "defer"},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.admin.refresh_from_db()
+        self.assertGreater(self.admin.onboarding_deferred_until, before)
+        self.assertFalse(self.admin.should_start_onboarding)
+
+    def test_restart_resets_onboarding_and_redirects_to_dashboard(self):
+        self.admin.onboarding_version = User.ONBOARDING_VERSION
+        self.admin.onboarding_completed_at = timezone.now()
+        self.admin.save(
+            update_fields=["onboarding_version", "onboarding_completed_at"]
+        )
+        self.client.force_login(self.admin)
+
+        response = self.client.post(reverse("restart_onboarding"))
+
+        self.assertRedirects(
+            response,
+            f"{reverse('current_applications')}?tour=1",
+            fetch_redirect_response=False,
+        )
+        self.admin.refresh_from_db()
+        self.assertEqual(self.admin.onboarding_version, 0)
+        self.assertEqual(self.admin.onboarding_step, 0)
+        self.assertTrue(self.admin.should_start_onboarding)
+
+    def test_onboarding_controls_are_admin_only(self):
+        self.client.force_login(self.employee)
+
+        update_response = self.client.post(
+            reverse("update_onboarding"),
+            {"action": "progress", "step": 2},
+        )
+        restart_response = self.client.post(reverse("restart_onboarding"))
+        page_response = self.client.get(reverse("current_applications"))
+
+        self.assertEqual(update_response.status_code, 403)
+        self.assertEqual(restart_response.status_code, 302)
+        self.assertNotContains(page_response, "Пройти обучение")
+
+    def test_admin_menu_contains_restart_button(self):
+        self.admin.onboarding_version = User.ONBOARDING_VERSION
+        self.admin.save(update_fields=["onboarding_version"])
+        self.client.force_login(self.admin)
+
+        response = self.client.get(reverse("current_applications"))
+
+        self.assertContains(response, "Пройти обучение")
+        self.assertContains(response, reverse("restart_onboarding"))
 
 
 class EmailAuthenticationTests(TestCase):

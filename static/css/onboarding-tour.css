@@ -1,0 +1,35 @@
+.crm-tour-overlay { position:fixed; inset:0; z-index:10000; background:rgba(9,24,39,.68); backdrop-filter:blur(2px); }
+.crm-tour-tooltip { position:fixed; z-index:10002; width:min(390px,calc(100vw - 28px)); padding:24px; border:1px solid rgba(7,126,194,.14); border-radius:22px; color:#152b3b; background:#fff; box-shadow:0 24px 75px rgba(3,30,49,.3); font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+.crm-tour-tooltip[hidden],.crm-tour-overlay[hidden] { display:none!important; }
+.crm-tour-tooltip--center { top:50%; left:50%; transform:translate(-50%,-50%); }
+.crm-tour-close { position:absolute; top:13px; right:14px; width:34px; height:34px; padding:0; border:0; border-radius:11px; color:#69808f; background:#f1f6f9; font-size:23px; line-height:1; cursor:pointer; }
+.crm-tour-progress-row { display:flex; align-items:center; justify-content:space-between; gap:20px; padding-right:34px; }
+.crm-tour-kicker { color:#077ec2; font-size:11px; font-weight:800; letter-spacing:.1em; text-transform:uppercase; }
+.crm-tour-progress { color:#7b8d99; font-size:11px; font-weight:700; white-space:nowrap; }
+.crm-tour-progress-track { height:5px; margin:12px 0 20px; overflow:hidden; border-radius:999px; background:#e9f0f4; }
+.crm-tour-progress-track span { display:block; width:0; height:100%; border-radius:inherit; background:linear-gradient(90deg,#077ec2,#20a7ef); transition:width .2s ease; }
+.crm-tour-tooltip h2 { margin:0 0 10px; color:#132b3b; font-size:23px; line-height:1.18; letter-spacing:-.025em; }
+.crm-tour-tooltip p { margin:0; color:#607583; font-size:14px; line-height:1.6; }
+.crm-tour-actions { display:flex; align-items:center; justify-content:space-between; gap:15px; margin-top:24px; }
+.crm-tour-navigation { display:flex; gap:9px; }
+.crm-tour-button,.crm-tour-text-button { min-height:42px; border-radius:12px; cursor:pointer; font-weight:750; }
+.crm-tour-button { padding:0 16px; border:1px solid transparent; }
+.crm-tour-button--primary { color:#fff; border-color:#077ec2; background:#077ec2; box-shadow:0 9px 22px rgba(7,126,194,.22); }
+.crm-tour-button--secondary { color:#315268; border-color:#dbe6ec; background:#fff; }
+.crm-tour-button:disabled { opacity:.42; cursor:default; }
+.crm-tour-text-button { padding:0 4px; border:0; color:#7b8d99; background:transparent; font-size:12px; }
+.crm-tour-button:focus-visible,.crm-tour-text-button:focus-visible,.crm-tour-close:focus-visible { outline:3px solid rgba(7,126,194,.28); outline-offset:3px; }
+.crm-tour-highlight { z-index:10001!important; border-radius:12px; pointer-events:none!important; box-shadow:0 0 0 5px #fff,0 0 0 10px rgba(32,167,239,.68),0 18px 45px rgba(2,38,62,.32)!important; }
+.crm-tour-restart-form { margin:0; }
+.crm-tour-restart-button { width:100%; padding:10px 12px; border:1px solid rgba(255,255,255,.22); border-radius:10px; color:#fff; background:rgba(255,255,255,.09); text-align:left; cursor:pointer; }
+.crm-tour-restart-button:hover { background:rgba(255,255,255,.16); }
+@media (max-width:640px) {
+  .crm-tour-tooltip { bottom:12px; left:14px!important; width:calc(100vw - 28px); padding:21px; transform:none!important; }
+  .crm-tour-tooltip:not(.crm-tour-tooltip--center) { top:auto!important; }
+  .crm-tour-tooltip--center { top:50%!important; bottom:auto; transform:translateY(-50%)!important; }
+  .crm-tour-actions { align-items:stretch; flex-direction:column-reverse; }
+  .crm-tour-navigation { display:grid; grid-template-columns:1fr 1fr; }
+  .crm-tour-button { width:100%; }
+  .crm-tour-text-button { align-self:center; }
+}
+@media (prefers-reduced-motion:reduce) { .crm-tour-progress-track span { transition:none; } }

@@ -1,0 +1,27 @@
+{% load static %}
+{% if user.is_authenticated and user.status == "Администратор" %}
+  <div id="crm-onboarding-config" hidden
+       data-auto-start="{% if user.should_start_onboarding %}true{% else %}false{% endif %}"
+       data-step="{{ user.onboarding_step }}"
+       data-update-url="{% url 'update_onboarding' %}"
+       data-all-leads-url="{% url 'all_leads' %}"></div>
+  <div class="crm-tour-overlay" id="crm-tour-overlay" hidden></div>
+  <section class="crm-tour-tooltip" id="crm-tour-tooltip" role="dialog" aria-modal="true" aria-labelledby="crm-tour-title" aria-describedby="crm-tour-description" hidden>
+    <button class="crm-tour-close" id="crm-tour-close" type="button" aria-label="Продолжить обучение позже">×</button>
+    <div class="crm-tour-progress-row">
+      <span class="crm-tour-kicker">Обучение rossCRM</span>
+      <span class="crm-tour-progress" id="crm-tour-progress"></span>
+    </div>
+    <div class="crm-tour-progress-track" aria-hidden="true"><span id="crm-tour-progress-value"></span></div>
+    <h2 id="crm-tour-title"></h2>
+    <p id="crm-tour-description"></p>
+    <div class="crm-tour-actions">
+      <button class="crm-tour-text-button" id="crm-tour-skip" type="button">Пропустить</button>
+      <div class="crm-tour-navigation">
+        <button class="crm-tour-button crm-tour-button--secondary" id="crm-tour-back" type="button">Назад</button>
+        <button class="crm-tour-button crm-tour-button--primary" id="crm-tour-next" type="button">Далее</button>
+      </div>
+    </div>
+  </section>
+  <script src="{% static 'js/onboarding-tour.js' %}" defer></script>
+{% endif %}

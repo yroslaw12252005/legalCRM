@@ -1,12 +1,14 @@
 from django.db import models
 from django.contrib.auth.models import AbstractUser
 from django.core.validators import MaxValueValidator, MinValueValidator
+from django.utils import timezone
 from company.models import Companys
 from felial.models import Felial
 from .validators import username_with_spaces_validator
 
 
 class User(AbstractUser):
+    ONBOARDING_VERSION = 1
     SALARY_PERCENT = "Процент"
     SALARY_FIXED = "Оклад"
     SALARY_COMBINED = "Оклад + Процент"
@@ -66,4 +68,33 @@ class User(AbstractUser):
         "Учётная запись заблокирована",
         default=False,
     )
+    onboarding_version = models.PositiveSmallIntegerField(
+        "Пройденная версия обучения",
+        default=0,
+    )
+    onboarding_step = models.PositiveSmallIntegerField(
+        "Текущий шаг обучения",
+        default=0,
+    )
+    onboarding_completed_at = models.DateTimeField(
+        "Обучение завершено",
+        null=True,
+        blank=True,
+    )
+    onboarding_deferred_until = models.DateTimeField(
+        "Обучение отложено до",
+        null=True,
+        blank=True,
+    )
+
+    @property
+    def should_start_onboarding(self):
+        if self.status != "Администратор":
+            return False
+        if self.onboarding_version >= self.ONBOARDING_VERSION:
+            return False
+        return not (
+            self.onboarding_deferred_until
+            and self.onboarding_deferred_until > timezone.now()
+        )
 

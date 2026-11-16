@@ -1,8 +1,14 @@
 ﻿from django.shortcuts import redirect, render, get_object_or_404
+from datetime import timedelta
+
 from django.contrib import messages
 from django.contrib.auth import update_session_auth_hash
 from django.contrib.auth.decorators import login_required
+from django.http import JsonResponse
+from django.urls import reverse
+from django.utils import timezone
 from django.views.decorators.cache import never_cache
+from django.views.decorators.http import require_POST
 
 from .forms import AddEmployeesForm, EmployeeUpdateForm, SoloProfileUpdateForm
 from .models import User
@@ -106,6 +112,64 @@ def update_profile(request):
         return redirect("update_profile")
 
     return render(request, "profile_edit.html", {"form": form})
+
+
+@login_required
+@require_POST
+def update_onboarding(request):
+    if request.user.status != "Администратор":
+        return JsonResponse({"error": "Недостаточно прав"}, status=403)
+
+    action = request.POST.get("action", "").strip()
+    if action == "progress":
+        try:
+            step = int(request.POST.get("step", 0))
+        except (TypeError, ValueError):
+            return JsonResponse({"error": "Некорректный шаг"}, status=400)
+        request.user.onboarding_step = max(0, min(step, 15))
+        request.user.onboarding_deferred_until = None
+        update_fields = ["onboarding_step", "onboarding_deferred_until"]
+    elif action in {"complete", "skip"}:
+        request.user.onboarding_version = User.ONBOARDING_VERSION
+        request.user.onboarding_step = 0
+        request.user.onboarding_completed_at = timezone.now()
+        request.user.onboarding_deferred_until = None
+        update_fields = [
+            "onboarding_version",
+            "onboarding_step",
+            "onboarding_completed_at",
+            "onboarding_deferred_until",
+        ]
+    elif action == "defer":
+        request.user.onboarding_deferred_until = timezone.now() + timedelta(days=1)
+        update_fields = ["onboarding_deferred_until"]
+    else:
+        return JsonResponse({"error": "Неизвестное действие"}, status=400)
+
+    request.user.save(update_fields=update_fields)
+    return JsonResponse({"ok": True})
+
+
+@login_required
+@require_POST
+def restart_onboarding(request):
+    if request.user.status != "Администратор":
+        messages.error(request, "Обучение доступно только администратору")
+        return redirect("all_leads")
+
+    request.user.onboarding_version = 0
+    request.user.onboarding_step = 0
+    request.user.onboarding_completed_at = None
+    request.user.onboarding_deferred_until = None
+    request.user.save(
+        update_fields=[
+            "onboarding_version",
+            "onboarding_step",
+            "onboarding_completed_at",
+            "onboarding_deferred_until",
+        ]
+    )
+    return redirect(f"{reverse('current_applications')}?tour=1")
 
 
 @never_cache

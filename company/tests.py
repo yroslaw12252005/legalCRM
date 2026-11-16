@@ -52,6 +52,8 @@ class CompanyWorkModeTests(TestCase):
         self.assertFalse(company.is_solo)
         self.assertIsNone(admin.felial_id)
         self.assertFalse(Felial.objects.filter(companys=company).exists())
+        self.assertEqual(admin.onboarding_version, 0)
+        self.assertTrue(admin.should_start_onboarding)
 
     def test_new_solo_lead_is_assigned_to_only_admin(self):
         company, admin = self._register_company_and_admin(Companys.MODE_SOLO, "lead")

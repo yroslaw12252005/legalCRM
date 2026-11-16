@@ -262,7 +262,7 @@
 <div class="crm-container">
   <form method="post" action="{% url 'all_leads_bulk_in_work' %}" id="bulkInWorkForm">
     {% csrf_token %}
-    <div class="crm-table-wrapper">
+    <div class="crm-table-wrapper" data-tour="lead-list">
       <table class="crm-table">
         <thead>
           <tr>

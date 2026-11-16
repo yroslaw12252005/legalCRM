@@ -11,7 +11,7 @@
     </label>
 </div>
 <input type="checkbox" id="crm-nav-toggle" class="crm-nav-toggle" aria-hidden="true">
-<nav role="main container col">
+<nav role="main container col" data-tour="sidebar">
     <!-- Заголовок и информация пользователя -->
     <div class="user-info">
         <div class="user-header">
@@ -76,7 +76,7 @@ $(document).ready(function() {
 });
     </script>
 
-    <div class="month-navigation">
+    <div class="month-navigation" data-tour="calendar">
         <button id="last_date" class="nav-button">Предыдущий месяц</button>
         <button id="next_date" class="nav-button next-month">Следующий месяц</button>
     </div>
@@ -84,7 +84,7 @@ $(document).ready(function() {
     <div id="content-container"></div>
     {% endif %}
 
-    <a class="sidebar-wallet" href="{% url 'wallet_detail' %}">
+    <a class="sidebar-wallet" href="{% url 'wallet_detail' %}" data-tour="wallet">
         <span class="sidebar-wallet__icon" aria-hidden="true">₽</span>
         <span class="sidebar-wallet__content">
             <small>Баланс компании</small>
@@ -96,7 +96,7 @@ $(document).ready(function() {
     <div class="sidebar-menu">
         <ul>
         {% if user.is_authenticated %}
-            <li class="create-lead-cta">
+            <li class="create-lead-cta" data-tour="create-lead">
                 <span>
                     <a class="create-lead-link" style="color:#fff; text-decoration:none;" href="{% url 'add_record' %}">
                         <img src="{% static 'img/add_lead.png' %}" alt="Создать заявку" width="40" height="40">
@@ -104,7 +104,7 @@ $(document).ready(function() {
                 </span>
             </li>
 
-            <li>
+            <li data-tour="primary-leads">
                 <span><a style="color:#fff; text-decoration:none;" href="{% url 'current_applications' %}"> Первичка</a></span>
             </li>
 
@@ -191,23 +191,23 @@ $(document).ready(function() {
             {% endif %}
 
             {% if user.status == "Администратор" %}
-                <li class="active">
+                <li class="active" data-tour="all-leads">
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
                 </li>
-                <li>
+                <li data-tour="tasks">
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
                 </li>
-                <li>
+                <li data-tour="salary">
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'salary_list' %}">Зарплата</a></span>
                 </li>
                 {% if not user.companys.is_solo %}
-                    <li>
+                    <li data-tour="employees">
                         <span><a style="color:#fff; text-decoration:none;" href="{% url 'reg' %}"><img src="{% static 'img/add_user.png' %}" alt=""> Добавить пользователя</a></span>
                     </li>
-                    <li>
+                    <li data-tour="employee-list">
                         <span><a style="color:#fff; text-decoration:none;" href="{% url 'employees' %}"><img src="{% static 'img/employee.png' %}" width="28" alt=""> Пользователи</a></span>
                     </li>
-                    <li>
+                    <li data-tour="branches">
                         <span><a style="color:#fff; text-decoration:none;" href="{% url 'add_felial' %}"><img src="{% static 'img/add_felial.png' %}" alt=""> Создать филиал</a></span>
                     </li>
                     <li>
@@ -218,11 +218,17 @@ $(document).ready(function() {
                         <span><a style="color:#fff; text-decoration:none;" href="{% url 'update_profile' %}">Мой профиль</a></span>
                     </li>
                 {% endif %}
-                <li>
+                <li data-tour="lead-exchange">
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'lead_exchange' %}">Биржа заявок</a></span>
                 </li>
-                <li>
+                <li data-tour="tilda">
                     <span><a style="color:#fff; text-decoration:none;" href="{% url 'tilda_integration_list' %}">Интеграция с Tilda</a></span>
+                </li>
+                <li class="crm-tour-restart-item">
+                    <form method="post" action="{% url 'restart_onboarding' %}" class="crm-tour-restart-form">
+                        {% csrf_token %}
+                        <button type="submit" class="crm-tour-restart-button">Пройти обучение</button>
+                    </form>
                 </li>
             {% endif %}
 
@@ -238,7 +244,7 @@ $(document).ready(function() {
                 </li>
             {% endif %}
 
-            <li class="active">
+            <li class="active" data-tour="knowledge-base">
                 <span><a style="color:#fff; text-decoration:none;" href="{% url 'education_list' %}"><img src="{% static 'img/doc.png' %}" alt=""> База знаний</a></span>
             </li>
 
