@@ -58,6 +58,8 @@
         }
       }
       highlighted = null;
+      overlay.classList.remove("crm-tour-overlay--spotlight");
+      overlay.style.top=""; overlay.style.left=""; overlay.style.width=""; overlay.style.height="";
     }
     function closeTour() {
       removeHighlight(); overlay.hidden=true; tooltip.hidden=true; document.body.classList.remove("crm-tour-active");
@@ -86,6 +88,19 @@
       if (top+tipRect.height>window.innerHeight-14) top=Math.max(14,window.innerHeight-tipRect.height-14);
       tooltip.style.left=left+"px"; tooltip.style.top=top+"px";
     }
+    function positionSpotlight(target) {
+      if (!target) {
+        overlay.classList.remove("crm-tour-overlay--spotlight");
+        overlay.style.top=""; overlay.style.left=""; overlay.style.width=""; overlay.style.height="";
+        return;
+      }
+      const rect=target.getBoundingClientRect(); const padding=7;
+      overlay.classList.add("crm-tour-overlay--spotlight");
+      overlay.style.top=Math.max(0,rect.top-padding)+"px";
+      overlay.style.left=Math.max(0,rect.left-padding)+"px";
+      overlay.style.width=Math.min(window.innerWidth-Math.max(0,rect.left-padding),rect.width+padding*2)+"px";
+      overlay.style.height=Math.min(window.innerHeight-Math.max(0,rect.top-padding),rect.height+padding*2)+"px";
+    }
     async function showStep(index) {
       removeHighlight(); currentStep=Math.max(0,Math.min(index,steps.length-1)); let step=steps[currentStep];
       if (step.url && routePath(window.location.href)!==routePath(step.url)) { openRoute(step.url); return; }
@@ -104,13 +119,14 @@
         }
         target.classList.add("crm-tour-highlight"); highlighted=target;
       }
+      positionSpotlight(target);
       title.textContent=step.title; description.textContent=step.text;
       progress.textContent="Шаг "+(currentStep+1)+" из "+steps.length;
       progressValue.style.width=(((currentStep+1)/steps.length)*100)+"%";
       backButton.disabled=currentStep===0;
       nextButton.textContent=currentStep===0?"Начать":(currentStep===steps.length-1?"Завершить":"Далее");
       skipButton.textContent=currentStep===0?"Пропустить обучение":"Пропустить";
-      window.setTimeout(function(){ positionTooltip(target,Boolean(step.center)); nextButton.focus({preventScroll:true}); },target?260:0);
+      window.setTimeout(function(){ positionSpotlight(target); positionTooltip(target,Boolean(step.center)); nextButton.focus({preventScroll:true}); },target?300:0);
     }
     nextButton.addEventListener("click",async function(){
       if (currentStep>=steps.length-1) { await sendAction("complete"); closeTour(); return; }
@@ -119,7 +135,8 @@
     backButton.addEventListener("click",async function(){ if(currentStep===0)return; const previous=currentStep-1; await sendAction("progress",previous); showStep(previous); });
     skipButton.addEventListener("click",async function(){ await sendAction("skip"); closeTour(); });
     closeButton.addEventListener("click",async function(){ await sendAction("defer"); closeTour(); });
-    window.addEventListener("resize",function(){ if(!tooltip.hidden) positionTooltip(highlighted,Boolean(steps[currentStep].center)); });
+    window.addEventListener("resize",function(){ if(!tooltip.hidden) { positionSpotlight(highlighted); positionTooltip(highlighted,Boolean(steps[currentStep].center)); } });
+    window.addEventListener("scroll",function(){ if(!tooltip.hidden&&highlighted) positionSpotlight(highlighted); },{passive:true});
     document.addEventListener("keydown",function(event){ if(event.key==="Escape"&&!tooltip.hidden) closeButton.click(); });
     showStep(currentStep);
   });

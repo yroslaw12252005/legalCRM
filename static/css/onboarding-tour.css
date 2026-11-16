@@ -1,4 +1,5 @@
-.crm-tour-overlay { position:fixed; inset:0; z-index:10000; background:rgba(5,20,33,.76); backdrop-filter:blur(3px); }
+.crm-tour-overlay { position:fixed; inset:0; z-index:10000; background:rgba(5,20,33,.76); backdrop-filter:blur(3px); pointer-events:none; transition:top .2s ease,left .2s ease,width .2s ease,height .2s ease; }
+.crm-tour-overlay--spotlight { right:auto; bottom:auto; background:transparent; backdrop-filter:none; border:5px solid #fff; border-radius:18px; box-shadow:0 0 0 9px rgba(32,167,239,.92),0 0 0 9999px rgba(5,20,33,.76),0 24px 70px rgba(0,24,42,.55); }
 .crm-tour-tooltip { position:fixed; z-index:10002; width:min(390px,calc(100vw - 28px)); padding:24px; border:1px solid rgba(7,126,194,.14); border-radius:22px; color:#152b3b; background:#fff; box-shadow:0 24px 75px rgba(3,30,49,.3); font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
 .crm-tour-tooltip[hidden],.crm-tour-overlay[hidden] { display:none!important; }
 .crm-tour-tooltip--center { top:50%; left:50%; transform:translate(-50%,-50%); }
@@ -8,8 +9,8 @@
 .crm-tour-progress { color:#7b8d99; font-size:11px; font-weight:700; white-space:nowrap; }
 .crm-tour-progress-track { height:5px; margin:12px 0 20px; overflow:hidden; border-radius:999px; background:#e9f0f4; }
 .crm-tour-progress-track span { display:block; width:0; height:100%; border-radius:inherit; background:linear-gradient(90deg,#077ec2,#20a7ef); transition:width .2s ease; }
-.crm-tour-tooltip h2 { margin:0 0 10px; color:#132b3b; font-size:23px; line-height:1.18; letter-spacing:-.025em; }
-.crm-tour-tooltip p { margin:0; color:#607583; font-size:14px; line-height:1.6; }
+.crm-tour-tooltip h2 { margin:0 0 12px; color:#132b3b; font-size:27px; line-height:1.18; letter-spacing:-.025em; }
+.crm-tour-tooltip p { margin:0; color:#607583; font-size:17px; line-height:1.65; }
 .crm-tour-actions { display:flex; align-items:center; justify-content:space-between; gap:15px; margin-top:24px; }
 .crm-tour-navigation { display:flex; gap:9px; }
 .crm-tour-button,.crm-tour-text-button { min-height:42px; border-radius:12px; cursor:pointer; font-weight:750; }
@@ -20,21 +21,8 @@
 .crm-tour-text-button { padding:0 4px; border:0; color:#7b8d99; background:transparent; font-size:12px; }
 .crm-tour-button:focus-visible,.crm-tour-text-button:focus-visible,.crm-tour-close:focus-visible { outline:3px solid rgba(7,126,194,.28); outline-offset:3px; }
 .crm-tour-highlight {
-  z-index:10001!important;
-  isolation:isolate;
   border-radius:16px!important;
   pointer-events:none!important;
-  outline:6px solid #fff!important;
-  outline-offset:5px!important;
-  box-shadow:
-    0 0 0 15px rgba(32,167,239,.92),
-    0 0 0 25px rgba(32,167,239,.3),
-    0 26px 70px rgba(0,24,42,.55)!important;
-  animation:crm-tour-highlight-pulse 1.7s ease-in-out infinite;
-}
-@keyframes crm-tour-highlight-pulse {
-  0%,100% { box-shadow:0 0 0 15px rgba(32,167,239,.9),0 0 0 25px rgba(32,167,239,.26),0 26px 70px rgba(0,24,42,.55); }
-  50% { box-shadow:0 0 0 18px rgba(32,167,239,1),0 0 0 33px rgba(32,167,239,.14),0 30px 82px rgba(0,24,42,.65); }
 }
 .crm-tour-restart-form { margin:0; }
 .crm-tour-restart-button { width:100%; padding:10px 12px; border:1px solid rgba(255,255,255,.22); border-radius:10px; color:#fff; background:rgba(255,255,255,.09); text-align:left; cursor:pointer; }
@@ -47,5 +35,7 @@
   .crm-tour-navigation { display:grid; grid-template-columns:1fr 1fr; }
   .crm-tour-button { width:100%; }
   .crm-tour-text-button { align-self:center; }
+  .crm-tour-tooltip h2 { font-size:24px; }
+  .crm-tour-tooltip p { font-size:16px; }
 }
-@media (prefers-reduced-motion:reduce) { .crm-tour-progress-track span { transition:none; } .crm-tour-highlight { animation:none; } }
+@media (prefers-reduced-motion:reduce) { .crm-tour-progress-track span,.crm-tour-overlay { transition:none; } }
