@@ -68,6 +68,7 @@ MIDDLEWARE = [
     'django.middleware.common.CommonMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',
     'django.contrib.auth.middleware.AuthenticationMiddleware',
+    'legalCRM.middleware.DemoSessionMiddleware',
     'legalCRM.middleware.RequestUserTextNormalizationMiddleware',
     'legalCRM.middleware.CompanySubscriptionMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
@@ -186,6 +187,9 @@ USE_TZ = False
 
 # Не требует таблицу django_session
 SESSION_ENGINE = 'django.contrib.sessions.backends.signed_cookies'
+
+DEMO_MAX_ACTIVE_SESSIONS = int(os.getenv("DEMO_MAX_ACTIVE_SESSIONS", "50"))
+DEMO_STARTS_PER_HOUR = int(os.getenv("DEMO_STARTS_PER_HOUR", "3"))
 
 # CSRF settings - только для HTTPS
 CSRF_COOKIE_SECURE = os.getenv('CSRF_COOKIE_SECURE', 'False').lower() == 'true'

@@ -95,6 +95,7 @@
 
       <div class="header-actions">
         <a class="button button-ghost" href="{% url 'all_leads' %}">Войти</a>
+        <a class="button button-ghost" href="{% url 'demo_landing' %}">Демо</a>
         <a class="button button-primary button-small" href="{% url 'reg_company' %}">Начать работу</a>
       </div>
     </div>
@@ -110,7 +111,7 @@
           <p class="hero-lead">rossCRM объединяет заявки, клиентов, договоры, календарь, сотрудников и поступления. Руководитель видит процессы, а команда понимает, что делать дальше.</p>
           <div class="hero-actions">
             <a class="button button-primary" href="{% url 'reg_company' %}">Создать компанию</a>
-            <a class="button button-light" href="#capabilities">Посмотреть возможности</a>
+            <a class="button button-light" href="{% url 'demo_landing' %}">Попробовать демо</a>
           </div>
           <ul class="hero-points" aria-label="Ключевые преимущества">
             <li><span>✓</span> Единая база клиентов</li>

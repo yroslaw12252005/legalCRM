@@ -1,0 +1,54 @@
+{% load static %}
+<!doctype html>
+<html lang="ru">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="robots" content="noindex, nofollow">
+  <title>Демонстрация rossCRM</title>
+  <link rel="icon" type="image/jpeg" href="{% static 'img/logorossCRM.jpg' %}">
+  <link rel="stylesheet" href="{% static 'landing/rosscrm.css' %}">
+</head>
+<body class="demo-entry-body">
+  <header class="site-header demo-entry-header">
+    <div class="container header-inner">
+      <a class="brand" href="{% url 'index' %}" aria-label="rossCRM — главная">
+        <span class="brand-mark">R</span><span><b>ross</b><strong>CRM</strong></span>
+      </a>
+      <a class="button button-ghost" href="{% url 'index' %}">Вернуться на сайт</a>
+    </div>
+  </header>
+
+  <main class="demo-entry-main">
+    <section class="container demo-entry-grid">
+      <div class="demo-entry-copy">
+        <p class="eyebrow"><span></span> Персональная демосреда</p>
+        <h1>Посмотрите rossCRM<br><em>на реальных сценариях</em></h1>
+        <p class="demo-entry-lead">Мы создадим отдельную юридическую компанию только для вашей сессии: сотрудники, заявки, договоры, оплаты, задачи и календарь уже будут заполнены.</p>
+        <ul class="demo-entry-points">
+          <li><span>01</span><div><strong>Изолированные данные</strong><p>Другие посетители не увидят ваши изменения.</p></div></li>
+          <li><span>02</span><div><strong>Полный доступ администратора</strong><p>Можно менять статусы, назначать сотрудников и изучать расчёт зарплаты.</p></div></li>
+          <li><span>03</span><div><strong>Автоматическое удаление</strong><p>Компания и все её данные удалятся через два часа.</p></div></li>
+        </ul>
+      </div>
+
+      <aside class="demo-launch-card">
+        <span class="demo-card-label">Готовая среда</span>
+        <h2>Начать знакомство</h2>
+        <p>Создание компании обычно занимает несколько секунд. После входа запустится интерактивное обучение.</p>
+        {% if rate_limited %}
+          <div class="demo-entry-alert">С этого устройства уже создано несколько демосессий. Попробуйте снова через час.</div>
+        {% elif capacity_reached %}
+          <div class="demo-entry-alert">Сейчас все демосреды заняты. Попробуйте снова немного позже.</div>
+        {% else %}
+          <form method="post" action="{% url 'demo_start' %}">
+            {% csrf_token %}
+            <button class="button button-primary demo-launch-button" type="submit">Создать мою демокомпанию <span>→</span></button>
+          </form>
+        {% endif %}
+        <div class="demo-card-meta"><span>Без регистрации</span><span>Сессия 2 часа</span></div>
+      </aside>
+    </section>
+  </main>
+</body>
+</html>

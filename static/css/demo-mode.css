@@ -1,0 +1,8 @@
+.crm-demo-banner { position:fixed; z-index:9998; top:14px; right:18px; display:flex; align-items:center; gap:12px; max-width:min(560px,calc(100vw - 36px)); padding:11px 12px 11px 14px; border:1px solid rgba(9,153,255,.3); border-radius:15px; color:#143145; background:rgba(255,255,255,.96); box-shadow:0 14px 40px rgba(2,31,50,.2); backdrop-filter:blur(12px); font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
+.crm-demo-banner__pulse { width:10px; height:10px; flex:0 0 10px; border-radius:50%; background:#15a4f4; box-shadow:0 0 0 6px rgba(21,164,244,.14); }
+.crm-demo-banner div { display:grid; min-width:0; }
+.crm-demo-banner strong { font-size:13px; }
+.crm-demo-banner small { color:#687f8e; font-size:11px; }
+.crm-demo-banner form { margin:0 0 0 6px; }
+.crm-demo-banner button { min-height:34px; padding:0 12px; border:0; border-radius:9px; color:#fff; background:#0a89d1; font-size:12px; font-weight:750; white-space:nowrap; cursor:pointer; }
+@media (max-width:680px) { .crm-demo-banner { top:auto; right:12px; bottom:12px; left:12px; max-width:none; } .crm-demo-banner small { display:none; } }

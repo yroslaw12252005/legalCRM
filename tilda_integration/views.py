@@ -68,6 +68,8 @@ def tilda_webhook(request, public_id):
         public_id=public_id,
         is_active=True,
     )
+    if integration.company.is_demo:
+        return HttpResponse("demo_disabled", status=403)
 
     try:
         payload = parse_payload(request)

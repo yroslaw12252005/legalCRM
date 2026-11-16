@@ -49,7 +49,11 @@
               </td>
               <td>{{ recording.file_name }}</td>
               <td class="text-end">
-                <a class="btn btn-sm btn-primary" href="{% url 'download_call' recording.id %}">Скачать</a>
+                {% if user.companys.is_demo %}
+                  <span class="badge bg-secondary">Демо-запись</span>
+                {% else %}
+                  <a class="btn btn-sm btn-primary" href="{% url 'download_call' recording.id %}">Скачать</a>
+                {% endif %}
               </td>
             </tr>
           {% endfor %}

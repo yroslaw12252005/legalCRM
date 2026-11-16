@@ -24,6 +24,25 @@ class Companys(models.Model):
         default=False,
         verbose_name="Компания заблокирована",
     )
+    is_demo = models.BooleanField(
+        default=False,
+        db_index=True,
+        verbose_name="Демонстрационная компания",
+    )
+    demo_session_key = models.UUIDField(
+        default=None,
+        null=True,
+        blank=True,
+        unique=True,
+        editable=False,
+        verbose_name="Ключ демонстрационной сессии",
+    )
+    demo_expires_at = models.DateTimeField(
+        null=True,
+        blank=True,
+        db_index=True,
+        verbose_name="Демонстрационная сессия действует до",
+    )
 
     @property
     def is_solo(self):

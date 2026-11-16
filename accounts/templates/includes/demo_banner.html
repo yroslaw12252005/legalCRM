@@ -1,0 +1,10 @@
+{% if user.is_authenticated and user.companys.is_demo %}
+  <aside class="crm-demo-banner" role="status">
+    <span class="crm-demo-banner__pulse" aria-hidden="true"></span>
+    <div><strong>Демонстрационный режим</strong><small>Ваша изолированная компания удалится {{ user.companys.demo_expires_at|date:"d.m.Y в H:i" }}</small></div>
+    <form method="post" action="{% url 'demo_exit' %}">
+      {% csrf_token %}
+      <button type="submit">Завершить демо</button>
+    </form>
+  </aside>
+{% endif %}

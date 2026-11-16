@@ -97,6 +97,8 @@ def download_call(request, pk):
     if not can_view_recordings(request.user):
         messages.warning(request, "У вас нет доступа к записям разговоров.")
         return redirect("current_applications")
+    if request.user.companys and request.user.companys.is_demo:
+        raise Http404("Скачивание отключено в демонстрационном режиме")
 
     try:
         recording = CallRecording.objects.get(id=pk, companys=request.user.companys)
