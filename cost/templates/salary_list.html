@@ -26,7 +26,7 @@
   <h1>Зарплата</h1>
   <p class="salary-page__subtitle">Расчёт за период {{ period_label }}</p>
 
-  <form class="salary-filter" method="get">
+  <form class="salary-filter" method="get" data-tour="salary-filter">
     <label>Месяц
       <input type="month" name="month" value="{{ month_value }}" required>
     </label>
@@ -40,7 +40,7 @@
     <a class="salary-export" href="{% url 'salary_export' %}?month={{ month_value }}&amp;period={{ period }}">Скачать ведомость Excel</a>
   </form>
 
-  <div class="salary-table-wrap">
+  <div class="salary-table-wrap" data-tour="salary-table">
     <table class="salary-table">
       <thead>
         <tr><th>Имя</th><th>Расчётная сумма</th><th>ЗП за выбранный период</th></tr>

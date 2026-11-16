@@ -17,27 +17,31 @@
     const nextButton = document.getElementById("crm-tour-next");
     const skipButton = document.getElementById("crm-tour-skip");
     const closeButton = document.getElementById("crm-tour-close");
-    const allLeadsPath = new URL(config.dataset.allLeadsUrl, window.location.origin).pathname;
     let currentStep = Math.max(0, parseInt(config.dataset.step || "0", 10));
     let highlighted = null;
+    const isSolo = config.dataset.isSolo === "true";
     const steps = [
-      { title:"Добро пожаловать в rossCRM", text:"За несколько минут покажем основные разделы и рабочий путь администратора — от новой заявки до контроля сотрудников.", center:true },
-      { target:"[data-tour='sidebar']", title:"Главное меню", text:"Здесь собраны все рабочие разделы компании. Состав меню зависит от роли сотрудника и формата компании." },
-      { target:"[data-tour='create-lead']", title:"Создание заявки", text:"Добавляйте клиента вручную: контакты, направление обращения, источник и первичный комментарий." },
-      { target:"[data-tour='primary-leads']", title:"Первичка", text:"Раздел показывает свежие заявки и помогает быстро обработать первичное обращение клиента." },
-      { target:"[data-tour='all-leads']", title:"Все заявки", text:"Полный реестр клиентов компании: статусы, ответственные сотрудники, оплаты и переход в карточку дела." },
-      { target:"[data-tour='lead-filters']", path:allLeadsPath, title:"Поиск и фильтры", text:"Находите заявки по имени, телефону, ID или номеру договора и сочетайте несколько фильтров одновременно." },
-      { target:"[data-tour='lead-list']", path:allLeadsPath, title:"Работа со списком", text:"Откройте клиента нажатием на имя. Выбранные заявки можно массово передавать в работу, назначать сотрудникам и менять их статус." },
-      { target:"[data-tour='tasks']", title:"Задачи", text:"Создавайте поручения сотрудникам и контролируйте сроки выполнения в одном списке." },
-      { target:"[data-tour='calendar']", title:"Рабочий календарь", text:"Календарь помогает видеть записи в офис, звонки и другие события по датам." },
-      { target:"[data-tour='wallet']", title:"Баланс компании", text:"Здесь отображается текущий баланс для сервисов CRM и переход к истории пополнений." },
-      { target:"[data-tour='salary']", title:"Расчёт зарплаты", text:"Формируйте расчёт за выбранный период и выгружайте ведомость по сотрудникам." },
-      { target:"[data-tour='employees']", title:"Добавление сотрудников", text:"Создавайте учётные записи, назначайте роли и задавайте тип зарплаты. В одиночной компании этот шаг не требуется." },
-      { target:"[data-tour='branches']", title:"Филиалы", text:"Разделяйте сотрудников и заявки между филиалами компании. В одиночной компании шаг будет пропущен." },
-      { target:"[data-tour='tilda']", title:"Интеграция с Tilda", text:"Подключите формы сайта, чтобы новые обращения автоматически создавались в CRM." },
-      { target:"[data-tour='knowledge-base']", title:"База знаний", text:"Храните внутренние инструкции и материалы, которые должны быть доступны сотрудникам." },
-      { title:"Готово к работе", text:"Начните с создания заявки или настройте сотрудников и интеграцию с сайтом. Повторно запустить обучение можно кнопкой в меню администратора.", center:true }
-    ];
+      { title:"Добро пожаловать в rossCRM", text:"Проведём вас по главным рабочим страницам CRM. Вы увидите настоящий интерфейс каждого раздела, но обучение ничего не создаст и не изменит.", center:true },
+      { target:"[data-tour='sidebar']", title:"Главное меню", text:"Через это меню вы переходите между рабочими разделами компании. Во время обучения мы последовательно откроем самые важные из них." },
+      { url:config.dataset.currentApplicationsUrl, target:"[data-tour='current-applications-interface']", title:"Первичка", text:"Здесь отображаются актуальные обращения. Из списка можно открыть заявку, проверить последнее изменение и начать первичную обработку." },
+      { url:config.dataset.addRecordUrl, target:"[data-tour='add-record-interface']", title:"Создание заявки", text:"В этой форме вручную добавляют клиента, контакты, источник обращения и ответственных сотрудников. Сейчас заполнять или сохранять форму не нужно." },
+      { url:config.dataset.allLeadsUrl, target:"[data-tour='lead-filters']", title:"Поиск и фильтры", text:"На странице всех заявок можно искать по имени, телефону, ID и номеру договора, а также сочетать несколько фильтров." },
+      { url:config.dataset.allLeadsUrl, target:"[data-tour='lead-list']", title:"Реестр заявок", text:"Это основной список клиентов компании. Отсюда открывают карточку дела, меняют статус и выполняют массовые действия с выбранными заявками." },
+      { url:config.dataset.tasksUrl, target:"[data-tour='tasks-interface']", title:"Задачи", text:"В разделе видны поручения, сроки и приоритеты. Здесь же администратор создаёт новую задачу сотруднику." },
+      { url:config.dataset.calendarUrl, target:"[data-tour='calendar-interface']", title:"Рабочий календарь", text:"Календарь собирает записи в офис, созвоны, доплаты и другие события по датам." },
+      { url:config.dataset.walletUrl, target:"[data-tour='wallet-interface']", title:"Кошелёк компании", text:"Здесь отображаются баланс, способ пополнения и история всех операций по счёту компании." },
+      { url:config.dataset.salaryUrl, target:"[data-tour='salary-filter']", title:"Период расчёта зарплаты", text:"Выберите месяц и половину месяца, затем сформируйте расчёт или скачайте ведомость Excel." },
+      { url:config.dataset.salaryUrl, target:"[data-tour='salary-table']", title:"Ведомость сотрудников", text:"Таблица показывает расчётную базу и итоговую зарплату. Нажатие на имя открывает подробный расчёт сотрудника." },
+      { url:config.dataset.registerEmployeeUrl, target:"[data-tour='register-employee-interface']", title:"Новый сотрудник", text:"Здесь создают учётную запись, назначают роль и задают условия зарплаты: процент, оклад или их сочетание.", teamOnly:true },
+      { url:config.dataset.employeesUrl, target:"[data-tour='employees-interface']", title:"Список сотрудников", text:"В списке можно открыть сотрудника для редактирования или отключить его учётную запись, сохранив историю назначений.", teamOnly:true },
+      { url:config.dataset.addBranchUrl, target:"[data-tour='add-branch-interface']", title:"Новый филиал", text:"Форма добавляет подразделение компании. После этого сотрудников и заявки можно распределять по филиалам.", teamOnly:true },
+      { url:config.dataset.branchesUrl, target:"[data-tour='branches-interface']", title:"Филиалы компании", text:"Здесь отображается структура компании и доступен переход к данным каждого филиала.", teamOnly:true },
+      { url:config.dataset.leadExchangeUrl, target:"[data-tour='lead-exchange-interface']", title:"Биржа заявок", text:"В этом разделе настраивают потоковое получение лидов и работают с доступными предложениями на бирже." },
+      { url:config.dataset.tildaUrl, target:"[data-tour='tilda-interface']", title:"Интеграция с Tilda", text:"Создайте подключение формы сайта, получите адрес webhook и ключ — новые обращения будут автоматически попадать в CRM." },
+      { url:config.dataset.knowledgeBaseUrl, target:"[data-tour='knowledge-base-interface']", title:"База знаний", text:"Здесь хранятся внутренние инструкции и материалы компании. Администратор может добавлять категории и документы." },
+      { url:config.dataset.callRecordingsUrl, target:"[data-tour='call-recordings-interface']", title:"Записи разговоров", text:"Раздел позволяет найти звонок по номеру телефона, увидеть сотрудника и скачать запись разговора." },
+      { title:"Обучение завершено", text:"Теперь вы знаете, где находятся основные инструменты rossCRM. В любой момент обучение можно запустить заново кнопкой «Пройти обучение» в меню администратора.", center:true }
+    ].filter(function(step){ return !(step.teamOnly && isSolo); });
     async function sendAction(action, step) {
       const body = new URLSearchParams({action:action});
       if (typeof step === "number") body.set("step", String(step));
@@ -63,6 +67,14 @@
       const navToggle=document.getElementById("crm-nav-toggle");
       if (navToggle && target && target.closest("nav") && window.innerWidth<=768) navToggle.checked=true;
     }
+    function routePath(url) {
+      return new URL(url, window.location.origin).pathname.replace(/\/+$/, "") || "/";
+    }
+    function openRoute(url) {
+      const destination = new URL(url, window.location.origin);
+      destination.searchParams.set("tour", "1");
+      window.location.assign(destination.pathname + destination.search + destination.hash);
+    }
     function positionTooltip(target, centered) {
       tooltip.classList.toggle("crm-tour-tooltip--center", centered);
       tooltip.style.top=""; tooltip.style.left=""; tooltip.style.bottom=""; tooltip.style.transform="";
@@ -76,16 +88,16 @@
     }
     async function showStep(index) {
       removeHighlight(); currentStep=Math.max(0,Math.min(index,steps.length-1)); let step=steps[currentStep];
-      if (step.path && window.location.pathname!==step.path) { window.location.assign(step.path+"?tour=1"); return; }
+      if (step.url && routePath(window.location.href)!==routePath(step.url)) { openRoute(step.url); return; }
       let target=step.target?document.querySelector(step.target):null;
       while (step.target && !target && currentStep<steps.length-1) {
         currentStep+=1; await sendAction("progress",currentStep); step=steps[currentStep];
-        if (step.path && window.location.pathname!==step.path) { window.location.assign(step.path+"?tour=1"); return; }
+        if (step.url && routePath(window.location.href)!==routePath(step.url)) { openRoute(step.url); return; }
         target=step.target?document.querySelector(step.target):null;
       }
       overlay.hidden=false; tooltip.hidden=false; document.body.classList.add("crm-tour-active"); openMobileNavigation(target);
       if (target) {
-        target.scrollIntoView({behavior:"smooth",block:"center",inline:"nearest"});
+        target.scrollIntoView({behavior:"smooth",block:target.offsetHeight>window.innerHeight*.72?"start":"center",inline:"nearest"});
         if (window.getComputedStyle(target).position === "static") {
           target.style.position = "relative";
           target.dataset.crmTourPositionChanged = "true";

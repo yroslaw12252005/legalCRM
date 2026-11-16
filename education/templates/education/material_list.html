@@ -1,7 +1,7 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="container py-4">
+<div class="container py-4" data-tour="knowledge-base-interface">
   <div class="d-flex flex-wrap gap-2 align-items-center justify-content-between mb-3">
     <h3 class="mb-0">База знаний</h3>
     {% if user.status == "Администратор" or user.status == "Директор КЦ" or user.status == "Директор ЮПП" %}

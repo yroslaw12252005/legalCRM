@@ -1,4 +1,4 @@
-.crm-tour-overlay { position:fixed; inset:0; z-index:10000; background:rgba(9,24,39,.68); backdrop-filter:blur(2px); }
+.crm-tour-overlay { position:fixed; inset:0; z-index:10000; background:rgba(5,20,33,.76); backdrop-filter:blur(3px); }
 .crm-tour-tooltip { position:fixed; z-index:10002; width:min(390px,calc(100vw - 28px)); padding:24px; border:1px solid rgba(7,126,194,.14); border-radius:22px; color:#152b3b; background:#fff; box-shadow:0 24px 75px rgba(3,30,49,.3); font-family:Inter,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif; }
 .crm-tour-tooltip[hidden],.crm-tour-overlay[hidden] { display:none!important; }
 .crm-tour-tooltip--center { top:50%; left:50%; transform:translate(-50%,-50%); }
@@ -19,7 +19,23 @@
 .crm-tour-button:disabled { opacity:.42; cursor:default; }
 .crm-tour-text-button { padding:0 4px; border:0; color:#7b8d99; background:transparent; font-size:12px; }
 .crm-tour-button:focus-visible,.crm-tour-text-button:focus-visible,.crm-tour-close:focus-visible { outline:3px solid rgba(7,126,194,.28); outline-offset:3px; }
-.crm-tour-highlight { z-index:10001!important; border-radius:12px; pointer-events:none!important; box-shadow:0 0 0 5px #fff,0 0 0 10px rgba(32,167,239,.68),0 18px 45px rgba(2,38,62,.32)!important; }
+.crm-tour-highlight {
+  z-index:10001!important;
+  isolation:isolate;
+  border-radius:16px!important;
+  pointer-events:none!important;
+  outline:6px solid #fff!important;
+  outline-offset:5px!important;
+  box-shadow:
+    0 0 0 15px rgba(32,167,239,.92),
+    0 0 0 25px rgba(32,167,239,.3),
+    0 26px 70px rgba(0,24,42,.55)!important;
+  animation:crm-tour-highlight-pulse 1.7s ease-in-out infinite;
+}
+@keyframes crm-tour-highlight-pulse {
+  0%,100% { box-shadow:0 0 0 15px rgba(32,167,239,.9),0 0 0 25px rgba(32,167,239,.26),0 26px 70px rgba(0,24,42,.55); }
+  50% { box-shadow:0 0 0 18px rgba(32,167,239,1),0 0 0 33px rgba(32,167,239,.14),0 30px 82px rgba(0,24,42,.65); }
+}
 .crm-tour-restart-form { margin:0; }
 .crm-tour-restart-button { width:100%; padding:10px 12px; border:1px solid rgba(255,255,255,.22); border-radius:10px; color:#fff; background:rgba(255,255,255,.09); text-align:left; cursor:pointer; }
 .crm-tour-restart-button:hover { background:rgba(255,255,255,.16); }
@@ -32,4 +48,4 @@
   .crm-tour-button { width:100%; }
   .crm-tour-text-button { align-self:center; }
 }
-@media (prefers-reduced-motion:reduce) { .crm-tour-progress-track span { transition:none; } }
+@media (prefers-reduced-motion:reduce) { .crm-tour-progress-track span { transition:none; } .crm-tour-highlight { animation:none; } }

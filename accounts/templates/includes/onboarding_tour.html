@@ -4,7 +4,22 @@
        data-auto-start="{% if user.should_start_onboarding %}true{% else %}false{% endif %}"
        data-step="{{ user.onboarding_step }}"
        data-update-url="{% url 'update_onboarding' %}"
-       data-all-leads-url="{% url 'all_leads' %}"></div>
+       data-is-solo="{% if user.companys.is_solo %}true{% else %}false{% endif %}"
+       data-current-applications-url="{% url 'current_applications' %}"
+       data-add-record-url="{% url 'add_record' %}"
+       data-all-leads-url="{% url 'all_leads' %}"
+       data-tasks-url="{% url 'todolist' %}"
+       data-calendar-url="{% url 'calendar' %}"
+       data-wallet-url="{% url 'wallet_detail' %}"
+       data-salary-url="{% url 'salary_list' %}"
+       data-register-employee-url="{% url 'reg' %}"
+       data-employees-url="{% url 'employees' %}"
+       data-add-branch-url="{% url 'add_felial' %}"
+       data-branches-url="{% url 'felials' %}"
+       data-lead-exchange-url="{% url 'lead_exchange' %}"
+       data-tilda-url="{% url 'tilda_integration_list' %}"
+       data-knowledge-base-url="{% url 'education_list' %}"
+       data-call-recordings-url="{% url 'get_calls' %}"></div>
   <div class="crm-tour-overlay" id="crm-tour-overlay" hidden></div>
   <section class="crm-tour-tooltip" id="crm-tour-tooltip" role="dialog" aria-modal="true" aria-labelledby="crm-tour-title" aria-describedby="crm-tour-description" hidden>
     <button class="crm-tour-close" id="crm-tour-close" type="button" aria-label="Продолжить обучение позже">×</button>

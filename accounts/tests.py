@@ -75,6 +75,33 @@ class AdministratorOnboardingTests(TestCase):
         self.assertFalse(self.admin.should_start_onboarding)
         self.assertIsNotNone(self.admin.onboarding_completed_at)
 
+    def test_onboarding_accepts_steps_from_extended_page_tour(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse("update_onboarding"),
+            {"action": "progress", "step": 19},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.admin.refresh_from_db()
+        self.assertEqual(self.admin.onboarding_step, 19)
+
+    def test_onboarding_clamps_unknown_step_to_supported_maximum(self):
+        self.client.force_login(self.admin)
+
+        response = self.client.post(
+            reverse("update_onboarding"),
+            {"action": "progress", "step": 999},
+        )
+
+        self.assertEqual(response.status_code, 200)
+        self.admin.refresh_from_db()
+        self.assertEqual(
+            self.admin.onboarding_step,
+            User.ONBOARDING_MAX_STEP,
+        )
+
     def test_admin_can_defer_onboarding_for_one_day(self):
         self.client.force_login(self.admin)
         before = timezone.now() + timedelta(hours=23)

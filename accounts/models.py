@@ -9,6 +9,7 @@ from .validators import username_with_spaces_validator
 
 class User(AbstractUser):
     ONBOARDING_VERSION = 1
+    ONBOARDING_MAX_STEP = 24
     SALARY_PERCENT = "Процент"
     SALARY_FIXED = "Оклад"
     SALARY_COMBINED = "Оклад + Процент"

@@ -126,7 +126,10 @@ def update_onboarding(request):
             step = int(request.POST.get("step", 0))
         except (TypeError, ValueError):
             return JsonResponse({"error": "Некорректный шаг"}, status=400)
-        request.user.onboarding_step = max(0, min(step, 15))
+        request.user.onboarding_step = max(
+            0,
+            min(step, User.ONBOARDING_MAX_STEP),
+        )
         request.user.onboarding_deferred_until = None
         update_fields = ["onboarding_step", "onboarding_deferred_until"]
     elif action in {"complete", "skip"}:
