@@ -84,7 +84,7 @@ $(document).ready(function() {
     <div id="content-container"></div>
     {% endif %}
 
-    <a class="sidebar-wallet" href="{% url 'wallet_detail' %}" data-tour="wallet">
+    <a class="sidebar-wallet{% if request.resolver_match.url_name == 'wallet_detail' %} active{% endif %}" href="{% url 'wallet_detail' %}" data-tour="wallet">
         <span class="sidebar-wallet__icon" aria-hidden="true">₽</span>
         <span class="sidebar-wallet__content">
             <small>Баланс компании</small>
@@ -96,133 +96,59 @@ $(document).ready(function() {
     <div class="sidebar-menu">
         <ul>
         {% if user.is_authenticated %}
-            <li class="create-lead-cta" data-tour="create-lead">
-                <span>
-                    <a class="create-lead-link" style="color:#fff; text-decoration:none;" href="{% url 'add_record' %}">
-                        <img src="{% static 'img/add_lead.png' %}" alt="Создать заявку" width="40" height="40">
-                    </a>
-                </span>
+            <li class="create-lead-cta{% if request.resolver_match.url_name == 'add_record' %} active{% endif %}" data-tour="create-lead">
+                <a class="create-lead-link" href="{% url 'add_record' %}"><i class="fas fa-plus-circle" aria-hidden="true"></i><span>Создать заявку</span></a>
             </li>
 
-            <li data-tour="primary-leads">
-                <span><a style="color:#fff; text-decoration:none;" href="{% url 'current_applications' %}"> Первичка</a></span>
+            <li class="{% if request.resolver_match.url_name == 'current_applications' %}active{% endif %}" data-tour="primary-leads">
+                <span><a href="{% url 'current_applications' %}"><i class="fas fa-inbox" aria-hidden="true"></i><span>Первичка</span></a></span>
             </li>
 
-            {% if user.status == "Директор КЦ" %}
-                <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
+            {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Директор ЮПП" or user.status == "Юрист пирвичник" or user.status == "ОП" or user.status == "Директор представителей" or user.status == "Представитель" or user.status == "Менеджер" or user.status == "Администратор" %}
+                <li class="{% if request.resolver_match.url_name == 'all_leads' %}active{% endif %}" data-tour="all-leads">
+                    <span><a href="{% url 'all_leads' %}"><i class="fas fa-address-book" aria-hidden="true"></i><span>{% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Менеджер" or user.status == "Администратор" %}Все заявки{% else %}Все клиенты{% endif %}</span></a></span>
                 </li>
-                <li>
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
-                </li>
-                <li>
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'reg' %}"><img src="{% static 'img/add_user.png' %}" alt=""> Добавить пользователя</a></span>
+                <li class="{% if request.resolver_match.url_name == 'todolist' %}active{% endif %}" data-tour="tasks">
+                    <span><a href="{% url 'todolist' %}"><i class="fas fa-tasks" aria-hidden="true"></i><span>Список задач</span></a></span>
                 </li>
             {% endif %}
 
-            {% if user.status == "Оператор" %}
-                <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
-                </li>
-                <li>
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
+            {% if user.status == "Менеджер" or user.status == "Администратор" %}
+                <li class="{% if request.resolver_match.url_name == 'salary_list' %}active{% endif %}" data-tour="salary">
+                    <span><a href="{% url 'salary_list' %}"><i class="fas fa-wallet" aria-hidden="true"></i><span>Зарплата</span></a></span>
                 </li>
             {% endif %}
 
-            {% if user.status == "Директор ЮПП" %}
-                <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все клиенты</a></span>
-                </li>
-                <li>
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
-                </li>
-                            <li>
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'reg' %}"><img src="{% static 'img/add_user.png' %}" alt=""> Добавить пользователя</a></span>
-                </li>
-            {% endif %}
-
-            {% if user.status == "Юрист пирвичник" %}
-                <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все клиенты</a></span>
-                </li>
-                <li>
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
-                </li>
-            {% endif %}
-
-            {% if user.status == "ОП" %}
-                <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все клиенты</a></span>
-                </li>
-                <li>
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
-                </li>
-            {% endif %}
-
-            {% if user.status == "Директор представителей" %}
-                <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все клиенты</a></span>
-                </li>
-                <li>
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
-                </li>
-
-            {% endif %}
-
-            {% if user.status == "Представитель" %}
-                <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все клиенты</a></span>
-                </li>
-                <li>
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
-                </li>
-            {% endif %}
-
-            {% if user.status == "Менеджер" %}
-                <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
-                </li>
-                <li>
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
-                </li>
-                <li>
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'salary_list' %}">Зарплата</a></span>
+            {% if user.status == "Директор КЦ" or user.status == "Директор ЮПП" %}
+                <li class="{% if request.resolver_match.url_name == 'reg' %}active{% endif %}">
+                    <span><a href="{% url 'reg' %}"><i class="fas fa-user-plus" aria-hidden="true"></i><span>Добавить пользователя</span></a></span>
                 </li>
             {% endif %}
 
             {% if user.status == "Администратор" %}
-                <li class="active" data-tour="all-leads">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'all_leads' %}"> Все заявки</a></span>
-                </li>
-                <li data-tour="tasks">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'todolist' %}"><img src="{% static 'img/to-do-list.png' %}" alt=""> Список задач</a></span>
-                </li>
-                <li data-tour="salary">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'salary_list' %}">Зарплата</a></span>
-                </li>
                 {% if not user.companys.is_solo %}
-                    <li data-tour="employees">
-                        <span><a style="color:#fff; text-decoration:none;" href="{% url 'reg' %}"><img src="{% static 'img/add_user.png' %}" alt=""> Добавить пользователя</a></span>
+                    <li class="{% if request.resolver_match.url_name == 'reg' %}active{% endif %}" data-tour="employees">
+                        <span><a href="{% url 'reg' %}"><i class="fas fa-user-plus" aria-hidden="true"></i><span>Добавить пользователя</span></a></span>
                     </li>
-                    <li data-tour="employee-list">
-                        <span><a style="color:#fff; text-decoration:none;" href="{% url 'employees' %}"><img src="{% static 'img/employee.png' %}" width="28" alt=""> Пользователи</a></span>
+                    <li class="{% if request.resolver_match.url_name == 'employees' %}active{% endif %}" data-tour="employee-list">
+                        <span><a href="{% url 'employees' %}"><i class="fas fa-users" aria-hidden="true"></i><span>Пользователи</span></a></span>
                     </li>
-                    <li data-tour="branches">
-                        <span><a style="color:#fff; text-decoration:none;" href="{% url 'add_felial' %}"><img src="{% static 'img/add_felial.png' %}" alt=""> Создать филиал</a></span>
+                    <li class="{% if request.resolver_match.url_name == 'add_felial' %}active{% endif %}" data-tour="branches">
+                        <span><a href="{% url 'add_felial' %}"><i class="fas fa-code-branch" aria-hidden="true"></i><span>Создать филиал</span></a></span>
                     </li>
-                    <li>
-                        <span><a style="color:#fff; text-decoration:none;" href="{% url 'felials' %}"><img src="{% static 'img/branch.png' %}" alt=""> Ваши филиалы</a></span>
+                    <li class="{% if request.resolver_match.url_name == 'felials' %}active{% endif %}">
+                        <span><a href="{% url 'felials' %}"><i class="fas fa-sitemap" aria-hidden="true"></i><span>Ваши филиалы</span></a></span>
                     </li>
                 {% else %}
-                    <li>
-                        <span><a style="color:#fff; text-decoration:none;" href="{% url 'update_profile' %}">Мой профиль</a></span>
+                    <li class="{% if request.resolver_match.url_name == 'update_profile' %}active{% endif %}">
+                        <span><a href="{% url 'update_profile' %}"><i class="fas fa-user-circle" aria-hidden="true"></i><span>Мой профиль</span></a></span>
                     </li>
                 {% endif %}
-                <li data-tour="lead-exchange">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'lead_exchange' %}">Биржа заявок</a></span>
+                <li class="{% if request.resolver_match.url_name == 'lead_exchange' %}active{% endif %}" data-tour="lead-exchange">
+                    <span><a href="{% url 'lead_exchange' %}"><i class="fas fa-exchange-alt" aria-hidden="true"></i><span>Биржа заявок</span></a></span>
                 </li>
-                <li data-tour="tilda">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'tilda_integration_list' %}">Интеграция с Tilda</a></span>
+                <li class="{% if request.resolver_match.url_name == 'tilda_integration_list' %}active{% endif %}" data-tour="tilda">
+                    <span><a href="{% url 'tilda_integration_list' %}"><i class="fas fa-plug" aria-hidden="true"></i><span>Интеграция с Tilda</span></a></span>
                 </li>
                 <li class="crm-tour-restart-item">
                     <form method="post" action="{% url 'restart_onboarding' %}" class="crm-tour-restart-form">
@@ -233,27 +159,26 @@ $(document).ready(function() {
             {% endif %}
 
             {% if user.email == "yrik@gmail.com" or user.username == "Yrik" or user.username == "Сергей" %}
-                <li>
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'companys' %}"><img width="24" src="{% static 'img/statistics.png' %}" alt=""> Статистика компаний</a></span>
+                <li class="{% if request.resolver_match.url_name == 'companys' %}active{% endif %}">
+                    <span><a href="{% url 'companys' %}"><i class="fas fa-chart-bar" aria-hidden="true"></i><span>Статистика компаний</span></a></span>
                 </li>
             {% endif %}
 
             {% if can_validate_wallet_payment %}
-                <li>
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'wallet_validate_payment' %}">Валидация платежа</a></span>
+                <li class="{% if request.resolver_match.url_name == 'wallet_validate_payment' %}active{% endif %}">
+                    <span><a href="{% url 'wallet_validate_payment' %}"><i class="fas fa-check-circle" aria-hidden="true"></i><span>Валидация платежа</span></a></span>
                 </li>
             {% endif %}
 
-            <li class="active" data-tour="knowledge-base">
-                <span><a style="color:#fff; text-decoration:none;" href="{% url 'education_list' %}"><img src="{% static 'img/doc.png' %}" alt=""> База знаний</a></span>
+            <li class="{% if request.resolver_match.url_name == 'education_list' %}active{% endif %}" data-tour="knowledge-base">
+                <span><a href="{% url 'education_list' %}"><i class="fas fa-book-open" aria-hidden="true"></i><span>База знаний</span></a></span>
             </li>
 
             {% if user.status == "Директор КЦ" or user.status == "Директор ЮПП" or user.status == "Администратор" %}
-                <li class="active">
-                    <span><a style="color:#fff; text-decoration:none;" href="{% url 'get_calls' %}"><img src="{% static 'img/doc.png' %}" alt=""> Записи разговоров</a></span>
+                <li class="{% if request.resolver_match.url_name == 'get_calls' %}active{% endif %}">
+                    <span><a href="{% url 'get_calls' %}"><i class="fas fa-headphones-alt" aria-hidden="true"></i><span>Записи разговоров</span></a></span>
                 </li>
             {% endif %}
-
         {% endif %}
         </ul>
     </div>
