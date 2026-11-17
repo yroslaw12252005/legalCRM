@@ -125,8 +125,10 @@ nav {
 }
 
 .sidebar-menu li {
-    padding: 12px 14px;
-    margin: 8px 0;
+    position: relative;
+    padding: 11px 14px;
+    margin: 5px 0;
+    border: 1px solid transparent;
     border-radius: 12px;
     cursor: pointer;
     display: flex;
@@ -137,11 +139,14 @@ nav {
 
 .sidebar-menu li:hover {
     background: rgba(148, 163, 184, 0.16);
+    border-color: rgba(148, 163, 184, 0.12);
 }
 
 .sidebar-menu li.active {
     color: white;
     background: rgba(59, 130, 246, 0.35);
+    border-color: rgba(147, 197, 253, 0.22);
+    box-shadow: inset 3px 0 0 #93c5fd;
 }
 .sidebar-menu li.create-lead-cta {
     background: transparent;
@@ -187,6 +192,27 @@ nav {
     width: 20px;
     height: 20px;
     flex: 0 0 auto;
+}
+
+/* Normalize image and vector icons across menu entries. */
+.sidebar-menu li:not(.create-lead-cta) > span {
+    width: 100%;
+    min-width: 0;
+}
+
+.sidebar-menu li:not(.create-lead-cta) a {
+    width: 100%;
+    min-height: 24px;
+    gap: 11px;
+    text-decoration: none;
+}
+
+.sidebar-menu li:not(.create-lead-cta) a img {
+    width: 20px;
+    height: 20px;
+    object-fit: contain;
+    flex: 0 0 20px;
+    margin-right: 0;
 }
 
 .create-lead-link svg {
