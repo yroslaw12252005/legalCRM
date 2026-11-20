@@ -362,7 +362,7 @@ class EmployeeDeactivationTests(TestCase):
         self.lawyer = User.objects.create_user(
             username="lawyer",
             password="test-pass-123",
-            status="Юрист пирвичник",
+            status="Юрист первичник",
             companys=self.company,
             felial=self.branch,
         )

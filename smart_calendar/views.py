@@ -18,7 +18,7 @@ STATUS_ADMIN = "Администратор"
 STATUS_MANAGER = "Менеджер"
 STATUS_DIRECTOR_UPP = "Директор ЮПП"
 STATUS_DIRECTOR_KC = "Директор КЦ"
-STATUS_LAWYER_PRIMARY = "Юрист пирвичник"
+STATUS_LAWYER_PRIMARY = "Юрист первичник"
 STATUS_DIRECTOR_REP = "Директор представителей"
 STATUS_REPRESENTATIVE = "Представитель"
 
@@ -37,7 +37,7 @@ def _status_variants(value):
 
 
 STATUS_DIRECTOR_UPP_RU = "Директор ЮПП"
-STATUS_LAWYER_PRIMARY_RU = "Юрист пирвичник"
+STATUS_LAWYER_PRIMARY_RU = "Юрист первичник"
 STATUS_ADMIN_RU = "Администратор"
 STATUS_MANAGER_RU = "Менеджер"
 STATUS_DIRECTOR_KC_RU = "Директор КЦ"
@@ -204,7 +204,7 @@ def smart_calendar(request):
             dat__range=(start_dat, end_dat),
             contract__record__companys=request.user.companys,
         ).select_related("contract__record", "contract__record__lawyer").order_by("dat")
-    elif _status_matches(request.user.status, "Юрист пирвичник"):
+    elif _status_matches(request.user.status, "Юрист первичник"):
         surcharges = Surcharge.objects.filter(
             dat__range=(start_dat, end_dat),
             contract__record__companys=request.user.companys,

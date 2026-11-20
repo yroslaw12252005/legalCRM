@@ -270,7 +270,7 @@ class AllLeadsFiltersTests(TestCase):
         self.lawyer = User.objects.create_user(
             username="lawyer_1",
             password="test-pass-123",
-            status="Юрист пирвичник",
+            status="Юрист первичник",
             companys=self.company,
             felial=self.felial,
         )
@@ -405,7 +405,7 @@ class StatusPermissionsTests(TestCase):
         lawyer = User.objects.create_user(
             username="lawyer",
             password="test-pass-123",
-            status="Юрист пирвичник",
+            status="Юрист первичник",
             companys=self.company,
             felial=self.felial,
         )

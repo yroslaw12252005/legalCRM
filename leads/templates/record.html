@@ -1,4 +1,4 @@
-﻿{% extends "base.html" %}
+{% extends "base.html" %}
 {% load static %}
 {% load lead_access %}
 {% block content %}
@@ -726,10 +726,10 @@
     {% if can_show_transfer_button %}
       <a href="{% url 'to_representative' record.id %}" class="btn btn-primary">Передать представителям</a>
     {% endif %}
-    {% if record.status == "Запись в офис" and user.status == "Юрист пирвичник" or record.status == "Запись в офис" and user.status == "Директор ЮПП" or record.status == "Запись в офис" and user.status == "Директор КЦ" or record.status == "Запись в офис" and user.status == "Оператор" or record.status == "Запись в офис" and user.status == "Менеджер" or record.status == "Запись в офис" and user.status == "Администратор" %}
+    {% if record.status == "Запись в офис" and user.status == "Юрист первичник" or record.status == "Запись в офис" and user.status == "Директор ЮПП" or record.status == "Запись в офис" and user.status == "Директор КЦ" or record.status == "Запись в офис" and user.status == "Оператор" or record.status == "Запись в офис" and user.status == "Менеджер" or record.status == "Запись в офис" and user.status == "Администратор" %}
       <a href="{% url 'add_office_booking' record.id %}" class="btn btn-primary">Запись в офис</a>
     {% endif %}
-    {% if user.status == "Директор ЮПП" or user.status == "Юрист пирвичник" %}
+    {% if user.status == "Директор ЮПП" or user.status == "Юрист первичник" %}
       <a href="{% url 'add_call_event' record.id %}" class="btn btn-warning">Назначить созвон</a>
     {% endif %}
 
@@ -823,7 +823,7 @@
                             {{form_status.as_p}}
                             <button type="submit" class="btn btn-success">Изменить статус</button>
           </form>
-            {% if user.status == "Менеджер" or user.status == "Администратор" or user.status == "Юрист пирвичник"%}
+            {% if user.status == "Менеджер" or user.status == "Администратор" or user.status == "Юрист первичник"%}
             <p class="card-text"><strong>Цена: </strong> {{ cost.cost }} руб.</p>
             {% for surcharge in surcharge %}
             <p class="card-text"><strong>Доплата: </strong> {{ surcharge.surcharge }} руб. Дата доплаты:{{ surcharge.date }}</p>

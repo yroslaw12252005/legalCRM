@@ -77,7 +77,7 @@ class ClientCabinetDocumentsTests(TestCase):
             first_name="Анна",
             last_name="Юристова",
             email="lawyer@example.test",
-            status="Юрист пирвичник",
+            status="Юрист первичник",
             companys=self.company,
             felial=self.branch,
         )
@@ -120,7 +120,7 @@ class ClientCabinetDocumentsTests(TestCase):
             username="primary_for_client",
             first_name="Первичный",
             last_name="Юрист",
-            status="Юрист пирвичник",
+            status="Юрист первичник",
             companys=self.company,
             felial=self.branch,
         )

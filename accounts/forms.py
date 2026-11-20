@@ -1,4 +1,4 @@
-﻿from django import forms
+from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth import get_user_model
 from django.contrib.auth.password_validation import validate_password
@@ -65,7 +65,7 @@ class AddEmployeesForm(SalaryFieldsMixin, UniqueEmailMixin, UserCreationForm):
             ("Директор КЦ", "Директор КЦ"),
             ("Оператор", "Оператор"),
             ("Директор ЮПП", "Директор ЮПП"),
-            ("Юрист пирвичник", "Юрист пирвичник"),
+            ("Юрист первичник", "Юрист первичник"),
             ("Директор представителей", "Директор представителей"),
             ("Представитель", "Представитель"),
         ),
@@ -95,7 +95,7 @@ class AddEmployeesForm(SalaryFieldsMixin, UniqueEmailMixin, UserCreationForm):
             self.fields["felial"].queryset = Felial.objects.filter(companys=self.user.companys)
             if self.user.status == "Директор ЮПП":
                 self.fields["status"].choices = (
-                    ("Юрист пирвичник", "Юрист пирвичник"),
+                    ("Юрист первичник", "Юрист первичник"),
                 )
             elif self.user.status == "Директор КЦ":
                 self.fields["status"].choices = (("Оператор", "Оператор"),)

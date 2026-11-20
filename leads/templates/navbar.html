@@ -1,4 +1,4 @@
-﻿{% load static %}
+{% load static %}
 {% if user.is_authenticated %}
 <link rel="stylesheet" href="{% static 'css/nav.css' %}" />
 <link rel="stylesheet" href="{% static 'css/style.css' %}" />
@@ -104,7 +104,7 @@ $(document).ready(function() {
                 <span><a href="{% url 'current_applications' %}"><i class="fas fa-inbox" aria-hidden="true"></i><span>Первичка</span></a></span>
             </li>
 
-            {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Директор ЮПП" or user.status == "Юрист пирвичник" or user.status == "ОП" or user.status == "Директор представителей" or user.status == "Представитель" or user.status == "Менеджер" or user.status == "Администратор" %}
+            {% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Директор ЮПП" or user.status == "Юрист первичник" or user.status == "ОП" or user.status == "Директор представителей" or user.status == "Представитель" or user.status == "Менеджер" or user.status == "Администратор" %}
                 <li class="{% if request.resolver_match.url_name == 'all_leads' %}active{% endif %}" data-tour="all-leads">
                     <span><a href="{% url 'all_leads' %}"><i class="fas fa-address-book" aria-hidden="true"></i><span>{% if user.status == "Директор КЦ" or user.status == "Оператор" or user.status == "Менеджер" or user.status == "Администратор" %}Все заявки{% else %}Все клиенты{% endif %}</span></a></span>
                 </li>

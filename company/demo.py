@@ -101,12 +101,12 @@ def create_demo_company(*, lead_count=36, lifetime=DEMO_LIFETIME):
     )
     lawyer_one = _employee(
         username=f"Алексей Морозов · {suffix}", email=f"lawyer1-{suffix}@example.test",
-        status="Юрист пирвичник", company=company, branch=moscow,
+        status="Юрист первичник", company=company, branch=moscow,
         salary_type=User.SALARY_PERCENT, percent=Decimal("20"),
     )
     lawyer_two = _employee(
         username=f"Елена Крылова · {suffix}", email=f"lawyer2-{suffix}@example.test",
-        status="Юрист пирвичник", company=company, branch=petersburg,
+        status="Юрист первичник", company=company, branch=petersburg,
         salary_type=User.SALARY_COMBINED, percent=Decimal("12"), bet=Decimal("70000"),
     )
     representative_one = _employee(

@@ -1,4 +1,4 @@
-﻿from django import forms
+from django import forms
 from django.core.validators import FileExtensionValidator
 
 from accounts.models import User
@@ -151,7 +151,7 @@ class Employees_UPPForm(forms.ModelForm):
         user = kwargs.pop("user", None)
         company_id = kwargs.pop("company_id", None) or getattr(kwargs.get("instance"), "companys_id", None)
         super().__init__(*args, **kwargs)
-        self.fields["employees_UPP"].queryset = _tenant_user_queryset(user, "Юрист пирвичник", company_id=company_id)
+        self.fields["employees_UPP"].queryset = _tenant_user_queryset(user, "Юрист первичник", company_id=company_id)
 
     class Meta:
         model = Record

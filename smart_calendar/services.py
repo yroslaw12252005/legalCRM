@@ -3,7 +3,7 @@ from accounts.models import User
 from .models import Booking, CallBooking
 
 
-LAWYER_PRIMARY_STATUS = "Юрист пирвичник"
+LAWYER_PRIMARY_STATUS = "Юрист первичник"
 
 
 def _status_variants(value):

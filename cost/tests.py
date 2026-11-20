@@ -37,7 +37,7 @@ class SalaryCalculationTests(TestCase):
             companys=self.company, felial=self.branch,
         )
         self.lawyer = User.objects.create_user(
-            username="salary_lawyer", password="password", status="Юрист пирвичник",
+            username="salary_lawyer", password="password", status="Юрист первичник",
             type_zp=User.SALARY_PERCENT, percent=Decimal("9"),
             companys=self.company, felial=self.branch,
         )

@@ -187,7 +187,7 @@ DOCUMENT_ALLOWED_STATUSES = {
     "Директор ЮПП",
     "Директор представителей",
     "Представитель",
-    "Юрист пирвичник",
+    "Юрист первичник",
     "Администратор",
 }
 
@@ -222,7 +222,7 @@ for _status in DOCUMENT_ALLOWED_STATUSES:
 ASSIGN_KC_ALLOWED_STATUSES = {"Директор КЦ", "Администратор"}
 ASSIGN_UPP_ALLOWED_STATUSES = {"Директор ЮПП", "Администратор"}
 ASSIGN_REP_ALLOWED_STATUSES = {"Директор представителей", "Администратор"}
-EDIT_RECORD_ALLOWED_STATUSES = {"Директор ЮПП", "Директор КЦ", "Администратор", "Оператор", "Юрист пирвичник"}
+EDIT_RECORD_ALLOWED_STATUSES = {"Директор ЮПП", "Директор КЦ", "Администратор", "Оператор", "Юрист первичник"}
 
 EDIT_RECORD_ALLOWED_STATUS_VARIANTS = set()
 for _status in EDIT_RECORD_ALLOWED_STATUSES:
@@ -573,9 +573,10 @@ async def record(request, pk):
     upload_file_form = await init_upload_form()
 
     can_edit_status_flag = can_edit_status(current_user)
-    can_edit_topic = status_matches(current_user.status, "Директор КЦ", "Оператор")
+    # Every authenticated user who can open this company's record may update its topic.
+    can_edit_topic = current_user.is_authenticated
     is_assigned_lawyer = (
-        status_matches(current_user.status, "Юрист пирвичник")
+        status_matches(current_user.status, "Юрист первичник")
         and record.is_assigned_to_lawyer(current_user)
     )
     can_manage_contracts = status_matches(current_user.status, "Менеджер", "Администратор", "Директор ЮПП")
@@ -872,7 +873,7 @@ def update_record(request, pk):
     comment_upp_form = RecordCommentForm(request.POST or None, instance=record)
     comment_op_form = RecordCommentOPForm(request.POST or None, instance=record)
     can_edit_comment_kc = request.user.status in {"Директор КЦ", "Оператор", "Администратор"}
-    can_edit_comment_upp = request.user.status in {"Директор ЮПП", "Юрист пирвичник", "Администратор"}
+    can_edit_comment_upp = request.user.status in {"Директор ЮПП", "Юрист первичник", "Администратор"}
     can_edit_comment_op = request.user.status in {"Директор представителей", "Представитель", "Администратор"}
 
     if request.method == "POST":
@@ -1229,7 +1230,7 @@ def get_time(request):
             "Директор ЮПП",
             "Директор КЦ",
         )
-        is_lawyer = _status_matches(employee_status, "Юрист пирвичник")
+        is_lawyer = _status_matches(employee_status, "Юрист первичник")
         is_operator = _status_matches(employee_status, "Оператор")
 
         if is_management:
@@ -1265,7 +1266,7 @@ def get_time(request):
                 "Менеджер",
                 "Администратор",
                 "Директор ЮПП",
-                "Юрист пирвичник",
+                "Юрист первичник",
             )
             if can_see_surcharges:
                 base_surcharges = Surcharge.objects.filter(

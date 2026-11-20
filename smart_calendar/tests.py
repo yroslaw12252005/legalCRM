@@ -28,14 +28,14 @@ class CallBookingTests(TestCase):
         self.lawyer_1 = User.objects.create_user(
             username="lawyer_1",
             password="test-pass-123",
-            status="Юрист пирвичник",
+            status="Юрист первичник",
             companys=self.company,
             felial=self.felial,
         )
         self.lawyer_2 = User.objects.create_user(
             username="lawyer_2",
             password="test-pass-123",
-            status="Юрист пирвичник",
+            status="Юрист первичник",
             companys=self.company,
             felial=self.felial,
         )

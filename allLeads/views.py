@@ -1,4 +1,4 @@
-﻿from datetime import date, datetime
+from datetime import date, datetime
 
 
 
@@ -41,7 +41,7 @@ STATUS_MANAGER = "Менеджер"
 
 STATUS_DIRECTOR_UPP = "Директор ЮПП"
 
-STATUS_LAWYER_PRIMARY = "Юрист пирвичник"
+STATUS_LAWYER_PRIMARY = "Юрист первичник"
 
 STATUS_OP = "ОП"
 

@@ -77,7 +77,7 @@ class TenantIsolationTests(TestCase):
         lawyer = User.objects.create_user(
             username="lawyer_1",
             password="test-pass-123",
-            status="Юрист пирвичник",
+            status="Юрист первичник",
             companys=self.company_1,
             felial=self.felial_1,
         )
@@ -121,7 +121,7 @@ class TenantIsolationTests(TestCase):
         lawyer = User.objects.create_user(
             username="inactive_lawyer",
             password="test-pass-123",
-            status="Юрист пирвичник",
+            status="Юрист первичник",
             companys=self.company_1,
             felial=self.felial_1,
             is_active=False,
@@ -138,7 +138,7 @@ class TenantIsolationTests(TestCase):
         lawyer = User.objects.create_user(
             username="legacy_lawyer",
             password="test-pass-123",
-            status="Юрист пирвичник",
+            status="Юрист первичник",
             companys=self.company_1,
             felial=self.felial_1,
         )

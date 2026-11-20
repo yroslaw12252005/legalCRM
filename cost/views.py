@@ -23,7 +23,7 @@ MONTH_NAMES = (
     "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь",
 )
 SALARY_ACCESS_ROLES = ("Администратор", "Менеджер")
-PRIMARY_LAWYER_ROLE = "Юрист пирвичник"
+PRIMARY_LAWYER_ROLE = "Юрист первичник"
 REPRESENTATIVE_EMPLOYEE_ROLES = ("Представитель", "ОП")
 BRANCH_SALARY_ROLES = (
     "Администратор",
@@ -286,10 +286,10 @@ def cost(request, pk):
         record__companys=request.user.companys,
     )
     record = contract.record
-    if not status_matches(request.user.status, "Юрист пирвичник", "Менеджер", "Администратор", "Директор ЮПП"):
+    if not status_matches(request.user.status, "Юрист первичник", "Менеджер", "Администратор", "Директор ЮПП"):
         messages.warning(request, "Нет прав для внесения доплаты")
         return redirect("record", pk=record.id)
-    if status_matches(request.user.status, "Юрист пирвичник") and not record.is_assigned_to_lawyer(request.user):
+    if status_matches(request.user.status, "Юрист первичник") and not record.is_assigned_to_lawyer(request.user):
         messages.warning(request, "Нет прав для внесения доплаты")
         return redirect("record", pk=record.id)
     get_surcharge_form = Surcharge_form(request.POST or None)

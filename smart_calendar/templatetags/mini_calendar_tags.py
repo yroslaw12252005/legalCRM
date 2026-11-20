@@ -34,7 +34,7 @@
 #        # Исправленный фильтр для доплат
 #        surcharges = Surcharge.objects.filter(dat__range=(start_date, end_date))
 #    else:
-#        if employee_status != "Юрист пирвичник":
+#        if employee_status != "Юрист первичник":
 #            bookings = Booking.objects.filter(
 #                date__lt=end_date,
 #                date__gte=start_date,

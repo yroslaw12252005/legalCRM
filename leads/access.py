@@ -120,7 +120,7 @@ def can_view_phone(user, record, booking_come=None):
         return True
 
     user_status = getattr(user, "status", None)
-    if status_matches(user_status, "Директор ЮПП", "Юрист пирвичник"):
+    if status_matches(user_status, "Директор ЮПП", "Юрист первичник"):
         return booking_come is True or status_matches(getattr(record, "status", None), "Онлайн", "Договор")
 
     if status_matches(user_status, "Менеджер"):
