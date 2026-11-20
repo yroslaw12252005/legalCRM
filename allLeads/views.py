@@ -201,6 +201,8 @@ def _can_change_status(user):
 
 def _parse_filters(request):
     search_query = request.GET.get("q", "").strip()
+    selected_date_from = request.GET.get("date_from", "").strip()
+    selected_date_to = request.GET.get("date_to", "").strip()
     selected_employee = request.GET.get("employee", "").strip()
     selected_operator = request.GET.get("operator", "").strip()
     selected_lawyer_upp = request.GET.get("lawyer_upp", "").strip()
@@ -256,6 +258,8 @@ def _parse_filters(request):
 
     return (
         search_query,
+        selected_date_from,
+        selected_date_to,
         selected_employee,
         selected_operator,
         selected_lawyer_upp,
@@ -349,6 +353,8 @@ def all_leads(request):
 
     (
         search_query,
+        selected_date_from,
+        selected_date_to,
         selected_employee,
         selected_operator,
         selected_lawyer_upp,
@@ -363,6 +369,28 @@ def all_leads(request):
     base_records = _with_booking_come(_visible_records_for_user(_base_records_for_user(request.user), request.user))
 
     get_records = base_records
+
+    try:
+        date_from = date.fromisoformat(selected_date_from) if selected_date_from else None
+    except ValueError:
+        date_from = None
+        selected_date_from = ""
+
+    try:
+        date_to = date.fromisoformat(selected_date_to) if selected_date_to else None
+    except ValueError:
+        date_to = None
+        selected_date_to = ""
+
+    if date_from and date_to and date_from > date_to:
+        date_from, date_to = date_to, date_from
+        selected_date_from, selected_date_to = selected_date_to, selected_date_from
+
+    if date_from:
+        get_records = get_records.filter(created_at__date__gte=date_from)
+
+    if date_to:
+        get_records = get_records.filter(created_at__date__lte=date_to)
 
 
 
@@ -564,6 +592,8 @@ def all_leads(request):
             "statuses": statuses,
 
             "search_query": search_query,
+            "selected_date_from": selected_date_from,
+            "selected_date_to": selected_date_to,
 
             "selected_employee": selected_employee,
 

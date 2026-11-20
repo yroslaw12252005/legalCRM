@@ -25,7 +25,8 @@
     align-items: stretch;
   }
   .desktop-toolbar-input,
-  .desktop-toolbar-select {
+  .desktop-toolbar-select,
+  .desktop-toolbar-date-input {
     width: 100%;
     border: 1px solid #d1d5db;
     border-radius: 12px;
@@ -39,6 +40,16 @@
   }
   .desktop-toolbar-input {
     grid-column: span 2;
+  }
+  .desktop-toolbar-date {
+    min-width: 0;
+  }
+  .desktop-toolbar-date-label {
+    display: block;
+    margin: 0 0 5px 2px;
+    color: #4b5563;
+    font-size: 11px;
+    font-weight: 600;
   }
   .desktop-toolbar-note {
     margin: 8px 2px 0 2px;
@@ -95,6 +106,7 @@
     }
     .desktop-toolbar-input,
     .desktop-toolbar-select,
+    .desktop-toolbar-date-input,
     .crm-btn {
       min-height: 42px;
     }
@@ -119,6 +131,14 @@
           value="{{ search_query }}"
           placeholder="Поиск по имени, телефону, описанию, ID или № договора"
         >
+        <label class="desktop-toolbar-date">
+          <span class="desktop-toolbar-date-label">С даты</span>
+          <input class="desktop-toolbar-date-input" type="date" name="date_from" value="{{ selected_date_from }}">
+        </label>
+        <label class="desktop-toolbar-date">
+          <span class="desktop-toolbar-date-label">По дату</span>
+          <input class="desktop-toolbar-date-input" type="date" name="date_to" value="{{ selected_date_to }}">
+        </label>
         <select class="desktop-toolbar-select" name="operator">
           <option value="">Все операторы</option>
           <option value="unassigned" {% if selected_operator == "unassigned" %}selected{% endif %}>Не прикреплён оператор</option>
@@ -167,7 +187,7 @@
         <button type="submit" class="crm-btn crm-btn-primary">Применить</button>
         <a href="{% url 'all_leads' %}" class="crm-btn">Сбросить</a>
       </form>
-      <p class="desktop-toolbar-note">Фильтры работают вместе: поиск, оператор, юрист ЮПП, юрист ОП, тематика, статус и источник.</p>
+      <p class="desktop-toolbar-note">Фильтры работают вместе: поиск, период создания заявки, оператор, юрист ЮПП, юрист ОП, тематика, статус и источник.</p>
       {% if user.status == "Администратор" %}
       <div class="desktop-toolbar-actions">
         <a href="{% url 'import_records_from_excel' %}" class="crm-btn">Загрузить заявки из Excel</a>
