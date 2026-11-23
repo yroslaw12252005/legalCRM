@@ -794,7 +794,7 @@ def add_record(request):
     if form.is_valid():
         add_record = form.save(commit=False)
         add_record.companys = request.user.companys
-        if request.user.status in _status_variants("Директор ЮПП"):
+        if _status_matches(request.user.status, "Директор ЮПП", "Менеджер"):
             add_record.in_work = True
             add_record.felial = request.user.felial
         if request.user.status =="Оператор":
