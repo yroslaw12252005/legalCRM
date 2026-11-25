@@ -30,8 +30,12 @@ LEAD_SOURCES = [
     "Право",
     "Лакоста",
     "Марина",
+    "Авито",
     "Excel",
 ]
+
+PRIMARY_LAWYER_STATUS = "Юрист первичник"
+LEGACY_PRIMARY_LAWYER_STATUS = "\u042e\u0440\u0438\u0441\u0442 \u043f\u0438\u0440\u0432\u0438\u0447\u043d\u0438\u043a"
 
 
 def normalize_text(value):
@@ -65,6 +69,8 @@ def normalize_text(value):
 def status_variants(value):
     normalized = normalize_text(value)
     variants = {normalized}
+    if normalized in {PRIMARY_LAWYER_STATUS, LEGACY_PRIMARY_LAWYER_STATUS}:
+        variants.update({PRIMARY_LAWYER_STATUS, LEGACY_PRIMARY_LAWYER_STATUS})
     try:
         variants.add(normalized.encode("utf-8").decode("cp1251"))
     except Exception:

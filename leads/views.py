@@ -194,6 +194,12 @@ DOCUMENT_ALLOWED_STATUSES = {
 
 def _status_variants(value):
     variants = {value}
+    primary_lawyer_statuses = {
+        "Юрист первичник",
+        "\u042e\u0440\u0438\u0441\u0442 \u043f\u0438\u0440\u0432\u0438\u0447\u043d\u0438\u043a",
+    }
+    if value in primary_lawyer_statuses:
+        variants.update(primary_lawyer_statuses)
     try:
         variants.add(value.encode("utf-8").decode("cp1251"))
     except Exception:
@@ -873,7 +879,12 @@ def update_record(request, pk):
     comment_upp_form = RecordCommentForm(request.POST or None, instance=record)
     comment_op_form = RecordCommentOPForm(request.POST or None, instance=record)
     can_edit_comment_kc = request.user.status in {"Директор КЦ", "Оператор", "Администратор"}
-    can_edit_comment_upp = request.user.status in {"Директор ЮПП", "Юрист первичник", "Администратор"}
+    can_edit_comment_upp = _status_matches(
+        request.user.status,
+        "Директор ЮПП",
+        "Юрист первичник",
+        "Администратор",
+    )
     can_edit_comment_op = request.user.status in {"Директор представителей", "Представитель", "Администратор"}
 
     if request.method == "POST":

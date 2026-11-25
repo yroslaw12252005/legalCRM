@@ -25,6 +25,12 @@ STATUS_REPRESENTATIVE = "Представитель"
 
 def _status_variants(value):
     variants = {value}
+    primary_lawyer_statuses = {
+        "Юрист первичник",
+        "\u042e\u0440\u0438\u0441\u0442 \u043f\u0438\u0440\u0432\u0438\u0447\u043d\u0438\u043a",
+    }
+    if value in primary_lawyer_statuses:
+        variants.update(primary_lawyer_statuses)
     try:
         variants.add(value.encode("utf-8").decode("cp1251"))
     except Exception:
